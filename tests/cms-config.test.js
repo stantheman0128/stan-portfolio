@@ -10,16 +10,35 @@ async function loadCmsConfig() {
   return parse(await readFile(path.join(rootDir, "public", "admin", "config.yml"), "utf8"));
 }
 
+function expectFieldsToMatchValue(fields, value, context) {
+  expect(new Set(fields.map(({ name }) => name)), `${context} field names`).toEqual(new Set(Object.keys(value)));
+
+  for (const field of fields) {
+    const child = value[field.name];
+    if (Array.isArray(child)) {
+      expect(field.widget, `${context}.${field.name} widget`).toBe("list");
+      if (child.length && typeof child[0] === "object") {
+        expect(field.fields, `${context}.${field.name} nested fields`).toBeDefined();
+        child.forEach((item, index) => expectFieldsToMatchValue(field.fields, item, `${context}.${field.name}[${index}]`));
+      } else {
+        expect(field.field, `${context}.${field.name} item field`).toBeDefined();
+      }
+    } else if (child && typeof child === "object") {
+      expect(field.fields, `${context}.${field.name} nested fields`).toBeDefined();
+      expectFieldsToMatchValue(field.fields, child, `${context}.${field.name}`);
+    }
+  }
+}
+
 describe("Sveltia CMS configuration", () => {
   test("edits every project frontmatter field used by the site", async () => {
     const [{ projects }, config] = await Promise.all([loadPortfolioContent({ rootDir }), loadCmsConfig()]);
     const projectCollection = config.collections.find(({ name }) => name === "projects");
-    const cmsFields = new Set(projectCollection.fields.map(({ name }) => name));
-    const contentFields = new Set(projects.flatMap((project) => Object.keys(project)).filter((key) => key !== "slug"));
+    const projectWithoutSlug = Object.fromEntries(Object.entries(projects[0]).filter(([key]) => key !== "slug"));
 
     expect(projectCollection.folder).toBe("data/projects");
     expect(projectCollection.format).toBe("yaml-frontmatter");
-    expect(cmsFields).toEqual(contentFields);
+    expectFieldsToMatchValue(projectCollection.fields, projectWithoutSlug, "project");
   });
 
   test("edits every top-level site content field", async () => {
@@ -28,7 +47,7 @@ describe("Sveltia CMS configuration", () => {
 
     expect(siteSingleton.file).toBe("data/site.json");
     expect(siteSingleton.format).toBe("json");
-    expect(new Set(siteSingleton.fields.map(({ name }) => name))).toEqual(new Set(Object.keys(site)));
+    expectFieldsToMatchValue(siteSingleton.fields, site, "site");
   });
 
   test("targets the deployed repository and OAuth Worker", async () => {
