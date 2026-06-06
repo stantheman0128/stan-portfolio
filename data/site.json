@@ -1,0 +1,148 @@
+{
+  "email": "stan@stan-shih.com",
+  "github": "https://github.com/stantheman0128",
+  "linkedin": "https://www.linkedin.com/in/po-han-stan-shih-39b713277/",
+  "resume": "#TODO-resume-pdf",
+  "hero": {
+    "headline": "I find products I love — then build for them.",
+    "subhead": "CS student who ships end-to-end across web, mobile, desktop, and browser extensions. AI-first by default."
+  },
+  "colonistCallout": {
+    "headline": "I built a Colonist Stats Tracker before applying. That is how I work.",
+    "note": "Unofficial, fan-made, local-only, and designed around actual player uncertainty."
+  },
+  "home": {
+    "projectsKicker": "Selected work",
+    "projectsTitle": "Built around real workflows.",
+    "projectsLead": "I like products where the interface, parser, and workflow all have to survive actual use.",
+    "calloutHeadline": "I care about the product enough to build before permission.",
+    "calloutBody": "The Colonist tracker is a small example: a local extension that watches the game log, computes state, and turns ambiguity into UI instead of hiding it."
+  },
+  "about": {
+    "heading": "I ship across surfaces.",
+    "paragraphs": [
+      "I am a third-year NTNU CS student. I tend to start with products I already use, then build tools around the pain I can feel: a Colonist browser extension, a graduation-credit checker, a LINE support bot, Android notification tooling, and AI-assisted learning workflows.",
+      "My background is split between product, engineering, community, and writing. That makes me comfortable with small details: the copy inside a popup, the edge case in a parser, the support message after a bug, and the UX of uncertainty."
+    ],
+    "languages": [
+      {
+        "label": "English",
+        "value": "near-native"
+      },
+      {
+        "label": "Mandarin",
+        "value": "native"
+      },
+      {
+        "label": "Tools",
+        "value": "JS/TS, Kotlin, Python, .NET, Claude Code"
+      }
+    ]
+  },
+  "projectsPage": {
+    "kicker": "Projects",
+    "title": "Small products, shipped end to end.",
+    "lead": "Each project is listed with one defensible sentence, status, tags, links, and a real local screenshot or a clearly labeled placeholder."
+  },
+  "colonistPage": {
+    "heroTitle": "For Colonist",
+    "disclaimerTitle": "Fan-made and unofficial.",
+    "disclaimerBody": "Not affiliated with, endorsed by, or sponsored by Colonist or colonist.io. The extension collects and transmits no data.",
+    "why": {
+      "kicker": "Why Colonist",
+      "title": "A product where UI clarity changes the game.",
+      "paragraphs": [
+        "Colonist is interesting because every product decision is felt by real players in real time: hidden information, trade timing, game-log readability, and table state all have to stay understandable under pressure.",
+        "That is the kind of product I like building for. The rules are concrete, the users are active, and the interface has to respect both strategy and uncertainty."
+      ]
+    },
+    "fit": [
+      {
+        "title": "Product taste",
+        "body": "Board-game systems, player-facing UX, and visible tradeoffs."
+      },
+      {
+        "title": "Engineering surface",
+        "body": "JavaScript, browser extensions, parsers, SPA behavior, and local state."
+      },
+      {
+        "title": "Work style",
+        "body": "AI-first, written reasoning, fast prototypes, and honest uncertainty."
+      }
+    ],
+    "proof": {
+      "kicker": "Proof",
+      "title": "Colonist.io Stats Tracker",
+      "lead": "A pure content-script overlay that watches Colonist's game log and keeps analysis local.",
+      "items": [
+        {
+          "title": "Dice distribution",
+          "body": "Live counts and percentages for sums 2-12, colored against fair-dice expectations."
+        },
+        {
+          "title": "Resource tracking",
+          "body": "Per-player resource estimates from initial yields, rolls, builds, trades, discards, and Monopoly."
+        },
+        {
+          "title": "Unknown cards",
+          "body": "Robber and knight steals move into a separate unknown pool until spending makes a type obvious."
+        },
+        {
+          "title": "SPA resilience",
+          "body": "MutationObserver re-attaches to the game log after page and match navigation."
+        }
+      ]
+    },
+    "strengths": {
+      "kicker": "How I match the role",
+      "title": "Builder habits Colonist can use.",
+      "lead": "The work below maps to UI/UX taste, JavaScript, real-player product sense, and async collaboration."
+    },
+    "related": {
+      "kicker": "Selected support work",
+      "title": "Other shipped surfaces.",
+      "lead": "Web, LINE, Android, and canvas projects that show end-to-end shipping beyond a single stack."
+    }
+  },
+  "strengths": [
+    {
+      "title": "Browser extension UI",
+      "body": "Manifest V3, content scripts, lightweight overlays, and state that lives beside a real product."
+    },
+    {
+      "title": "Parser-heavy product work",
+      "body": "The Colonist tracker reads game-log events, handles trades, robber uncertainty, and SPA navigation."
+    },
+    {
+      "title": "Clear uncertainty",
+      "body": "Hidden cards are not guessed away. The UI exposes an unknown pool so the player knows what is inferred."
+    },
+    {
+      "title": "AI-first shipping",
+      "body": "I use Claude Code heavily, but keep source-of-truth logic testable and local where privacy matters."
+    },
+    {
+      "title": "Async communication",
+      "body": "At Cooby I wrote technical docs, handled VIP tickets, and translated feature details into user-facing language."
+    },
+    {
+      "title": "Real users, real constraints",
+      "body": "I have shipped production PWAs, LINE flows, Android utilities, and local dev tools around actual workflows."
+    }
+  ],
+  "highlights": [
+    "Third-year B.Sc. student in Computer Science and Information Engineering at NTNU.",
+    "English: near-native; TOEFL 115, TOEIC 980 / IELTS 8.0 level.",
+    "Inventor of US10699576B1 / TWM578665U, a vehicle collision-warning patent later sold for NT$400k and cited by GM Cruise, Huawei, and Plus.ai.",
+    "Dcard official business partner and creator with roughly 2M+ monthly impressions.",
+    "Founded Nothing Taiwan Community; presented Nothing Phone 3(a) to 40+ media outlets.",
+    "Cooby Chief of Staff Intern; proposed onboarding fixes that reduced activation time by 30%."
+  ],
+  "colonistProject": "colonist-stats-tracker",
+  "colonistRelated": [
+    "course-checker",
+    "antnest-chatbot",
+    "line-notify-plus",
+    "traffic-congestion-lab"
+  ]
+}

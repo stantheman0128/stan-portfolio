@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Stan Shih portfolio preview">
+  <rect width="1200" height="630" fill="#f8f6f1"/>
+  <path d="M80 96H1120M80 534H1120" stroke="#171514" stroke-width="2"/>
+  <circle cx="1020" cy="150" r="11" fill="#c2522d"/>
+  <circle cx="1065" cy="150" r="11" fill="#c2522d"/>
+  <circle cx="1042.5" cy="190" r="11" fill="#c2522d"/>
+  <text x="82" y="170" font-family="Consolas, Menlo, monospace" font-size="44" font-weight="700" fill="#171514">Stan Shih</text>
+  <text x="82" y="292" font-family="Consolas, Menlo, monospace" font-size="78" font-weight="700" fill="#171514">I find products I love</text>
+  <text x="82" y="382" font-family="Consolas, Menlo, monospace" font-size="78" font-weight="700" fill="#171514">then build for them.</text>
+  <text x="82" y="470" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="30" fill="#716a62">Web, mobile, desktop, browser extensions. AI-first by default.</text>
+</svg>

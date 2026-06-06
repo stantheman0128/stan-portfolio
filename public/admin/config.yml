@@ -1,0 +1,160 @@
+backend:
+  name: github
+  repo: stantheman0128/stan-portfolio
+  branch: main
+  base_url: https://stan-portfolio-cms-auth.stanshih888.workers.dev
+
+site_url: https://portfolio.stan-shih.com
+display_url: https://portfolio.stan-shih.com
+logo_url: https://portfolio.stan-shih.com/favicon.svg
+media_folder: public/assets
+public_folder: /assets
+publish_mode: simple
+
+collections:
+  - name: projects
+    label: Projects
+    label_singular: Project
+    icon: view_module
+    folder: data/projects
+    format: yaml-frontmatter
+    create: true
+    delete: true
+    sortable_fields: [order, title, status]
+    summary: "{{order}} · {{title}} · {{status}}"
+    fields:
+      - { name: title, label: Title }
+      - name: status
+        label: Status
+        widget: select
+        options: [Live, Production, Prototype, In progress, Local tool]
+      - { name: path, label: Local project path, hint: "Display-only path; do not include sensitive absolute paths." }
+      - { name: description, label: One-sentence description, widget: text }
+      - { name: tags, label: Tags, widget: list, field: { name: tag, label: Tag } }
+      - { name: image, label: Image, widget: image, required: false }
+      - name: imageMode
+        label: Image display mode
+        widget: select
+        required: false
+        options:
+          - { label: Fill, value: "" }
+          - { label: Contain, value: contain }
+          - { label: Icon, value: icon }
+      - { name: alt, label: Image alt text }
+      - name: links
+        label: Links
+        widget: list
+        required: false
+        fields:
+          - { name: label, label: Label }
+          - { name: href, label: URL, hint: "Use #TODO-name for an unconfirmed link; it will be hidden publicly." }
+      - { name: hero, label: Featured hero project, widget: boolean, default: false }
+      - { name: order, label: Display order, widget: number, value_type: int, min: 1 }
+
+singletons:
+  - name: site
+    label: Site content
+    icon: edit_note
+    file: data/site.json
+    format: json
+    fields:
+      - { name: email, label: Email }
+      - { name: github, label: GitHub URL }
+      - { name: linkedin, label: LinkedIn URL }
+      - { name: resume, label: Resume URL, hint: "Use #TODO-resume-pdf until a sanitized public PDF is available." }
+      - name: hero
+        label: Home hero
+        widget: object
+        fields:
+          - { name: headline, label: Headline }
+          - { name: subhead, label: Subhead, widget: text }
+      - name: colonistCallout
+        label: Colonist callout
+        widget: object
+        fields:
+          - { name: headline, label: Headline }
+          - { name: note, label: Note, widget: text }
+      - name: home
+        label: Home sections
+        widget: object
+        fields:
+          - { name: projectsKicker, label: Projects kicker }
+          - { name: projectsTitle, label: Projects title }
+          - { name: projectsLead, label: Projects lead, widget: text }
+          - { name: calloutHeadline, label: Callout headline }
+          - { name: calloutBody, label: Callout body, widget: text }
+      - name: about
+        label: About
+        widget: object
+        fields:
+          - { name: heading, label: Heading }
+          - { name: paragraphs, label: Paragraphs, widget: list, field: { name: paragraph, label: Paragraph, widget: text } }
+          - name: languages
+            label: Languages and tools
+            widget: list
+            fields:
+              - { name: label, label: Label }
+              - { name: value, label: Value }
+      - name: projectsPage
+        label: Projects page
+        widget: object
+        fields:
+          - { name: kicker, label: Kicker }
+          - { name: title, label: Title }
+          - { name: lead, label: Lead, widget: text }
+      - name: colonistPage
+        label: Colonist page
+        widget: object
+        fields:
+          - { name: heroTitle, label: Hero title }
+          - { name: disclaimerTitle, label: Disclaimer title }
+          - { name: disclaimerBody, label: Disclaimer body, widget: text }
+          - name: why
+            label: Why Colonist
+            widget: object
+            fields:
+              - { name: kicker, label: Kicker }
+              - { name: title, label: Title }
+              - { name: paragraphs, label: Paragraphs, widget: list, field: { name: paragraph, label: Paragraph, widget: text } }
+          - name: fit
+            label: Role fit
+            widget: list
+            fields:
+              - { name: title, label: Title }
+              - { name: body, label: Body, widget: text }
+          - name: proof
+            label: Proof section
+            widget: object
+            fields:
+              - { name: kicker, label: Kicker }
+              - { name: title, label: Title }
+              - { name: lead, label: Lead, widget: text }
+              - name: items
+                label: Proof items
+                widget: list
+                fields:
+                  - { name: title, label: Title }
+                  - { name: body, label: Body, widget: text }
+          - name: strengths
+            label: Strengths section
+            widget: object
+            fields:
+              - { name: kicker, label: Kicker }
+              - { name: title, label: Title }
+              - { name: lead, label: Lead, widget: text }
+          - name: related
+            label: Related work section
+            widget: object
+            fields:
+              - { name: kicker, label: Kicker }
+              - { name: title, label: Title }
+              - { name: lead, label: Lead, widget: text }
+      - name: strengths
+        label: Strengths
+        widget: list
+        fields:
+          - { name: title, label: Title }
+          - { name: body, label: Body, widget: text }
+      - { name: highlights, label: Highlights, widget: list, field: { name: highlight, label: Highlight, widget: text } }
+      - { name: colonistProject, label: Colonist project slug, hint: "Must match a filename in data/projects without .md." }
+      - { name: colonistRelated, label: Colonist related project slugs, widget: list, field: { name: slug, label: Project slug } }
