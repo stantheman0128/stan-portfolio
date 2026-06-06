@@ -54,6 +54,10 @@ Required GitHub Actions secrets:
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_API_TOKEN` with Cloudflare Pages edit access
 
+The current workflow secret was bootstrapped from the authenticated Wrangler session and
+has been verified by a successful deployment. Replace it with a dedicated scoped
+Cloudflare API token for long-term CI credential hygiene.
+
 ## CMS Authentication
 
 The official `sveltia/sveltia-cms-auth` Worker is deployed at:

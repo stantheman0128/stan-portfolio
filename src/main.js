@@ -289,6 +289,10 @@ function render() {
 
 document.querySelectorAll("[data-site-link]").forEach((link) => {
   const key = link.dataset.siteLink;
+  if (links[key].startsWith("#TODO-")) {
+    link.remove();
+    return;
+  }
   link.href = links[key];
   if (key === "email" && link.textContent.includes("@")) link.textContent = site.email;
 });
