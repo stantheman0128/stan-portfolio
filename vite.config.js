@@ -5,6 +5,9 @@ const virtualId = "virtual:portfolio-content";
 const resolvedVirtualId = `\0${virtualId}`;
 
 export default defineConfig({
+  test: {
+    include: ["tests/**/*.test.js"]
+  },
   plugins: [
     {
       name: "portfolio-content",

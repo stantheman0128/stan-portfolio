@@ -60,21 +60,23 @@ Cloudflare API token for long-term CI credential hygiene.
 
 ## CMS Authentication
 
-The official `sveltia/sveltia-cms-auth` Worker is deployed at:
+The OAuth flow is based on the official `sveltia/sveltia-cms-auth` Worker and is deployed at:
 
 `https://stan-portfolio-cms-auth.stanshih888.workers.dev`
 
-It allows only `portfolio.stan-shih.com` and `stan-portfolio.pages.dev`. To finish
-GitHub OAuth:
+It allows only `portfolio.stan-shih.com` and `stan-portfolio.pages.dev`. The GitHub
+OAuth App is configured with:
 
-1. Register a GitHub OAuth App named `Stan Portfolio CMS`.
-2. Set its homepage to `https://portfolio.stan-shih.com/admin/`.
-3. Set its callback to `https://stan-portfolio-cms-auth.stanshih888.workers.dev/callback`.
-4. Store the generated values as encrypted Worker secrets named
-   `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`.
+- Name: `Stan Portfolio CMS`
+- Homepage: `https://portfolio.stan-shih.com/admin/`
+- Callback: `https://stan-portfolio-cms-auth.stanshih888.workers.dev/callback`
 
-Until those OAuth secrets are configured, Sveltia's `Sign in with token` option remains
-available to the repository owner.
+The Worker stores `ALLOWED_DOMAINS`, `GITHUB_CLIENT_ID`, and `GITHUB_CLIENT_SECRET`
+as encrypted secrets. Rotate the GitHub OAuth secret in GitHub Developer Settings and
+write the replacement with `wrangler secret put`; never commit it.
+
+The versioned Worker source in `cms-auth/` deliberately requests only `public_repo` and
+`read:user`, rather than access to private repositories or full user data.
 
 ## TODO / Placeholders
 
