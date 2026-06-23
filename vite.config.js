@@ -3,6 +3,7 @@ import { loadPortfolioContent } from "./src/content-loader.js";
 
 const virtualId = "virtual:portfolio-content";
 const resolvedVirtualId = `\0${virtualId}`;
+const pathSeparator = process.platform === "win32" ? "\\" : "/";
 
 export default defineConfig({
   test: {
@@ -28,5 +29,3 @@ export default defineConfig({
     }
   ]
 });
-
-const pathSeparator = process.platform === "win32" ? "\\" : "/";
