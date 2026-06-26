@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stan Shih — Index (demo)</title>
+    <style>
+      :root {
+        --bg: #f6f5f1;
+        --ink: #17161a;
+        --muted: #8b877f;
+        --faint: #b7b2a8;
+        --line: rgba(23, 22, 26, 0.12);
+        --line-strong: rgba(23, 22, 26, 0.28);
+        --accent: #c2522d;
+        --card: #fffdfa;
+        --serif: "Newsreader", Georgia, "Times New Roman", serif;
+        --sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      * { box-sizing: border-box; }
+
+      html { -webkit-text-size-adjust: 100%; }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--sans);
+        font-size: 16px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      a { color: inherit; text-decoration: none; }
+
+      .wrap {
+        max-width: 920px;
+        margin: 0 auto;
+        padding: clamp(28px, 7vw, 88px) clamp(20px, 6vw, 48px) 80px;
+      }
+
+      /* ---------- masthead ---------- */
+      .eyebrow {
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid var(--line);
+      }
+      .eyebrow .badge {
+        border: 1px solid var(--line-strong);
+        border-radius: 999px;
+        padding: 3px 10px;
+        color: var(--ink);
+        font-size: 11px;
+        letter-spacing: 0.18em;
+      }
+
+      .hero { padding: clamp(40px, 9vw, 96px) 0 clamp(36px, 7vw, 72px); }
+      .hero h1 {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: clamp(34px, 6.4vw, 62px);
+        line-height: 1.06;
+        letter-spacing: -0.01em;
+        margin: 0 0 26px;
+        max-width: 16ch;
+      }
+      .hero h1 em {
+        font-style: italic;
+        color: var(--accent);
+      }
+      .hero .sub {
+        font-size: clamp(16px, 2.1vw, 19px);
+        color: var(--muted);
+        max-width: 54ch;
+        margin: 0 0 30px;
+      }
+      .contacts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 26px;
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.02em;
+      }
+      .contacts a {
+        color: var(--ink);
+        padding-bottom: 3px;
+        border-bottom: 1px solid var(--line-strong);
+        transition: border-color 0.2s, color 0.2s;
+      }
+      .contacts a:hover { color: var(--accent); border-color: var(--accent); }
+
+      /* ---------- index list ---------- */
+      .index-head {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--faint);
+        padding: 0 0 12px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .item { border-bottom: 1px solid var(--line); }
+
+      .row {
+        display: grid;
+        grid-template-columns: 46px 1fr auto;
+        align-items: baseline;
+        gap: 18px;
+        width: 100%;
+        background: none;
+        border: 0;
+        text-align: left;
+        cursor: pointer;
+        padding: 22px 0;
+        color: var(--ink);
+        font-family: inherit;
+        transition: padding-left 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+      }
+      .row:hover, .item.open .row { padding-left: 14px; }
+
+      .row .num {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--faint);
+        transition: color 0.25s;
+      }
+      .row:hover .num, .item.open .num { color: var(--accent); }
+
+      .row .title {
+        font-family: var(--serif);
+        font-size: clamp(21px, 3.2vw, 30px);
+        font-weight: 400;
+        line-height: 1.12;
+        letter-spacing: -0.01em;
+      }
+      .row .meta {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        text-transform: uppercase;
+        white-space: nowrap;
+        text-align: right;
+      }
+
+      /* expand panel */
+      .panel {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: grid-template-rows 0.36s cubic-bezier(0.2, 0.7, 0.2, 1);
+      }
+      .item.open .panel { grid-template-rows: 1fr; }
+      .panel-inner { overflow: hidden; }
+      .panel-grid {
+        display: grid;
+        grid-template-columns: 1fr 240px;
+        gap: 30px;
+        padding: 2px 0 30px 64px;
+        opacity: 0;
+        transform: translateY(6px);
+        transition: opacity 0.3s 0.06s, transform 0.3s 0.06s;
+      }
+      .item.open .panel-grid { opacity: 1; transform: none; }
+      .panel-grid .desc { font-size: 15.5px; color: #2c2a28; margin: 0 0 18px; max-width: 52ch; }
+      .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
+      .tag {
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 3px 9px;
+      }
+      .links { display: flex; flex-wrap: wrap; gap: 8px 18px; font-family: var(--mono); font-size: 13px; }
+      .links a {
+        display: inline-flex; align-items: center; gap: 6px;
+        border-bottom: 1px solid var(--line-strong);
+        padding-bottom: 2px; transition: color 0.2s, border-color 0.2s;
+      }
+      .links a:hover { color: var(--accent); border-color: var(--accent); }
+      .links a::after { content: "↗"; font-size: 11px; color: var(--faint); }
+      .thumb {
+        align-self: start;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        aspect-ratio: 4 / 3;
+        display: flex; align-items: center; justify-content: center;
+        overflow: hidden;
+      }
+      .thumb img { max-width: 86%; max-height: 86%; object-fit: contain; }
+
+      /* ---------- floating hover preview (desktop) ---------- */
+      .float {
+        position: fixed;
+        top: 0; left: 0;
+        width: 260px; height: 195px;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: 0 24px 60px rgba(40, 30, 23, 0.16);
+        overflow: hidden;
+        display: flex; align-items: center; justify-content: center;
+        pointer-events: none;
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.96);
+        transition: opacity 0.18s, transform 0.18s;
+        z-index: 50;
+      }
+      .float img { max-width: 88%; max-height: 88%; object-fit: contain; }
+      .float.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+      footer {
+        margin-top: 70px;
+        padding-top: 22px;
+        border-top: 1px solid var(--line);
+        font-family: var(--mono);
+        font-size: 11.5px;
+        letter-spacing: 0.04em;
+        color: var(--faint);
+        display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+      }
+
+      @media (max-width: 640px) {
+        .row { grid-template-columns: 30px 1fr; }
+        .row .meta { display: none; }
+        .panel-grid { grid-template-columns: 1fr; padding-left: 0; }
+        .panel-grid .thumb { grid-row: 1; order: -1; max-width: 220px; }
+        .float { display: none; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="eyebrow">
+        <span>Stan Shih — Selected Work</span>
+        <span class="badge">Demo</span>
+      </header>
+
+      <section class="hero">
+        <h1>I find products I love — <em>then build for them.</em></h1>
+        <p class="sub">
+          CS student who ships end-to-end across web, mobile, desktop, and browser
+          extensions. AI-first by default.
+        </p>
+        <nav class="contacts">
+          <a href="mailto:stan@stan-shih.com">Email</a>
+          <a href="https://github.com/stantheman0128" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://www.linkedin.com/in/po-han-stan-shih-39b713277/" target="_blank" rel="noopener">LinkedIn</a>
+        </nav>
+      </section>
+
+      <div class="index-head">
+        <span>Index</span>
+        <span>2024 — 2026</span>
+      </div>
+
+      <main id="list"></main>
+
+      <footer>
+        <span>© 2026 Stan Shih</span>
+        <span>Built end-to-end · Taipei</span>
+      </footer>
+    </div>
+
+    <div class="float" id="float" aria-hidden="true"><img alt="" /></div>
+
+    <script>
+      // Demo content — general portfolio, all projects equal.
+      const projects = [
+        {
+          title: "Colonist.io Stats Tracker",
+          status: "Local tool",
+          tagline: "Chrome MV3 · JavaScript",
+          image: "/assets/colonist-stats-icon.png",
+          desc: "A fan-made Chrome MV3 overlay that parses Colonist's game log locally to show live dice distribution, resources, and hidden-card uncertainty.",
+          tags: ["Chrome MV3", "JavaScript", "MutationObserver", "Local-only"],
+          links: [
+            { label: "GitHub", href: "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/colonist-stats-tracker" },
+          ],
+        },
+        {
+          title: "Course Checker",
+          status: "Live",
+          tagline: "PWA · React",
+          image: "/assets/course-hero.png",
+          desc: "A production PWA that checks NTNU CS graduation credits against catalog rules and transcript data.",
+          tags: ["PWA", "React", "TypeScript", "Credit rules"],
+          links: [{ label: "Live", href: "https://course.stan-shih.com" }],
+        },
+        {
+          title: "Antnest Chatbot",
+          status: "Production",
+          tagline: "Next.js · Supabase",
+          image: "/assets/antnest-logo.png",
+          desc: "A production LINE + AI support system for a real dessert shop, with Next.js, Supabase, Gemini, admin tools, and reservations.",
+          tags: ["Next.js", "TypeScript", "Supabase", "Gemini", "LINE"],
+          links: [
+            { label: "Live", href: "https://antnest-chatbot-0410.zeabur.app" },
+            { label: "GitHub", href: "https://github.com/stantheman0128/antnest-chatbot" },
+          ],
+        },
+        {
+          title: "LINE Notify+",
+          status: "In progress",
+          tagline: "Kotlin · Android",
+          image: "/assets/line-notify-screenshot.png",
+          desc: "An Android app that reshapes LINE notifications for Nothing Phone users with chat grouping, settings, and Play Store assets.",
+          tags: ["Kotlin", "Compose", "Android", "Notifications"],
+          links: [{ label: "GitHub", href: "https://github.com/stantheman0128/line-notify-plus" }],
+        },
+        {
+          title: "ClaudePulse",
+          status: "Local tool",
+          tagline: ".NET · Windows tray",
+          image: "/assets/claudepulse-screenshot.png",
+          desc: "A Windows tray monitor that tracks multiple Claude Code sessions, permission waits, and idle states through local hooks.",
+          tags: [".NET", "Windows tray", "HTTP hooks", "AI tooling"],
+          links: [{ label: "GitHub", href: "https://github.com/stantheman0128/claudepulse-win" }],
+        },
+        {
+          title: "Traffic Congestion Lab",
+          status: "Prototype",
+          tagline: "React · Canvas",
+          image: "/assets/traffic-lab-concept.png",
+          desc: "An interactive canvas lab that shows stop-and-go congestion waves from tiny braking disturbances on a three-lane stadium track.",
+          tags: ["React", "Vite", "Canvas", "Simulation"],
+          links: [],
+        },
+        {
+          title: "English Companion",
+          status: "In progress",
+          tagline: "Next.js · PWA",
+          image: "/assets/english-companion-icon.png",
+          desc: "An iPad PWA workflow for daily reading and writing practice, learner modeling, and Claude Code-assisted feedback.",
+          tags: ["Next.js", "PWA", "Drizzle", "Postgres"],
+          links: [],
+        },
+        {
+          title: "ETF / Quant Research",
+          status: "Prototype",
+          tagline: "Python · Backtesting",
+          image: "/assets/etf-tracker-screenshot.png",
+          desc: "A research codebase for portfolio tracking and walk-forward quant experiments with explicit bias and overfit controls.",
+          tags: ["Next.js", "Python", "Backtesting", "DSR"],
+          links: [
+            { label: "etf-tracker", href: "https://github.com/stantheman0128/etf-tracker" },
+            { label: "quant", href: "https://github.com/stantheman0128/quant" },
+          ],
+        },
+      ];
+
+      const list = document.getElementById("list");
+      const float = document.getElementById("float");
+      const floatImg = float.querySelector("img");
+      const pad = (n) => String(n + 1).padStart(2, "0");
+
+      projects.forEach((p, i) => {
+        const item = document.createElement("section");
+        item.className = "item";
+        const linkHtml = p.links
+          .map((l) => `<a href="${l.href}" target="_blank" rel="noopener">${l.label}</a>`)
+          .join("");
+        item.innerHTML = `
+          <button class="row" aria-expanded="false">
+            <span class="num">${pad(i)}</span>
+            <span class="title">${p.title}</span>
+            <span class="meta">${p.status} · ${p.tagline}</span>
+          </button>
+          <div class="panel">
+            <div class="panel-inner">
+              <div class="panel-grid">
+                <div class="body">
+                  <p class="desc">${p.desc}</p>
+                  <div class="tags">${p.tags.map((t) => `<span class="tag">${t}</span>`).join("")}</div>
+                  <div class="links">${linkHtml || '<span style="color:var(--faint)">No public link yet</span>'}</div>
+                </div>
+                <div class="thumb"><img src="${p.image}" alt="${p.title} preview" /></div>
+              </div>
+            </div>
+          </div>`;
+
+        const row = item.querySelector(".row");
+        row.addEventListener("click", () => {
+          const isOpen = item.classList.contains("open");
+          document.querySelectorAll(".item.open").forEach((el) => {
+            el.classList.remove("open");
+            el.querySelector(".row").setAttribute("aria-expanded", "false");
+          });
+          if (!isOpen) {
+            item.classList.add("open");
+            row.setAttribute("aria-expanded", "true");
+          }
+        });
+
+        // floating preview on hover (desktop pointers only)
+        row.addEventListener("mouseenter", () => {
+          if (window.matchMedia("(hover: hover)").matches) {
+            floatImg.src = p.image;
+            float.classList.add("show");
+          }
+        });
+        row.addEventListener("mouseleave", () => float.classList.remove("show"));
+
+        list.appendChild(item);
+      });
+
+      window.addEventListener("mousemove", (e) => {
+        // keep the preview near the cursor but clamped to viewport
+        const x = Math.min(window.innerWidth - 150, Math.max(150, e.clientX + 150));
+        const y = Math.min(window.innerHeight - 120, Math.max(120, e.clientY));
+        float.style.left = x + "px";
+        float.style.top = y + "px";
+      });
+
+      // Deep-link: #p3 opens the 3rd project (shareable per-project links).
+      function openFromHash() {
+        const m = (location.hash || "").match(/^#p(\d+)$/);
+        if (!m) return;
+        const el = list.children[Number(m[1]) - 1];
+        if (!el) return;
+        el.classList.add("open");
+        el.querySelector(".row").setAttribute("aria-expanded", "true");
+      }
+      openFromHash();
+      window.addEventListener("hashchange", openFromHash);
+    </script>
+  </body>
+</html>

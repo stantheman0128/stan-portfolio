@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stan Shih — Builder · Inventor · AI-first engineer</title>
+<meta name="description" content="Stan Shih (Po-Han Shih): product builder, patent inventor, and AI-first engineer. A dashboard of work, stats, and a way to reach me.">
+<style>
+  /* ============ Bento Dashboard — design tokens ============ */
+  :root{
+    --paper:#f4f1ea;
+    --tile:#fffdf8;
+    --tile-2:#faf7ef;
+    --ink:#1b1916;
+    --ink-soft:#46423b;
+    --ink-faint:#6e6759;            /* darkened: small-text body now >=4.5:1 on tile/paper */
+    --line:#e4ded2;
+    --line-strong:#d6cfc0;
+    --accent:#d2691e;       /* one confident accent: burnt ochre */
+    --accent-deep:#a8501a;
+    --accent-tint:#f6e7d6;
+    --accent-ink:#5c3210;
+    --accent-on-dark:#e9913f;       /* link accent for use on the dark ink tiles (~6:1) */
+    --good:#3b6d44;
+    --radius:18px;
+    --radius-sm:11px;
+    --shadow-rest:0 1px 2px rgba(40,33,22,.05), 0 1px 0 rgba(255,255,255,.6) inset;
+    --shadow-hover:0 14px 34px -16px rgba(60,40,15,.38), 0 2px 6px rgba(40,33,22,.06);
+    --maxw:1180px;
+    --gap:16px;
+    --font:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","Cascadia Mono","Segoe UI Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#15130f;
+      --tile:#211d18;
+      --tile-2:#1a1712;
+      --ink:#f3ede1;
+      --ink-soft:#cdc4b4;
+      --ink-faint:#938a7b;
+      --line:#322c24;
+      --line-strong:#403930;
+      --accent:#e9913f;
+      --accent-deep:#f0a85f;
+      --accent-tint:#3a2a17;
+      --accent-ink:#f6cd9e;
+      --accent-on-dark:#f0a85f;
+      --good:#7bbf86;
+      --shadow-rest:0 1px 2px rgba(0,0,0,.35);
+      --shadow-hover:0 16px 38px -16px rgba(0,0,0,.7), 0 2px 6px rgba(0,0,0,.4);
+    }
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  a{color:inherit;}
+  img{max-width:100%;display:block;}
+  ::selection{background:var(--accent);color:#fff;}
+  :focus-visible{outline:2.5px solid var(--accent);outline-offset:3px;border-radius:4px;}
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:clamp(18px,4vw,40px) clamp(14px,3.5vw,34px) 28px;}
+
+  /* skip link */
+  .skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;z-index:50;}
+  .skip:focus{left:14px;}
+
+  /* top bar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap;}
+  .brandmark{display:flex;align-items:center;gap:11px;font-weight:600;letter-spacing:.01em;}
+  .brandmark .dot{width:34px;height:34px;border-radius:9px;background:var(--ink);color:var(--paper);
+    display:grid;place-items:center;font-family:var(--font);font-size:19px;font-weight:700;flex:none;}
+  .brandmark b{font-size:15px;}
+  .brandmark span{display:block;font-size:11.5px;font-weight:500;color:var(--ink-faint);letter-spacing:.02em;}
+  .demo-tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--ink-faint);border:1px solid var(--line-strong);border-radius:999px;padding:5px 11px;white-space:nowrap;}
+
+  /* ============ Bento grid ============ */
+  .bento{
+    display:grid;
+    grid-template-columns:repeat(12,1fr);
+    gap:var(--gap);
+    grid-auto-flow:dense;
+  }
+  .tile{
+    background:var(--tile);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px 22px;
+    box-shadow:var(--shadow-rest);
+    position:relative;
+    transition:transform .26s cubic-bezier(.2,.7,.3,1), box-shadow .26s ease, border-color .26s ease;
+    min-width:0;
+    display:flex;flex-direction:column;
+  }
+  .tile:hover{transform:translateY(-4px);box-shadow:var(--shadow-hover);border-color:var(--line-strong);}
+  .tile .kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--ink-faint);display:flex;align-items:center;gap:8px;margin:0 0 12px;}
+  .tile .kicker::before{content:"";width:14px;height:1.5px;background:var(--accent);flex:none;}
+
+  /* column spans (desktop) */
+  .c12{grid-column:span 12;} .c8{grid-column:span 8;} .c7{grid-column:span 7;}
+  .c6{grid-column:span 6;} .c5{grid-column:span 5;} .c4{grid-column:span 4;}
+  .c3{grid-column:span 3;} .c2{grid-column:span 2;}
+  .r2{grid-row:span 2;}
+
+  /* ---- IDENTITY / hero tile ---- */
+  .identity{background:var(--ink);color:var(--paper);border-color:var(--ink);overflow:hidden;}
+  .identity::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 90% at 92% 8%, rgba(210,105,30,.30), transparent 55%);}
+  .identity .kicker{color:rgba(244,241,234,.6);}
+  .identity .kicker::before{background:var(--accent-deep);}
+  .id-name{font-family:var(--font);font-size:clamp(34px,5.4vw,56px);line-height:1;letter-spacing:-.015em;
+    margin:2px 0 4px;font-weight:700;}
+  .id-latin{font-size:13px;color:rgba(244,241,234,.62);margin:0 0 16px;letter-spacing:.02em;}
+  .id-line{font-family:var(--font);font-size:clamp(18px,2.4vw,23px);line-height:1.32;max-width:30ch;
+    margin:0 0 6px;position:relative;z-index:1;}
+  .id-line em{font-style:normal;color:var(--accent-deep);}
+  .id-sub{font-size:13.5px;color:rgba(244,241,234,.72);max-width:50ch;margin:10px 0 0;line-height:1.5;position:relative;z-index:1;}
+  .id-roles{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto;padding-top:18px;position:relative;z-index:1;}
+  .id-roles span{font-size:12px;font-weight:600;letter-spacing:.02em;padding:5px 11px;border-radius:999px;
+    background:rgba(244,241,234,.10);border:1px solid rgba(244,241,234,.16);}
+  .id-roles span.hot{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .id-meta{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:14px;font-size:12.5px;color:rgba(244,241,234,.78);position:relative;z-index:1;}
+  .id-meta>span{display:inline-flex;align-items:center;min-height:24px;}
+  .id-meta a{color:var(--accent-on-dark);text-decoration:underline;text-underline-offset:2px;
+    text-decoration-thickness:1px;font-weight:600;display:inline-flex;align-items:center;min-height:24px;padding:2px 0;}
+  .id-meta a:hover{text-decoration-thickness:2px;}
+  .avail-dot{width:7px;height:7px;border-radius:50%;background:var(--good);display:inline-block;margin-right:6px;
+    box-shadow:0 0 0 3px rgba(123,191,134,.20);animation:pulse 4s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 3px rgba(123,191,134,.20);}50%{box-shadow:0 0 0 5px rgba(123,191,134,.06);}}
+
+  /* ---- PATENT tile (interactive) ---- */
+  .patent{background:linear-gradient(165deg,var(--accent-tint),var(--tile) 72%);}
+  .patent .ptitle{font-family:var(--font);font-size:clamp(20px,2.5vw,26px);line-height:1.18;margin:2px 0 10px;letter-spacing:-.01em;}
+  .patent .ids{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
+  .patent .ids code{font-family:var(--mono);font-size:11.5px;background:var(--accent-tint);color:var(--accent-ink);
+    border:1px solid color-mix(in srgb,var(--accent) 38%, transparent);padding:4px 9px;border-radius:7px;font-weight:600;}
+  .patent .pblurb{font-size:13.5px;color:var(--ink-soft);margin:0 0 14px;max-width:52ch;}
+  .bignum{display:flex;align-items:baseline;gap:10px;margin-bottom:4px;}
+  .bignum .n{font-family:var(--font);font-size:clamp(40px,6vw,60px);font-weight:700;color:var(--accent-deep);line-height:.9;letter-spacing:-.02em;}
+  .bignum .u{font-size:13px;color:var(--ink-faint);font-weight:600;}
+  .pmeta{font-size:12px;color:var(--ink-faint);margin-bottom:14px;}
+  .reveal-btn{align-self:flex-start;margin-top:auto;font-family:var(--sans);font-size:12.5px;font-weight:600;
+    cursor:pointer;background:transparent;border:1px solid var(--line-strong);color:var(--ink);
+    padding:8px 14px;border-radius:999px;display:inline-flex;align-items:center;gap:7px;transition:background .18s,border-color .18s;}
+  .reveal-btn:hover{background:var(--accent-tint);border-color:var(--accent);}
+  .reveal-btn .chev{transition:transform .26s ease;font-size:11px;}
+  .patent[data-open="true"] .reveal-btn .chev{transform:rotate(180deg);}
+  .phighlights{display:grid;gap:9px;overflow:hidden;max-height:0;opacity:0;
+    transition:max-height .42s ease,opacity .3s ease,margin .3s ease;margin-top:0;}
+  .patent[data-open="true"] .phighlights{max-height:340px;opacity:1;margin-top:16px;}
+  .phighlights li{list-style:none;display:flex;gap:10px;font-size:13px;color:var(--ink-soft);line-height:1.4;}
+  .phighlights li::before{content:"";flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:7px;}
+  .phighlights{padding:0;}
+
+  /* ---- STAT tiles ---- */
+  .stat{justify-content:space-between;background:var(--tile-2);}
+  .stat .sval{font-family:var(--font);font-size:clamp(26px,3.4vw,34px);font-weight:700;line-height:1;letter-spacing:-.01em;}
+  .stat .slabel{font-size:12px;color:var(--ink-faint);margin-top:8px;line-height:1.35;}
+  .stat .toprow{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .stat .toprow .kicker{margin:0;}
+  /* sparkline */
+  .spark{width:100%;height:30px;margin-top:12px;display:block;overflow:visible;}
+  .spark path.line{fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .spark path.fill{fill:color-mix(in srgb,var(--accent) 14%, transparent);stroke:none;}
+  .spark circle{fill:var(--accent);}
+  /* dice motif */
+  .dice{display:inline-grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);
+    width:30px;height:30px;gap:2px;margin-top:12px;}
+  .dice i{background:transparent;border-radius:50%;}
+  .dice i.on{background:var(--accent);}
+
+  /* ---- WORK tile ---- */
+  .work-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+  .work-head h2{font-family:var(--font);font-size:21px;margin:0;font-weight:700;letter-spacing:-.01em;}
+  .work-head .count{font-size:12px;color:var(--ink-faint);font-family:var(--mono);}
+  .work-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .wcard{display:flex;flex-direction:column;gap:0;background:var(--tile-2);border:1px solid var(--line);
+    border-radius:var(--radius-sm);padding:13px 13px 12px;color:inherit;
+    transition:transform .2s ease,border-color .2s ease,background .2s ease;position:relative;min-width:0;}
+  .wcard:hover{transform:translateY(-3px);border-color:var(--line-strong);background:var(--tile);}
+  /* primary card link = the title; stretched to cover the whole tile so the card is one big target,
+     while secondary links sit above it (z-index) as real, separately-targetable anchors */
+  .wcard:focus-within{border-color:var(--accent);}
+  .wcard .wtop{display:flex;align-items:center;gap:9px;margin-bottom:9px;padding-right:62px;}
+  .wcard .wtop>div{min-width:0;}
+  .wthumb{width:34px;height:34px;border-radius:8px;flex:none;object-fit:cover;background:var(--paper);border:1px solid var(--line);}
+  .wthumb.contain{object-fit:contain;padding:3px;background:#fff;}
+  .wthumb.glyph{display:grid;place-items:center;font-family:var(--font);font-weight:700;font-size:16px;
+    color:var(--accent-deep);background:var(--accent-tint);border-color:transparent;}
+  .wcard h3{font-size:13.5px;margin:0;font-weight:600;line-height:1.2;letter-spacing:-.005em;}
+  .wcard .wtitle{color:inherit;text-decoration:none;}
+  .wcard .wtitle::after{content:"";position:absolute;inset:0;border-radius:var(--radius-sm);z-index:0;}
+  .wcard .wtitle:hover h3{color:var(--accent-deep);}
+  .wcard .wyear{font-size:11px;color:var(--ink-faint);font-family:var(--mono);margin-top:2px;}
+  .wcard p{font-size:12px;color:var(--ink-soft);margin:0;line-height:1.42;position:relative;z-index:1;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .wbadge{position:absolute;top:11px;right:11px;font-size:9px;font-family:var(--mono);letter-spacing:.06em;
+    text-transform:uppercase;color:var(--accent-ink);background:var(--accent-tint);z-index:2;
+    border:1px solid color-mix(in srgb,var(--accent) 30%, transparent);padding:2px 6px;border-radius:5px;}
+  .wlinks{display:flex;gap:6px 10px;margin-top:auto;padding-top:10px;flex-wrap:wrap;position:relative;z-index:2;}
+  .wlinks .wl{font-size:11.5px;font-weight:600;color:var(--accent-deep);text-decoration:none;
+    display:inline-flex;align-items:center;gap:3px;min-height:30px;padding:3px 2px;border-radius:6px;}
+  .wlinks .wl:hover{text-decoration:underline;text-underline-offset:2px;}
+  .wnolink{font-size:11px;color:var(--ink-faint);margin-top:auto;padding-top:10px;font-style:italic;position:relative;z-index:1;}
+
+  /* ---- ETHOS / NOW tile ---- */
+  .ethos h2{font-family:var(--font);font-size:20px;margin:0 0 12px;font-weight:700;}
+  .principles{display:grid;gap:11px;margin:0;padding:0;}
+  .principles li{list-style:none;}
+  .principles .pt{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;}
+  .principles .pt::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--accent);flex:none;transform:rotate(45deg);}
+  .principles .pb{font-size:12px;color:var(--ink-faint);margin:2px 0 0 16px;line-height:1.4;}
+  .now-box{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line-strong);}
+  .now-box .nlabel{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-deep);margin-bottom:6px;display:flex;align-items:center;gap:7px;}
+  .now-box .nlabel .live{width:7px;height:7px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%, transparent);animation:pulse2 4s ease-in-out infinite;}
+  @keyframes pulse2{0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 20%, transparent);}
+    50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 6%, transparent);}}
+  .now-box p{font-size:13px;color:var(--ink-soft);margin:0;line-height:1.5;}
+
+  /* ---- ABOUT tile ---- */
+  .about h2{font-family:var(--font);font-size:21px;margin:0 0 12px;font-weight:700;}
+  .about p{font-size:13.5px;color:var(--ink-soft);margin:0 0 11px;line-height:1.6;max-width:68ch;}
+  .about p:last-child{margin-bottom:0;}
+  .about .lede{font-family:var(--font);font-size:16px;color:var(--ink);line-height:1.5;}
+
+  /* ---- TWO-COL PANEL (experience / press / education / skills) ---- */
+  .panel h2{font-family:var(--font);font-size:18px;margin:0 0 14px;font-weight:700;}
+  .timeline{display:grid;gap:14px;}
+  .titem{position:relative;padding-left:16px;}
+  .titem::before{content:"";position:absolute;left:0;top:6px;width:7px;height:7px;border-radius:50%;
+    background:var(--tile);border:2px solid var(--accent);}
+  .titem .thead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+  .titem .torg{font-size:13.5px;font-weight:600;}
+  .titem .tper{font-size:11px;color:var(--ink-faint);font-family:var(--mono);white-space:nowrap;}
+  .titem .trole{font-size:12px;color:var(--accent-deep);font-weight:600;margin:1px 0 4px;}
+  .titem ul{margin:4px 0 0;padding:0;display:grid;gap:4px;}
+  .titem li{list-style:none;font-size:12px;color:var(--ink-faint);line-height:1.45;padding-left:13px;position:relative;}
+  .titem li::before{content:"–";position:absolute;left:0;color:var(--accent);}
+  .metric-pill{font-size:11px;font-weight:700;color:var(--accent-ink);background:var(--accent-tint);
+    padding:2px 8px;border-radius:6px;font-family:var(--mono);}
+
+  /* skills */
+  .skillgroups{display:grid;gap:13px;}
+  .sg .sgt{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:7px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chips span{font-size:11.5px;font-weight:500;background:var(--tile-2);border:1px solid var(--line);
+    color:var(--ink-soft);padding:4px 9px;border-radius:7px;}
+
+  /* education */
+  .edu .eitem{padding:11px 0;border-bottom:1px solid var(--line);}
+  .edu .eitem:last-child{border-bottom:none;padding-bottom:0;}
+  .edu .eitem:first-child{padding-top:0;}
+  .edu .eschool{font-size:13.5px;font-weight:600;display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+  .edu .eper{font-size:10.5px;color:var(--ink-faint);font-family:var(--mono);font-weight:400;white-space:nowrap;}
+  .edu .eprog{font-size:12px;color:var(--accent-deep);font-weight:600;margin-top:1px;}
+  .edu .enote{font-size:11.5px;color:var(--ink-faint);margin-top:3px;line-height:1.4;}
+
+  /* ---- CONTACT tile ---- */
+  .contact{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .contact .kicker{color:rgba(244,241,234,.6);}
+  .contact h2{font-family:var(--font);font-size:clamp(20px,2.6vw,26px);margin:2px 0 6px;font-weight:700;line-height:1.15;}
+  .contact p{font-size:13px;color:rgba(244,241,234,.72);margin:0 0 16px;max-width:34ch;}
+  .contact .cmail{display:inline-flex;align-items:center;gap:9px;background:var(--accent);color:#fff;
+    font-weight:700;font-size:14px;text-decoration:none;padding:11px 18px;border-radius:11px;
+    transition:transform .18s ease,background .18s ease;}
+  .contact .cmail:hover{transform:translateY(-2px);background:var(--accent-deep);}
+  .clinks{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .clinks a{font-size:12.5px;font-weight:600;text-decoration:none;color:var(--paper);
+    border:1px solid rgba(244,241,234,.28);padding:10px 14px;min-height:44px;border-radius:9px;
+    display:inline-flex;align-items:center;transition:border-color .18s,background .18s;}
+  .clinks a:hover{border-color:var(--accent);background:rgba(210,105,30,.14);}
+  .cwhere{font-size:12px;color:rgba(244,241,234,.68);margin-top:14px;}
+
+  /* footer */
+  footer{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    font-size:12.5px;color:var(--ink-faint);}
+  footer a{color:var(--accent-deep);text-decoration:none;font-weight:600;
+    display:inline-flex;align-items:center;min-height:32px;}
+  footer a:hover{text-decoration:underline;}
+  footer .fnav{display:flex;gap:6px 18px;flex-wrap:wrap;}
+  footer .fnav a{color:var(--ink-soft);font-weight:500;}
+  footer .fnav a:hover{color:var(--accent-deep);text-decoration:underline;}
+
+  /* ============ Responsive ============ */
+  @media (max-width:1000px){
+    .c8{grid-column:span 12;} .c7{grid-column:span 12;} .c5{grid-column:span 6;}
+    .c6{grid-column:span 6;} .c4{grid-column:span 6;} .c3{grid-column:span 6;} .c2{grid-column:span 3;}
+    .work-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:680px){
+    :root{--gap:13px;}
+    .bento{grid-template-columns:1fr;}
+    .c12,.c8,.c7,.c6,.c5,.c4,.c3,.c2{grid-column:span 1;}
+    .r2{grid-row:auto;}
+    .work-grid{grid-template-columns:repeat(2,1fr);}
+    .tile{padding:18px;}
+    .id-name{font-size:40px;}
+  }
+  @media (max-width:400px){
+    .work-grid{grid-template-columns:1fr;}
+    .stat .sval{font-size:30px;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;}
+    .tile:hover,.wcard:hover{transform:none;}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#work">Skip to work</a>
+
+<div class="wrap">
+  <header class="topbar">
+    <div class="brandmark">
+      <span class="dot" aria-hidden="true">S</span>
+      <span><b>Stan Shih</b><span>Po-Han Shih · Taipei</span></span>
+    </div>
+    <span class="demo-tag" aria-label="Demo, Bento Dashboard direction">DEMO · Bento Dashboard</span>
+  </header>
+
+  <main>
+  <div class="bento">
+
+    <!-- ====== IDENTITY / HERO ====== -->
+    <section class="tile identity c8 r2" aria-labelledby="id-name">
+      <p class="kicker">Builder · Inventor · AI-first</p>
+      <h1 class="id-name" id="id-name">Stan Shih</h1>
+      <p class="id-latin">Po-Han Shih · CS @ NTNU · Taipei, Taiwan</p>
+      <p class="id-line">I find products I love — <em>then build for them.</em></p>
+      <p class="id-sub">A CS student who ships end-to-end across web, mobile, desktop, and browser extensions. AI-first by default. Sold a patent at 18; founded a community; turns ideas into working software the same week.</p>
+      <div class="id-roles" role="list" aria-label="What I am">
+        <span role="listitem" class="hot">Product builder</span>
+        <span role="listitem">Patent inventor</span>
+        <span role="listitem">AI-first engineer</span>
+      </div>
+      <div class="id-meta">
+        <span><span class="avail-dot" aria-hidden="true"></span>Open to internships &amp; collaborations</span>
+        <span><a href="mailto:stan@stan-shih.com">stan@stan-shih.com</a></span>
+        <span><a href="https://github.com/stantheman0128" target="_blank" rel="noopener">GitHub</a></span>
+        <span><a href="https://www.linkedin.com/in/po-han-stan-shih-39b713277/" target="_blank" rel="noopener">LinkedIn</a></span>
+      </div>
+    </section>
+
+    <!-- ====== STAT: Dcard (sparkline) ====== -->
+    <section class="tile stat c4" aria-label="Dcard monthly impressions">
+      <div class="toprow">
+        <p class="kicker">Reach</p>
+      </div>
+      <div>
+        <div class="sval" data-count="3" data-suffix="M">2.5–3.5M</div>
+        <div class="slabel">Monthly Dcard impressions as an official business partner &amp; creator</div>
+      </div>
+      <svg class="spark" viewBox="0 0 120 30" preserveAspectRatio="none" role="img" aria-label="Upward trend of monthly impressions">
+        <path class="fill" d="M0,24 L12,22 L24,23 L36,18 L48,19 L60,13 L72,15 L84,9 L96,10 L108,5 L120,4 L120,30 L0,30 Z"/>
+        <path class="line" d="M0,24 L12,22 L24,23 L36,18 L48,19 L60,13 L72,15 L84,9 L96,10 L108,5 L120,4"/>
+        <circle cx="120" cy="4" r="2.6"/>
+      </svg>
+    </section>
+
+    <!-- ====== STAT: Nothing community ====== -->
+    <section class="tile stat c4" aria-label="Media at a product launch">
+      <div class="toprow"><p class="kicker">Community</p></div>
+      <div>
+        <div class="sval">40+</div>
+        <div class="slabel">Media outlets I presented to at a phone launch — likely the only university student ever to do so</div>
+      </div>
+    </section>
+
+    <!-- ====== PATENT (interactive) ====== -->
+    <section class="tile patent c5 r2" data-open="false" aria-labelledby="patent-h">
+      <p class="kicker">Patent · US &amp; TW · 2020</p>
+      <h2 class="ptitle" id="patent-h">Travel Smart Collision-Avoidance Warning System</h2>
+      <div class="ids" aria-label="Patent numbers">
+        <code>US10699576B1</code><code>TWM578665U</code>
+      </div>
+      <div class="bignum">
+        <span class="n">NT$400K</span>
+      </div>
+      <p class="pmeta">Sole inventor · sold · invented in high school, inspired by my dad's Tesla.</p>
+      <p class="pblurb">A vehicle-to-vehicle collision-warning system, granted dual patents in the US and Taiwan.</p>
+      <button class="reveal-btn" aria-expanded="false" aria-controls="patent-highlights" id="patent-toggle">
+        See the highlights <span class="chev" aria-hidden="true">▾</span>
+      </button>
+      <ul class="phighlights" id="patent-highlights">
+        <li>Cited by GM Cruise, Huawei, and Plus.ai in autonomous-driving patents</li>
+        <li>Gold medal, Ukraine International Invention Expo; Silver, Poland — youngest awardee</li>
+        <li>International Outstanding Inventor Award; received by the President of Taiwan</li>
+      </ul>
+    </section>
+
+    <!-- ====== STAT: patent citations (dice-free, citation count) ====== -->
+    <section class="tile stat c3" aria-label="Self-driving companies citing the patent">
+      <div class="toprow"><p class="kicker">Cited by</p></div>
+      <div>
+        <div class="sval">3</div>
+        <div class="slabel">Self-driving giants cite my patent: GM Cruise · Huawei · Plus.ai</div>
+      </div>
+    </section>
+
+    <!-- ====== STAT: shipped products ====== -->
+    <section class="tile stat c4" aria-label="Products shipped">
+      <div class="toprow"><p class="kicker">Output</p></div>
+      <div>
+        <div class="sval">9</div>
+        <div class="slabel">Products shipped end-to-end — web, mobile, desktop, extensions</div>
+      </div>
+    </section>
+
+    <!-- ====== STAT: campaign views (Colonist dice motif lives elsewhere; this is reach) ====== -->
+    <section class="tile stat c3" aria-label="Campaign views created">
+      <div class="toprow"><p class="kicker">Campaigns</p></div>
+      <div>
+        <div class="sval">220K+</div>
+        <div class="slabel">Campaign views created with creator partnerships</div>
+      </div>
+      <span class="dice" id="dice" role="img" aria-label="A die showing five">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+      </span>
+    </section>
+
+    <!-- ====== WORK (all 9) ====== -->
+    <section class="tile c8 r2" id="work" aria-labelledby="work-h">
+      <div class="work-head">
+        <h2 id="work-h">Selected work</h2>
+        <span class="count">9 products · self-describing</span>
+      </div>
+      <div class="work-grid" id="work-grid"><!-- injected --></div>
+    </section>
+
+    <!-- ====== ETHOS / NOW ====== -->
+    <section class="tile ethos c4 r2" aria-labelledby="ethos-h">
+      <p class="kicker">How I work</p>
+      <h2 id="ethos-h">Ethos</h2>
+      <ul class="principles">
+        <li><div class="pt">Ship end-to-end</div><div class="pb">Web, mobile, desktop, extensions — whatever the product needs.</div></li>
+        <li><div class="pt">AI-first</div><div class="pb">Claude Code, MCP servers, and multi-agent workflows are part of how I build.</div></li>
+        <li><div class="pt">Lead with value</div><div class="pb">See widely, help first, and let opportunities follow.</div></li>
+        <li><div class="pt">Own the outcome</div><div class="pb">Discipline over talent. I finish what I start.</div></li>
+      </ul>
+      <div class="now-box">
+        <div class="nlabel"><span class="live" aria-hidden="true"></span>Now</div>
+        <p>Building an iPad English-practice PWA and an ETF / quant research codebase — both with Claude Code in the loop. Interning in venture, sourcing overlooked deals.</p>
+      </div>
+    </section>
+
+    <!-- ====== ABOUT ====== -->
+    <section class="tile about c8" aria-labelledby="about-h">
+      <p class="kicker">About</p>
+      <h2 id="about-h">The story</h2>
+      <p class="lede">Builder, inventor, and AI-first engineer. I make products end-to-end — and I'm happiest with something half-built on the screen in front of me.</p>
+      <p>I'm a CS student at NTNU. I was admitted to Carnegie Mellon's Information Systems program on Early Action — then stepped back from it. Walking away from a school I'd worked years to reach was the hardest thing I've done, and it taught me the lesson that runs through everything since: ability means little without discipline and ownership.</p>
+      <p>So I rebuilt, on my own terms. I went deep on the things I actually love — shipping products, and lately doing it with AI, which multiplied what a single person can make. I founded a community, created for an audience, and started turning ideas into working software the same week I have them.</p>
+      <p>The way I work now: see widely, lead with value, and help before I'm asked — opportunities tend to follow. I'd rather build something real and useful than talk about it.</p>
+    </section>
+
+    <!-- ====== EXPERIENCE ====== -->
+    <section class="tile panel c4" aria-labelledby="exp-h">
+      <p class="kicker">Experience</p>
+      <h2 id="exp-h">Where I've worked</h2>
+      <div class="timeline">
+        <div class="titem">
+          <div class="thead"><span class="torg">Addin Ventures</span><span class="tper">Mar 2026 — now</span></div>
+          <div class="trole">Investment Intern</div>
+          <ul><li>Independently sourced an overlooked startup deal (~$30M valuation), showing market judgment and independent analysis.</li></ul>
+        </div>
+        <div class="titem">
+          <div class="thead"><span class="torg">Cooby</span><span class="tper">Feb–Oct 2024</span></div>
+          <div class="trole">Chief of Staff Intern · SaaS startup</div>
+          <ul>
+            <li>Found the user-onboarding bottleneck and shipped a fix that cut activation time by 30%.</li>
+            <li>Handled 160+ support tickets, kept VIP customers satisfied, helped build $10K ARR.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== PRESS / COMMUNITY ====== -->
+    <section class="tile panel c4" aria-labelledby="press-h">
+      <p class="kicker">Press &amp; community</p>
+      <h2 id="press-h">Audience &amp; reach</h2>
+      <div class="timeline">
+        <div class="titem">
+          <div class="thead"><span class="torg">Nothing Taiwan Community</span><span class="metric-pill">220K+ views</span></div>
+          <div class="trole">Founder · Jun 2024 — now</div>
+          <ul>
+            <li>Grew the community 50% year over year.</li>
+            <li>Partnered with creators for 220K+ views; presented to 40+ media outlets at a phone launch.</li>
+          </ul>
+        </div>
+        <div class="titem">
+          <div class="thead"><span class="torg">Dcard</span><span class="metric-pill">2.5–3.5M / mo</span></div>
+          <div class="trole">Official Business Partner &amp; Creator · Jan 2024 — now</div>
+          <ul>
+            <li>2.5–3.5M monthly impressions.</li>
+            <li>Sponsored content for brands including Nvidia; one post ranked top-5 by views among business collaborations.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====== EDUCATION ====== -->
+    <section class="tile panel edu c4" aria-labelledby="edu-h">
+      <p class="kicker">Education</p>
+      <h2 id="edu-h">Schools</h2>
+      <div class="eitem">
+        <div class="eschool">Carnegie Mellon University <span class="eper">Admitted · EA</span></div>
+        <div class="eprog">Information Systems</div>
+        <div class="enote">On leave. Also admitted to Purdue Engineering and UW–Madison CS.</div>
+      </div>
+      <div class="eitem">
+        <div class="eschool">NTNU <span class="eper">2022 — 2026</span></div>
+        <div class="eprog">B.Sc. Computer Science &amp; Information Engineering</div>
+      </div>
+      <div class="eitem">
+        <div class="eschool">Kang Chiao International School <span class="eper">2016 — 2021</span></div>
+        <div class="enote">Mayor's Award (middle school), Speaker's Award (high school).</div>
+      </div>
+    </section>
+
+    <!-- ====== SKILLS ====== -->
+    <section class="tile panel c8" aria-labelledby="skills-h">
+      <p class="kicker">Stack</p>
+      <h2 id="skills-h">Skills &amp; tools</h2>
+      <div class="skillgroups" id="skillgroups" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));display:grid;gap:16px;"><!-- injected --></div>
+    </section>
+
+    <!-- ====== CONTACT ====== -->
+    <section class="tile contact c4" aria-labelledby="contact-h">
+      <p class="kicker">Get in touch</p>
+      <h2 id="contact-h">Let's build something real.</h2>
+      <p>Open to internships and collaborations. The fastest way to reach me:</p>
+      <a class="cmail" href="mailto:stan@stan-shih.com">✉ stan@stan-shih.com</a>
+      <div class="clinks">
+        <a href="https://github.com/stantheman0128" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/po-han-stan-shih-39b713277/" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+      <p class="cwhere">Based in Taipei, Taiwan · working across time zones.</p>
+    </section>
+
+  </div>
+  </main>
+
+  <footer>
+    <span>© <span id="yr"></span> Stan Shih (Po-Han Shih). Built end-to-end, AI-first.</span>
+    <nav class="fnav" aria-label="Footer">
+      <a href="#work">Work</a>
+      <a href="mailto:stan@stan-shih.com">Email</a>
+      <a href="https://github.com/stantheman0128" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/po-han-stan-shih-39b713277/" target="_blank" rel="noopener">LinkedIn</a>
+    </nav>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  /* ---- WORK data (mirror of content.json work[]) ---- */
+  var WORK = [
+    {title:"Colonist.io Stats Tracker",status:"Local tool",year:"2026",
+     blurb:"Fan-made Chrome MV3 overlay that parses Colonist's game log locally for live dice odds, resources, and hidden-card uncertainty.",
+     image:"/assets/colonist-stats-icon.png",mode:"icon",
+     links:[{label:"GitHub",href:"https://github.com/stantheman0128/stan-chrome-extensions/tree/master/colonist-stats-tracker"}]},
+    {title:"Course Checker",status:"Live",year:"2025",
+     blurb:"Production PWA that checks NTNU CS graduation credits against catalog rules and transcript data.",
+     image:"/assets/course-hero.png",mode:"contain",
+     links:[{label:"Live",href:"https://course.stan-shih.com"}]},
+    {title:"Antnest Chatbot",status:"Production",year:"2025",
+     blurb:"LINE + AI support system for a real dessert shop: Next.js, Supabase, Gemini, admin tools, reservations.",
+     image:"/assets/antnest-logo.png",mode:"contain",
+     links:[{label:"Live",href:"https://antnest-chatbot-0410.zeabur.app"},{label:"GitHub",href:"https://github.com/stantheman0128/antnest-chatbot"}]},
+    {title:"LINE Notify+",status:"In progress",year:"2025",
+     blurb:"Android app reshaping LINE notifications for Nothing Phone users — chat grouping, settings, Play Store assets.",
+     image:"/assets/line-notify-screenshot.png",mode:"cover",
+     links:[{label:"GitHub",href:"https://github.com/stantheman0128/line-notify-plus"}]},
+    {title:"ClaudePulse",status:"Local tool",year:"2026",
+     blurb:"Windows tray monitor tracking multiple Claude Code sessions, permission waits, and idle states via local hooks.",
+     image:"/assets/claudepulse-screenshot.png",mode:"contain",
+     links:[{label:"GitHub",href:"https://github.com/stantheman0128/claudepulse-win"}]},
+    {title:"Traffic Congestion Lab",status:"Prototype",year:"2025",
+     blurb:"Interactive canvas lab showing stop-and-go congestion waves from tiny braking disturbances on a 3-lane track.",
+     image:"/assets/traffic-lab-concept.png",mode:"cover",
+     links:[]},
+    {title:"English Companion",status:"In progress",year:"2026",
+     blurb:"iPad PWA for daily reading/writing practice, learner modeling, and Claude Code-assisted feedback.",
+     image:"/assets/english-companion-icon.png",mode:"icon",
+     links:[]},
+    {title:"ETF / Quant Research",status:"Prototype",year:"2026",
+     blurb:"Research codebase for portfolio tracking and walk-forward quant experiments with explicit bias and overfit controls.",
+     image:"/assets/etf-tracker-screenshot.png",mode:"cover",
+     links:[{label:"etf-tracker",href:"https://github.com/stantheman0128/etf-tracker"},{label:"quant",href:"https://github.com/stantheman0128/quant"}]},
+    {title:"Autonomous Financial API Discovery",status:"Research",year:"2026",
+     blurb:"AI-agent pipeline that autonomously probes exchange APIs to surface undocumented behavior — real rate limits, degradation, cross-endpoint quota sharing.",
+     image:null,mode:"",
+     links:[]}
+  ];
+
+  function glyphFor(t){ return (t.replace(/[^A-Za-z]/g,'')[0]||'•').toUpperCase(); }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+  var grid = document.getElementById('work-grid');
+  var frag = document.createDocumentFragment();
+  WORK.forEach(function(w){
+    var card = document.createElement('article');
+    card.className = 'wcard';
+    var hasLinks = w.links.length > 0;
+
+    var thumb;
+    if(w.image){
+      thumb = '<img class="wthumb '+(w.mode==='contain'?'contain':'')+'" src="'+esc(w.image)+'" alt="" aria-hidden="true" width="34" height="34" loading="lazy" decoding="async">';
+    } else {
+      thumb = '<span class="wthumb glyph" aria-hidden="true">'+glyphFor(w.title)+'</span>';
+    }
+
+    /* Title: the primary clickable affordance. When there's a link it is an <a> whose
+       ::after stretches over the whole card, so the entire tile is one large target. */
+    var titleHtml;
+    if(hasLinks){
+      titleHtml = '<a class="wtitle" href="'+esc(w.links[0].href)+'" target="_blank" rel="noopener" '+
+        'aria-label="'+esc(w.title)+' — open '+esc(w.links[0].label)+' (opens in a new tab)"><h3>'+esc(w.title)+'</h3></a>';
+    } else {
+      titleHtml = '<h3>'+esc(w.title)+'</h3>';
+    }
+
+    /* Secondary links: each is a REAL, separately-targetable anchor (not a fake span).
+       They sit above the stretched title link via z-index, so clicking "GitHub ↗" really
+       goes to GitHub even when "Live ↗" is the card's primary target. */
+    var linksHtml;
+    if(hasLinks){
+      linksHtml = '<div class="wlinks">'+w.links.map(function(l){
+        return '<a class="wl" href="'+esc(l.href)+'" target="_blank" rel="noopener" '+
+          'aria-label="'+esc(w.title)+' — '+esc(l.label)+' (opens in a new tab)">'+esc(l.label)+' ↗</a>';
+      }).join('')+'</div>';
+    } else {
+      linksHtml = '<div class="wnolink">No public link yet</div>';
+    }
+
+    card.innerHTML =
+      '<span class="wbadge">'+esc(w.status)+'</span>'+
+      '<div class="wtop">'+thumb+
+        '<div>'+titleHtml+'<div class="wyear">'+esc(w.year)+'</div></div>'+
+      '</div>'+
+      '<p>'+esc(w.blurb)+'</p>'+
+      linksHtml;
+    frag.appendChild(card);
+  });
+  grid.appendChild(frag);
+
+  /* ---- SKILLS ---- */
+  var SKILLS = [
+    {group:"Languages",items:["JavaScript / TypeScript","Python","Kotlin","SQL","Pine Script","C# / .NET"]},
+    {group:"AI",items:["Claude Code CLI","MCP servers & skills","Multi-agent frameworks"]},
+    {group:"Data",items:["pandas","NumPy","scikit-learn","Backtesting"]},
+    {group:"Web & Mobile",items:["React","Next.js","PWA","Chrome MV3","Android / Compose"]},
+    {group:"Platform",items:["Git","Vite","Supabase","Cloudflare"]}
+  ];
+  var sg = document.getElementById('skillgroups');
+  var sfrag = document.createDocumentFragment();
+  SKILLS.forEach(function(g){
+    var d = document.createElement('div'); d.className = 'sg';
+    d.innerHTML = '<div class="sgt">'+esc(g.group)+'</div><div class="chips">'+
+      g.items.map(function(i){return '<span>'+esc(i)+'</span>';}).join('')+'</div>';
+    sfrag.appendChild(d);
+  });
+  sg.appendChild(sfrag);
+
+  /* ---- PATENT toggle (interactive; content already in DOM = JS-free accessible) ---- */
+  var patent = document.querySelector('.patent');
+  var pbtn = document.getElementById('patent-toggle');
+  function setPatent(open){
+    patent.setAttribute('data-open', open ? 'true':'false');
+    pbtn.setAttribute('aria-expanded', open ? 'true':'false');
+    pbtn.childNodes[0].nodeValue = open ? 'Hide highlights ' : 'See the highlights ';
+  }
+  pbtn.addEventListener('click', function(){
+    setPatent(patent.getAttribute('data-open') !== 'true');
+  });
+  /* reveal on hover for pointer devices, but keep click as source of truth */
+  if(window.matchMedia && window.matchMedia('(hover:hover)').matches){
+    patent.addEventListener('mouseenter', function(){ setPatent(true); });
+  }
+
+  /* ---- Dice motif: roll on hover/focus ---- */
+  var FACES = {
+    1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]
+  };
+  var diceEl = document.getElementById('dice');
+  var pips = diceEl ? diceEl.querySelectorAll('i') : [];
+  function showFace(n){
+    var on = FACES[n];
+    pips.forEach(function(p,i){ p.className = on.indexOf(i)>-1 ? 'on' : ''; });
+    diceEl.setAttribute('aria-label','A die showing '+n);
+  }
+  if(diceEl){
+    showFace(5);
+    var diceTile = diceEl.closest('.tile');
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    diceTile.addEventListener('mouseenter', function(){
+      if(reduce){ return; }
+      showFace(Math.floor(Math.random()*6)+1);
+    });
+  }
+
+  /* ---- Count-up for the simple integer stats (respects reduced-motion) ---- */
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if(!reduceMotion && 'IntersectionObserver' in window){
+    var simple = [];
+    document.querySelectorAll('.stat .sval').forEach(function(el){
+      var raw = el.textContent.trim();
+      if(/^\d+$/.test(raw)){ simple.push(el); el.dataset.target = raw; el.textContent = '0'; }
+    });
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(!en.isIntersecting) return;
+        var el = en.target, target = parseInt(el.dataset.target,10), start = performance.now(), dur = 850;
+        function step(t){
+          var p = Math.min((t-start)/dur,1);
+          el.textContent = Math.round((1-Math.pow(1-p,3))*target);
+          if(p<1) requestAnimationFrame(step); else el.textContent = target;
+        }
+        requestAnimationFrame(step);
+        io.unobserve(el);
+      });
+    },{threshold:.5});
+    simple.forEach(function(el){ io.observe(el); });
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stan Shih — A builder's timeline</title>
+<meta name="description" content="Stan Shih (Po-Han Shih) — product builder, inventor, and AI-first engineer. A chronological journey from patent to shipped products." />
+<!-- Inline data-URI favicon: kills the /favicon.ico 404 with zero external requests. A burnt-sienna 'S' waypoint dot. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23b5481f'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='20' font-weight='700' text-anchor='middle' fill='%23f6f1e7'%3ES%3C/text%3E%3C/svg%3E" />
+<style>
+  /* ============================================================
+     DEMO · Timeline / Journey
+     One spine. Years as waypoints. Resilience, then momentum.
+     System fonts only. Zero external requests.
+     ============================================================ */
+
+  :root {
+    --ink:        #14110d;
+    --ink-soft:   #4a443b;
+    --ink-faint:  #837a6c;
+    --paper:      #f6f1e7;
+    --paper-2:    #efe8da;
+    --card:       #fffdf8;
+    --line:       #ddd3c0;
+    --line-soft:  #e7ddcb;
+    --accent:     #b5481f;   /* burnt sienna — kiln-fired */
+    --accent-2:   #1c5e54;   /* deep teal counterpoint */
+    --gold:       #9a7b2e;
+    --spine:      #d8cdb6;
+    --spine-fill: var(--accent);
+    --focus:      #1c5e54;
+    --radius:     14px;
+    --measure:    66ch;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Segoe UI Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink:        #f1ebdd;
+      --ink-soft:   #c3bbab;
+      --ink-faint:  #8f877a;
+      --paper:      #15130f;
+      --paper-2:    #1c1915;
+      --card:       #211d18;
+      --line:       #38322a;
+      --line-soft:  #2c2722;
+      --accent:     #e2723f;
+      --accent-2:   #4fb3a3;
+      --gold:       #d4ad5a;
+      --spine:      #3a332a;
+      --focus:      #4fb3a3;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 60%),
+      var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  a { color: inherit; }
+  img { max-width: 100%; height: auto; display: block; }
+
+  :focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .skip {
+    position: absolute; left: -9999px; top: 0;
+    background: var(--accent); color: #fff; padding: .6rem 1rem;
+    z-index: 200; border-radius: 0 0 8px 0; font-weight: 600;
+  }
+  .skip:focus { left: 0; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 clamp(18px, 4vw, 40px); }
+
+  /* ---------- top marker ---------- */
+  .demo-tag {
+    position: fixed; top: 12px; right: 12px; z-index: 90;
+    font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
+    color: var(--ink-faint);
+    background: color-mix(in srgb, var(--card) 85%, transparent);
+    border: 1px solid var(--line);
+    padding: 5px 10px; border-radius: 999px;
+    backdrop-filter: blur(6px);
+  }
+
+  /* ---------- scroll progress bar (top) ---------- */
+  .progress {
+    position: fixed; top: 0; left: 0; height: 3px; width: 100%;
+    z-index: 100; background: transparent; pointer-events: none;
+  }
+  .progress__fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    transition: width .08s linear;
+  }
+  @media (prefers-reduced-motion: reduce){ .progress__fill { transition: none; } }
+
+  /* =========================================================
+     HERO — who Stan is, at a glance (no scroll required)
+     ========================================================= */
+  header.hero {
+    position: relative;
+    padding: clamp(64px, 11vh, 130px) 0 clamp(40px, 7vh, 80px);
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eyebrow::before {
+    content: ""; width: 34px; height: 2px; background: var(--accent); display: inline-block;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.5rem, 6.5vw, 4.6rem);
+    line-height: 1.04;
+    letter-spacing: -0.015em;
+    margin: 0 0 4px;
+  }
+  .hero h1 .latin {
+    display: block;
+    font-family: var(--mono);
+    font-size: clamp(.8rem, 1.8vw, 1rem);
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 400;
+    margin-top: 14px;
+    text-transform: none;
+  }
+  .hero .lede {
+    font-family: var(--serif);
+    font-size: clamp(1.25rem, 2.7vw, 1.65rem);
+    line-height: 1.45;
+    color: var(--ink);
+    max-width: 30ch;
+    margin: 26px 0 8px;
+  }
+  .hero .lede b { color: var(--accent); font-weight: 600; }
+  .hero .sub {
+    color: var(--ink-soft);
+    max-width: var(--measure);
+    margin: 14px 0 0;
+    font-size: 1.02rem;
+  }
+
+  .role-tags {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin: 26px 0 0; padding: 0; list-style: none;
+  }
+  .role-tags li {
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: .04em;
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 13px; color: var(--ink-soft);
+    background: var(--card);
+  }
+  .role-tags li.lead { border-color: var(--accent); color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--card)); }
+
+  .hero-meta {
+    margin-top: 30px;
+    display: flex; flex-wrap: wrap; gap: 14px 22px;
+    font-size: .96rem;
+  }
+  .hero-meta a, .hero-meta span {
+    color: var(--ink-soft); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 7px;
+    min-height: 44px;
+  }
+  /* underline drawn on a pseudo-element so the 44px tap target stays generous
+     without a thick visible underline gap */
+  .hero-meta a { position: relative; transition: color .15s; }
+  .hero-meta a::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 9px;
+    height: 1px; background: var(--line); transition: background .15s;
+  }
+  .hero-meta a:hover { color: var(--accent); }
+  .hero-meta a:hover::after { background: var(--accent); }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-2); display: inline-block; }
+  .avail { color: var(--accent-2); font-weight: 600; }
+
+  /* ---------- year jump strip ---------- */
+  .jump {
+    position: sticky; top: 0; z-index: 80;
+    margin: 8px 0 0;
+    background: color-mix(in srgb, var(--paper) 86%, transparent);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--line-soft);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .jump nav {
+    display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+    padding: 5px 0; scrollbar-width: thin; align-items: center;
+  }
+  .jump nav::-webkit-scrollbar { height: 5px; }
+  .jump nav::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  .jump a {
+    flex: 0 0 auto;
+    display: inline-flex; align-items: center;
+    min-height: 44px;
+    font-family: var(--mono); font-size: 13px; letter-spacing: .03em;
+    text-decoration: none; color: var(--ink-soft);
+    padding: 0 14px; border-radius: 999px; white-space: nowrap;
+    transition: background .15s, color .15s;
+  }
+  .jump a:hover { background: var(--paper-2); color: var(--ink); }
+  .jump a[aria-current="true"] { background: var(--accent); color: #fff; }
+  .jump .jlabel {
+    flex: 0 0 auto; font-family: var(--mono); font-size: 11px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-faint); align-self: center;
+    padding-right: 6px; margin-right: 2px;
+  }
+
+  /* =========================================================
+     THE SPINE — timeline grid
+     ========================================================= */
+  main { display: block; }
+
+  .timeline {
+    position: relative;
+    padding: clamp(34px, 6vh, 64px) 0 20px;
+  }
+
+  /* The rail itself */
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: var(--rail-x, 26px);
+    top: 0; bottom: 0;
+    width: 2px;
+    background: var(--spine);
+    border-radius: 2px;
+  }
+  /* The animated fill that tracks scroll progress */
+  .timeline::after {
+    content: "";
+    position: absolute;
+    left: var(--rail-x, 26px);
+    top: 0;
+    width: 2px;
+    height: var(--spine-progress, 0%);
+    background: linear-gradient(180deg, var(--accent), var(--gold));
+    border-radius: 2px;
+    transition: height .1s linear;
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  @media (prefers-reduced-motion: reduce){ .timeline::after { transition: none; } }
+
+  :root { --rail-x: 26px; }
+  @media (min-width: 760px){ :root { --rail-x: 150px; } }
+
+  /* ----- A timeline entry ----- */
+  .node {
+    position: relative;
+    padding-left: 58px;
+    margin-bottom: clamp(34px, 5vh, 56px);
+    scroll-margin-top: 64px;
+  }
+  @media (min-width: 760px){
+    .node { padding-left: 192px; }
+  }
+
+  /* The marker dot */
+  .node__dot {
+    position: absolute;
+    left: calc(var(--rail-x) - 8px);
+    top: 6px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 2px solid var(--spine);
+    z-index: 2;
+    transition: border-color .35s ease, background .35s ease, box-shadow .35s ease, transform .35s ease;
+  }
+  .node.is-lit .node__dot {
+    border-color: var(--accent);
+    background: var(--accent);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 16%, transparent);
+    transform: scale(1.05);
+  }
+  .node.is-pivot .node__dot { border-color: var(--accent-2); }
+  .node.is-pivot.is-lit .node__dot { background: var(--accent-2); border-color: var(--accent-2); box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent-2) 18%, transparent); }
+
+  /* Year label — left of rail on desktop, above content on mobile */
+  .node__year {
+    position: absolute;
+    left: 0; top: 2px;
+    font-family: var(--mono);
+    font-size: 13px; letter-spacing: .04em;
+    color: var(--ink-faint);
+    font-weight: 600;
+  }
+  @media (min-width: 760px){
+    .node__year {
+      width: 120px; left: 0; top: 2px;
+      text-align: right;
+      font-size: 15px;
+      color: var(--ink-soft);
+    }
+    .node.is-lit .node__year { color: var(--accent); }
+  }
+  @media (max-width: 759px){
+    .node__year {
+      position: static;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    .node.is-lit .node__year { color: var(--accent); }
+  }
+
+  /* Chapter heading */
+  .node__head { margin: 0 0 6px; }
+  .node__title {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.45rem, 3.2vw, 2.05rem);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .node__kicker {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--accent-2);
+    margin: 0 0 8px; display: block;
+  }
+  .node.is-pivot .node__kicker { color: var(--accent); }
+  .node__lead {
+    color: var(--ink-soft);
+    max-width: var(--measure);
+    margin: 10px 0 0;
+  }
+  .node__lead.story { font-family: var(--serif); font-size: 1.12rem; color: var(--ink); }
+
+  /* "Quiet" pivot panel for the CMU step-back beat */
+  .pivot-panel {
+    border-left: 3px solid var(--accent-2);
+    background: color-mix(in srgb, var(--accent-2) 6%, var(--card));
+    padding: 18px 20px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin: 16px 0 0;
+    max-width: var(--measure);
+  }
+  .pivot-panel p { margin: 0; color: var(--ink); font-family: var(--serif); font-size: 1.08rem; line-height: 1.55; }
+  .pivot-panel p + p { margin-top: 12px; }
+
+  /* ----- detail expand (native disclosure) ----- */
+  details.detail {
+    margin: 16px 0 0;
+    max-width: 760px;
+  }
+  details.detail > summary {
+    list-style: none;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 9px;
+    min-height: 44px;
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: .04em;
+    color: var(--accent);
+    padding: 0 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--card);
+    transition: background .15s, border-color .15s;
+    user-select: none;
+  }
+  details.detail > summary::-webkit-details-marker { display: none; }
+  details.detail > summary:hover { background: color-mix(in srgb, var(--accent) 8%, var(--card)); border-color: var(--accent); }
+  details.detail > summary .chev {
+    width: 9px; height: 9px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+    transform: rotate(45deg); transition: transform .2s ease; margin-top: -2px;
+  }
+  details.detail[open] > summary .chev { transform: rotate(225deg); margin-top: 2px; }
+  details.detail[open] > summary { margin-bottom: 16px; }
+  @media (prefers-reduced-motion: reduce){ details.detail > summary .chev { transition: none; } }
+
+  .detail__body { animation: reveal .3s ease both; }
+  @keyframes reveal { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce){ .detail__body { animation: none; } }
+
+  /* generic list of bullet points */
+  ul.points { margin: 4px 0 0; padding-left: 1.1em; color: var(--ink-soft); }
+  ul.points li { margin: 6px 0; }
+  ul.points li::marker { color: var(--accent); }
+
+  /* tag chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .chips li {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .02em;
+    color: var(--ink-faint);
+    border: 1px solid var(--line-soft); border-radius: 6px;
+    padding: 3px 8px;
+  }
+
+  /* inline link rows */
+  .links { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .links a {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--mono); font-size: 12.5px;
+    text-decoration: none; color: var(--ink);
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 7px 12px; background: var(--card);
+    transition: transform .12s, border-color .15s, color .15s;
+  }
+  .links a:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
+  .links a .arrow { font-size: 14px; line-height: 1; }
+  .nolink { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); margin: 14px 0 0; font-style: italic; }
+
+  /* =========================================================
+     WORK CARDS (woven inside year nodes)
+     ========================================================= */
+  .work-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin: 18px 0 0;
+  }
+  @media (min-width: 620px){ .work-grid { grid-template-columns: 1fr 1fr; } }
+
+  .work {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .work:hover { transform: translateY(-3px); box-shadow: 0 10px 28px -16px color-mix(in srgb, var(--ink) 50%, transparent); border-color: var(--line); }
+
+  .work__media {
+    aspect-ratio: 16 / 9;
+    background: var(--paper-2);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .work__media img { width: 100%; height: 100%; object-fit: cover; }
+  .work__media.is-contain { padding: 18px; background:
+      repeating-linear-gradient(45deg, var(--paper-2) 0 10px, color-mix(in srgb, var(--paper-2) 60%, var(--paper)) 10px 20px); }
+  .work__media.is-contain img { object-fit: contain; width: auto; max-height: 100%; filter: drop-shadow(0 6px 14px rgba(0,0,0,.18)); }
+  .work__media.is-icon { padding: 0; }
+  .work__media.is-icon img { width: 64px; height: 64px; object-fit: contain; border-radius: 16px; box-shadow: 0 8px 18px -8px rgba(0,0,0,.4); }
+
+  /* typographic card for null-image work */
+  .work__media.typo {
+    background:
+      radial-gradient(120% 120% at 0% 0%, color-mix(in srgb, var(--accent) 18%, var(--card)), var(--card) 60%);
+    position: relative;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .work__media.typo .typo-glyph {
+    font-family: var(--serif); font-size: 3.4rem; font-weight: 600;
+    color: color-mix(in srgb, var(--accent) 75%, var(--ink));
+    line-height: 1; letter-spacing: -.02em;
+  }
+  .work__media.typo .typo-tag {
+    position: absolute; bottom: 10px; left: 14px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .work__body { padding: 15px 16px 17px; display: flex; flex-direction: column; flex: 1; }
+  .work__topline { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .work__name { font-family: var(--serif); font-weight: 600; font-size: 1.16rem; margin: 0; line-height: 1.2; }
+  .work__status {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--accent-2); border: 1px solid color-mix(in srgb, var(--accent-2) 40%, transparent);
+    padding: 2px 7px; border-radius: 999px; white-space: nowrap; flex: 0 0 auto;
+  }
+  .work__blurb { color: var(--ink-soft); font-size: .95rem; margin: 9px 0 0; line-height: 1.55; }
+  .work .chips { margin-top: 12px; }
+  .work .links { margin-top: 12px; }
+
+  /* =========================================================
+     PATENT — feature beat inside 2019 node
+     ========================================================= */
+  .patent {
+    border: 1px solid var(--gold);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--gold) 9%, var(--card)), var(--card) 55%);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin: 18px 0 0;
+    max-width: 760px;
+  }
+  .patent__eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--gold); margin: 0 0 8px;
+  }
+  .patent__title { font-family: var(--serif); font-weight: 600; font-size: 1.3rem; margin: 0; line-height: 1.2; }
+  .patent__ids { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); margin: 7px 0 0; }
+  .patent__ids b { color: var(--ink-soft); font-weight: 600; }
+  .patent__blurb { color: var(--ink-soft); margin: 12px 0 0; }
+  .patent ul.points { margin-top: 12px; }
+
+  /* ----- experience / community card -----
+     A teal-keyed sibling of .patent, deliberately distinct from the
+     single gold patent beat. Replaces the old inline style overrides. */
+  .exp-card {
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent-2);
+    background: var(--card);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 18px 20px;
+    max-width: 760px;
+  }
+  .exp-card + .exp-card { margin-top: 16px; }
+  .exp-card .exp__eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent-2); margin: 0 0 8px;
+  }
+  .exp-card .exp__title { font-family: var(--serif); font-weight: 600; font-size: 1.3rem; margin: 0; line-height: 1.2; }
+  .exp-card .exp__period { font-family: var(--mono); font-size: 12px; color: var(--ink-faint); margin: 7px 0 0; }
+  .exp-card ul.points { margin-top: 12px; }
+
+  /* =========================================================
+     STATS — momentum row, near the end
+     ========================================================= */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--line-soft);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: 18px 0 0;
+    max-width: 760px;
+  }
+  @media (min-width: 640px){ .stats { grid-template-columns: repeat(3, 1fr); } }
+  .stat { background: var(--card); padding: 16px 16px 14px; }
+  .stat .v { font-family: var(--serif); font-weight: 600; font-size: clamp(1.4rem, 3.5vw, 1.85rem); color: var(--accent); line-height: 1; letter-spacing: -.01em; }
+  .stat .l { font-size: .82rem; color: var(--ink-soft); margin-top: 7px; line-height: 1.35; }
+
+  /* =========================================================
+     CLOSING — skills, education recap, contact
+     ========================================================= */
+  .closing {
+    padding: clamp(48px, 8vh, 96px) 0 0;
+  }
+  .closing__rule {
+    width: 100%; height: 1px; background: var(--line); margin: 0 0 clamp(36px, 6vh, 64px);
+  }
+
+  .panel-grid {
+    display: grid; grid-template-columns: 1fr; gap: clamp(34px, 5vw, 56px);
+  }
+  @media (min-width: 820px){ .panel-grid { grid-template-columns: 1.1fr .9fr; } }
+
+  .sec-h {
+    font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 18px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .sec-h::after { content: ""; flex: 1; height: 1px; background: var(--line-soft); }
+
+  .skill-block { margin-bottom: 20px; }
+  .skill-block h3 { font-family: var(--sans); font-size: .82rem; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 9px; font-weight: 600; }
+  .skill-block .chips li { font-size: 12px; color: var(--ink-soft); border-color: var(--line); }
+
+  .edu-list { list-style: none; margin: 0; padding: 0; }
+  .edu-item { padding: 14px 0; border-top: 1px solid var(--line-soft); }
+  .edu-item:first-child { border-top: 0; padding-top: 0; }
+  .edu-item h3 { font-family: var(--serif); font-size: 1.1rem; margin: 0; font-weight: 600; }
+  .edu-item .meta { font-family: var(--mono); font-size: 12px; color: var(--accent-2); margin: 4px 0 0; }
+  .edu-item .note { color: var(--ink-soft); font-size: .92rem; margin: 6px 0 0; }
+
+  /* =========================================================
+     CONTACT / FOOTER
+     ========================================================= */
+  .contact {
+    margin-top: clamp(56px, 9vh, 110px);
+    border-top: 1px solid var(--line);
+    padding: clamp(44px, 8vh, 90px) 0 clamp(40px, 6vh, 70px);
+  }
+  .contact h2 {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.08; margin: 0;
+    letter-spacing: -.015em;
+  }
+  .contact h2 .em { color: var(--accent); }
+  .contact p { color: var(--ink-soft); max-width: 52ch; margin: 16px 0 0; font-size: 1.05rem; }
+  .contact__actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0 0; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: var(--mono); font-size: 13px; letter-spacing: .02em;
+    text-decoration: none; padding: 12px 18px; border-radius: 10px;
+    transition: transform .12s, box-shadow .2s, background .15s, color .15s, border-color .15s;
+  }
+  .btn--primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); }
+  .btn--primary:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -12px var(--accent); }
+  .btn--ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .btn--ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+  footer.foot {
+    border-top: 1px solid var(--line-soft);
+    padding: 26px 0 60px;
+    display: flex; flex-wrap: wrap; gap: 12px 26px; align-items: center; justify-content: space-between;
+    font-size: .85rem; color: var(--ink-faint);
+  }
+  footer.foot a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid transparent; }
+  footer.foot a:hover { color: var(--accent); border-color: var(--accent); }
+  footer.foot .foot-links { display: flex; flex-wrap: wrap; gap: 16px; }
+  footer.foot .mono { font-family: var(--mono); font-size: 11px; letter-spacing: .04em; }
+
+  /* reveal-on-scroll for nodes */
+  .node, .work, .stat, .skill-block, .edu-item {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .reveal { opacity: 0; transform: translateY(16px); transition: opacity .55s ease, transform .55s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+  }
+  /* Defensive backstop: .in (set by JS, the single source of truth) always
+     forces full visibility. Keeps reduced-motion users — who get .in on every
+     .reveal via JS — from ever being stranded at opacity 0, even if the
+     media-query block above is later edited. */
+  .reveal.in { opacity: 1 !important; transform: none !important; }
+</style>
+</head>
+<body>
+<a class="skip" href="#timeline">Skip to the timeline</a>
+<div class="demo-tag">DEMO · Timeline / Journey</div>
+<div class="progress" aria-hidden="true"><div class="progress__fill" id="progFill"></div></div>
+
+<!-- ============================ HERO ============================ -->
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">A builder's timeline</p>
+    <h1>
+      Stan Shih
+      <span class="latin">Po-Han Shih · Taipei, Taiwan</span>
+    </h1>
+    <p class="lede">I find products I love — <b>then build for them.</b></p>
+    <p class="sub">Builder, inventor, and AI-first engineer. I make products end-to-end across web, mobile, desktop, and browser extensions — and I'm happiest with something half-built on the screen in front of me.</p>
+
+    <ul class="role-tags" aria-label="What I do">
+      <li class="lead">Product builder</li>
+      <li class="lead">Inventor</li>
+      <li class="lead">AI-first engineer</li>
+      <li>CS @ NTNU</li>
+      <li>Ships end-to-end</li>
+    </ul>
+
+    <div class="hero-meta">
+      <span class="avail"><span class="dot"></span>Open to internships &amp; collaborations</span>
+      <a href="mailto:stan@stan-shih.com">stan@stan-shih.com</a>
+      <a href="https://github.com/stantheman0128" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.linkedin.com/in/po-han-stan-shih-39b713277/" target="_blank" rel="noopener">LinkedIn</a>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== YEAR JUMP STRIP ===================== -->
+<div class="jump">
+  <div class="wrap">
+    <nav aria-label="Jump to a year">
+      <span class="jlabel" aria-hidden="true">Jump</span>
+      <a href="#y-2016">2016</a>
+      <a href="#y-2019">2019</a>
+      <a href="#y-2021">2021</a>
+      <a href="#y-2022">2022</a>
+      <a href="#y-2024">2024</a>
+      <a href="#y-2025">2025</a>
+      <a href="#y-2026">2026</a>
+    </nav>
+  </div>
+</div>
+
+<!-- ========================= TIMELINE ========================= -->
+<main>
+  <div class="wrap">
+    <div class="timeline" id="timeline">
+
+      <!-- ---------- 2016–2021 Kang Chiao ---------- -->
+      <section class="node reveal" id="y-2016" aria-labelledby="h-2016">
+        <span class="node__dot" aria-hidden="true"></span>
+        <span class="node__year">2016–2021</span>
+        <div class="node__head">
+          <span class="node__kicker">Where it started</span>
+          <h2 class="node__title" id="h-2016">Kang Chiao International School</h2>
+        </div>
+        <p class="node__lead story">Six formative years. I learned to chase problems past the bell, and to make things instead of just studying them — the habit that became everything after.</p>
+        <details class="detail">
+          <summary><span>Recognition</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="detail__body">
+            <ul class="points">
+              <li>Mayor's Award (middle school)</li>
+              <li>Speaker's Award (high school)</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <!-- ---------- 2019–2020 Patent + medals ---------- -->
+      <section class="node reveal" id="y-2019" aria-labelledby="h-2019">
+        <span class="node__dot" aria-hidden="true"></span>
+        <span class="node__year">2019–2020</span>
+        <div class="node__head">
+          <span class="node__kicker">The first real thing I shipped</span>
+          <h2 class="node__title" id="h-2019">A patent, born from a Tesla ride</h2>
+        </div>
+        <p class="node__lead">In high school, a ride in my dad's Tesla turned into a question, and the question turned into an invention — a vehicle-to-vehicle collision-warning system. It won medals abroad, and it sold.</p>
+
+        <div class="patent">
+          <p class="patent__eyebrow">Patent · granted dual US + Taiwan</p>
+          <h3 class="patent__title">Travel Smart Collision-Avoidance Warning System</h3>
+          <p class="patent__ids">Inventor (sole), 2020 · <b>US10699576B1</b> · <b>TWM578665U</b></p>
+          <p class="patent__blurb">A vehicle-to-vehicle collision-warning system I invented in high school, inspired by my dad's Tesla. Granted dual patents in the US and Taiwan.</p>
+          <ul class="points">
+            <li>Sold for <strong>NT$400,000</strong></li>
+            <li>Cited by GM Cruise, Huawei, and Plus.ai in autonomous-driving patents</li>
+            <li>Gold medal, Ukraine International Invention Expo; Silver, Poland — youngest awardee</li>
+            <li>International Outstanding Inventor Award; received by the President of Taiwan</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ---------- 2021 CMU admit → stepping back ---------- -->
+      <section class="node is-pivot reveal" id="y-2021" aria-labelledby="h-2021">
+        <span class="node__dot" aria-hidden="true"></span>
+        <span class="node__year">2021</span>
+        <div class="node__head">
+          <span class="node__kicker">The hardest decision</span>
+          <h2 class="node__title" id="h-2021">CMU, Early Action — then stepping back</h2>
+        </div>
+        <p class="node__lead">I was admitted to Carnegie Mellon's Information Systems program on Early Action. Then I stepped back from it.</p>
+        <div class="pivot-panel">
+          <p>Walking away from a school I'd worked years to reach was the hardest thing I've done. It taught me the lesson that runs through everything since: <strong>ability means little without discipline and ownership.</strong></p>
+          <p>So I rebuilt — on my own terms.</p>
+        </div>
+        <details class="detail">
+          <summary><span>The admissions, for the record</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="detail__body">
+            <ul class="points">
+              <li>Carnegie Mellon University — Information Systems (Early Action). On leave.</li>
+              <li>Also admitted to Purdue Engineering and UW–Madison CS.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <!-- ---------- 2022 NTNU CS ---------- -->
+      <section class="node reveal" id="y-2022" aria-labelledby="h-2022">
+        <span class="node__dot" aria-hidden="true"></span>
+        <span class="node__year">2022</span>
+        <div class="node__head">
+          <span class="node__kicker">Rebuilding, on my own terms</span>
+          <h2 class="node__title" id="h-2022">NTNU — Computer Science</h2>
+        </div>
+        <p class="node__lead story">I went deep on what I actually love: shipping products. A CS degree at National Taiwan Normal University became the base camp I built everything else from.</p>
+        <details class="detail">
+          <summary><span>Program detail</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="detail__body">
+            <ul class="points">
+              <li>B.Sc. Computer Science &amp; Information Engineering</li>
+              <li>2022 — 2026 (expected)</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <!-- ---------- 2024 Cooby / Nothing Taiwan / Dcard ---------- -->
+      <section class="node reveal" id="y-2024" aria-labelledby="h-2024">
+        <span class="node__dot" aria-hidden="true"></span>
+        <span class="node__year">2024</span>
+        <div class="node__head">
+          <span class="node__kicker">Into the arena</span>
+          <h2 class="node__title" id="h-2024">Startup operating, a founded community, an audience</h2>
+        </div>
+        <p class="node__lead">The year I learned to lead with value: I joined a SaaS startup as chief of staff, founded a phone community, and started creating for a real audience. Opportunities followed.</p>
+
+        <details class="detail" open>
+          <summary><span>The three threads</span><span class="chev" aria-hidden="true"></span></summary>
+          <div class="detail__body">
+
+            <article class="exp-card">
+              <p class="exp__eyebrow">Experience · Cooby (SaaS startup)</p>
+              <h3 class="exp__title">Chief of Staff Intern</h3>
+              <p class="exp__period">Feb 2024 — Oct 2024</p>
+              <ul class="points">
+                <li>Found the user onboarding bottleneck and shipped a fix that cut activation time by 30%.</li>
+                <li>Handled 160+ support tickets, kept VIP customers satisfied, and helped build $10K ARR.</li>
+              </ul>
+            </article>
+
+            <article class="exp-card">
+              <p class="exp__eyebrow">Community · Nothing Taiwan — Founder · 220K+ views</p>
+              <h3 class="exp__title">Nothing Taiwan Community</h3>
+              <p class="exp__period">Jun 2024 — present</p>
+              <ul class="points">
+                <li>Grew the community 50% year over year.</li>
+                <li>Partnered with creators for 220K+ views and presented to 40+ media outlets at a phone launch — likely the only university student ever to present at one.</li>
+              </ul>
+            </article>
+
+            <article class="exp-card">
+              <p class="exp__eyebrow">Creator · Dcard — 2.5–3.5M / month</p>
+              <h3 class="exp__title">Dcard — Official Business Partner &amp; Creator</h3>
+              <p class="exp__period">Jan 2024 — present</p>
+              <ul class="points">
+                <li>2.5–3.5M monthly impressions.</li>
+                <li>Created sponsored content for brands including Nvidia; one post ranked top-5 by views among platform business collaborations.</li>
+              </ul>
+            </article>
+
+          </div>
+        </details>
+      </section>
+
+      <!-- ---------- 2025 Shipped products ---------- -->
+      <section class="node reveal" id="y-2025" aria-labelledby="h-2025">
+        <span class="node__dot" aria-hidden="true"></span>
+        <span class="node__year">2025</span>
+        <div class="node__head">
+          <span class="node__kicker">Shipping in production</span>
+          <h2 class="node__title" id="h-2025">Real products, real users</h2>
+        </div>
+        <p class="node__lead">I started turning ideas into working software — some of it live, in production, in front of real people.</p>
+
+        <div class="work-grid">
+
+          <!-- Course Checker -->
+          <article class="work reveal">
+            <div class="work__media is-contain">
+              <img src="/assets/course-hero.png" alt="Course Checker — graduation credit checker interface" width="640" height="360" loading="lazy" decoding="async" />
+            </div>
+            <div class="work__body">
+              <div class="work__topline">
+                <h3 class="work__name">Course Checker</h3>
+                <span class="work__status">Live</span>
+              </div>
+              <p class="work__blurb">A production PWA that checks NTNU CS graduation credits against catalog rules and transcript data.</p>
+              <ul class="chips"><li>PWA</li><li>React</li><li>TypeScript</li><li>Credit rules</li></ul>
+              <ul class="links">
+                <li><a href="https://course.stan-shih.com" target="_blank" rel="noopener">Live<span class="arrow" aria-hidden="true">↗</span></a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- Antnest Chatbot -->
+          <article class="work reveal">
+            <div class="work__media is-contain">
+              <img src="/assets/antnest-logo.png" alt="Antnest Chatbot — dessert shop logo" width="640" height="360" loading="lazy" decoding="async" />
+            </div>
+            <div class="work__body">
+              <div class="work__topline">
+                <h3 class="work__name">Antnest Chatbot</h3>
+                <span class="work__status">Production</span>
+              </div>
+              <p class="work__blurb">A production LINE + AI support system for a real dessert shop, with Next.js, Supabase, Gemini, admin tools, and reservations.</p>
+              <ul class="chips"><li>Next.js</li><li>TypeScript</li><li>Supabase</li><li>Gemini</li><li>LINE</li></ul>
+              <ul class="links">
+                <li><a href="https://antnest-chatbot-0410.zeabur.app" target="_blank" rel="noopener">Live<span class="arrow" aria-hidden="true">↗</span></a></li>
+                <li><a href="https://github.com/stantheman0128/antnest-chatbot" target="_blank" rel="noopener">GitHub<span class="arrow" aria-hidden="true">↗</span></a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- LINE Notify+ -->
+          <article class="work reveal">
+            <div class="work__media">
+              <img src="/assets/line-notify-screenshot.png" alt="LINE Notify+ — Android notification reshaping app screenshot" width="640" height="360" loading="lazy" decoding="async" />
+            </div>
+            <div class="work__body">
+              <div class="work__topline">
+                <h3 class="work__name">LINE Notify+</h3>
+                <span class="work__status">In progress</span>
+              </div>
+              <p class="work__blurb">An Android app that reshapes LINE notifications for Nothing Phone users with chat grouping, settings, and Play Store assets.</p>
+              <ul class="chips"><li>Kotlin</li><li>Compose</li><li>Android</li><li>Notifications</li></ul>
+              <ul class="links">
+                <li><a href="https://github.com/stantheman0128/line-notify-plus" target="_blank" rel="noopener">GitHub<span class="arrow" aria-hidden="true">↗</span></a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- Traffic Congestion Lab -->
+          <article class="work reveal">
+            <div class="work__media">
+              <img src="/assets/traffic-lab-concept.png" alt="Traffic Congestion Lab — congestion-wave simulation concept" width="640" height="360" loading="lazy" decoding="async" />
+            </div>
+            <div class="work__body">
+              <div class="work__topline">
+                <h3 class="work__name">Traffic Congestion Lab</h3>
+                <span class="work__status">Prototype</span>
+              </div>
+              <p class="work__blurb">An interactive canvas lab that shows stop-and-go congestion waves from tiny braking disturbances on a three-lane stadium track.</p>
+              <ul class="chips"><li>React</li><li>Vite</li><li>Canvas</li><li>Simulation</li></ul>
+              <p class="nolink">No public link yet</p>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+      <!-- ---------- 2025–2026 AI-first / Addin / momentum ---------- -->
+      <section class="node reveal" id="y-2026" aria-labelledby="h-2026">
+        <span class="node__dot" aria-hidden="true"></span>
+        <span class="node__year">2025–2026</span>
+        <div class="node__head">
+          <span class="node__kicker">AI-first, and accelerating</span>
+          <h2 class="node__title" id="h-2026">Building with AI — and investing in builders</h2>
+        </div>
+        <p class="node__lead">Lately I build with AI — Claude Code, MCP servers, multi-agent workflows — which multiplied what a single person can make. I now turn ideas into working software the same week I have them. And I joined a venture fund to find the builders doing the same.</p>
+
+        <!-- Addin Ventures experience -->
+        <div class="exp-card">
+          <p class="exp__eyebrow">Experience · Addin Ventures</p>
+          <h3 class="exp__title">Investment Intern</h3>
+          <p class="exp__period">Mar 2026 — present</p>
+          <ul class="points">
+            <li>Independently sourced an overlooked startup deal (~$30M valuation), demonstrating market judgment and independent analysis.</li>
+          </ul>
+        </div>
+
+        <!-- AI-first work cards -->
+        <div class="work-grid">
+
+          <!-- Colonist Stats Tracker -->
+          <article class="work reveal">
+            <div class="work__media is-icon">
+              <img src="/assets/colonist-stats-icon.png" alt="Colonist.io Stats Tracker — extension icon" width="64" height="64" loading="lazy" decoding="async" />
+            </div>
+            <div class="work__body">
+              <div class="work__topline">
+                <h3 class="work__name">Colonist.io Stats Tracker</h3>
+                <span class="work__status">Local tool</span>
+              </div>
+              <p class="work__blurb">A fan-made Chrome MV3 overlay that parses Colonist's game log locally to show live dice distribution, resources, and hidden-card uncertainty.</p>
+              <ul class="chips"><li>Chrome MV3</li><li>JavaScript</li><li>MutationObserver</li><li>Local-only</li></ul>
+              <ul class="links">
+                <li><a href="https://github.com/stantheman0128/stan-chrome-extensions/tree/master/colonist-stats-tracker" target="_blank" rel="noopener">GitHub<span class="arrow" aria-hidden="true">↗</span></a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- ClaudePulse -->
+          <article class="work reveal">
+            <div class="work__media is-contain">
+              <img src="/assets/claudepulse-screenshot.png" alt="ClaudePulse — Windows tray monitor for Claude Code sessions" width="640" height="360" loading="lazy" decoding="async" />
+            </div>
+            <div class="work__body">
+              <div class="work__topline">
+                <h3 class="work__name">ClaudePulse</h3>
+                <span class="work__status">Local tool</span>
+              </div>
+              <p class="work__blurb">A Windows tray monitor that tracks multiple Claude Code sessions, permission waits, and idle states through local hooks.</p>
+              <ul class="chips"><li>.NET</li><li>Windows tray</li><li>HTTP hooks</li><li>AI tooling</li></ul>
+              <ul class="links">
+                <li><a href="https://github.com/stantheman0128/claudepulse-win" target="_blank" rel="noopener">GitHub<span class="arrow" aria-hidden="true">↗</span></a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- English Companion -->
+          <article class="work reveal">
+            <div class="work__media is-icon">
+              <img src="/assets/english-companion-icon.png" alt="English Companion — app icon" width="64" height="64" loading="lazy" decoding="async" />
+            </div>
+            <div class="work__body">
+              <div class="work__topline">
+                <h3 class="work__name">English Companion</h3>
+                <span class="work__status">In progress</span>
+              </div>
+              <p class="work__blurb">An iPad PWA workflow for daily reading and writing practice, learner modeling, and Claude Code-assisted feedback.</p>
+              <ul class="chips"><li>Next.js</li><li>PWA</li><li>Drizzle</li><li>Postgres</li></ul>
+              <p class="nolink">No public link yet</p>
+            </div>
+          </article>
+
+          <!-- ETF / Quant Research -->
+          <article class="work reveal">
+            <div class="work__media">
+              <img src="/assets/etf-tracker-screenshot.png" alt="ETF / Quant Research — portfolio tracking dashboard screenshot" width="640" height="360" loading="lazy" decoding="async" />
+            </div>
+            <div class="work__body">
+              <div class="work__topline">
+                <h3 class="work__name">ETF / Quant Research</h3>
+                <span class="work__status">Prototype</span>
+              </div>
+              <p class="work__blurb">A research codebase for portfolio tracking and walk-forward quant experiments with explicit bias and overfit controls.</p>
+              <ul class="chips"><li>Next.js</li><li>Python</li><li>Backtesting</li><li>DSR</li></ul>
+              <ul class="links">
+                <li><a href="https://github.com/stantheman0128/etf-tracker" target="_blank" rel="noopener">etf-tracker<span class="arrow" aria-hidden="true">↗</span></a></li>
+                <li><a href="https://github.com/stantheman0128/quant" target="_blank" rel="noopener">quant<span class="arrow" aria-hidden="true">↗</span></a></li>
+              </ul>
+            </div>
+          </article>
+
+          <!-- Autonomous Financial API Discovery (null image → typographic card) -->
+          <article class="work reveal">
+            <div class="work__media typo" role="img" aria-label="Autonomous Financial API Discovery — research project, no image">
+              <span class="typo-glyph" aria-hidden="true">&#8734;</span>
+              <span class="typo-tag" aria-hidden="true">AI agents · autoresearch</span>
+            </div>
+            <div class="work__body">
+              <div class="work__topline">
+                <h3 class="work__name">Autonomous Financial API Discovery</h3>
+                <span class="work__status">Research</span>
+              </div>
+              <p class="work__blurb">An AI-agent pipeline that autonomously probes exchange APIs to surface undocumented behavior — real rate limits, degradation under extreme conditions, and cross-endpoint quota sharing.</p>
+              <ul class="chips"><li>AI agents</li><li>Autoresearch</li><li>Finance</li><li>Python</li></ul>
+              <p class="nolink">No public link yet</p>
+            </div>
+          </article>
+
+        </div>
+
+        <!-- Momentum stats -->
+        <h3 class="sec-h" style="margin-top:32px;">Momentum, by the numbers</h3>
+        <div class="stats" role="list" aria-label="Key numbers">
+          <div class="stat" role="listitem"><div class="v">NT$400K</div><div class="l">Patent sold</div></div>
+          <div class="stat" role="listitem"><div class="v">3</div><div class="l">Self-driving giants cite my patent</div></div>
+          <div class="stat" role="listitem"><div class="v">2.5–3.5M</div><div class="l">Monthly Dcard impressions</div></div>
+          <div class="stat" role="listitem"><div class="v">40+</div><div class="l">Media at a product launch</div></div>
+          <div class="stat" role="listitem"><div class="v">9</div><div class="l">Products shipped</div></div>
+          <div class="stat" role="listitem"><div class="v">220K+</div><div class="l">Campaign views created</div></div>
+        </div>
+      </section>
+
+    </div><!-- /timeline -->
+
+    <!-- ===================== CLOSING ===================== -->
+    <section class="closing" aria-label="About, skills and education">
+      <div class="closing__rule" aria-hidden="true"></div>
+
+      <!-- The story, distilled -->
+      <h2 class="sec-h">The short version</h2>
+      <div style="max-width:var(--measure); margin-bottom:clamp(40px,7vh,72px);">
+        <p style="font-family:var(--serif); font-size:1.18rem; line-height:1.6; margin:0 0 16px;">I'm a CS student at NTNU. I was admitted to Carnegie Mellon's Information Systems program on Early Action — then stepped back from it. Walking away from a school I'd worked years to reach was the hardest thing I've done, and it taught me the lesson that runs through everything since: ability means little without discipline and ownership.</p>
+        <p style="color:var(--ink-soft); margin:0 0 16px;">So I rebuilt, on my own terms. I went deep on the things I actually love — shipping products, and lately doing it with AI, which multiplied what a single person can make. I founded a community, created for an audience, and started turning ideas into working software the same week I have them.</p>
+        <p style="color:var(--ink-soft); margin:0;">The way I work now: see widely, lead with value, and help before I'm asked — opportunities tend to follow. I'd rather build something real and useful than talk about it.</p>
+
+        <ul class="role-tags" style="margin-top:24px;" aria-label="How I work">
+          <li class="lead">Ship end-to-end</li>
+          <li class="lead">AI-first</li>
+          <li>Lead with value</li>
+          <li>Own the outcome</li>
+        </ul>
+      </div>
+
+      <div class="panel-grid">
+        <!-- Skills -->
+        <div>
+          <h2 class="sec-h">Toolkit</h2>
+          <div class="skill-block">
+            <h3>Languages</h3>
+            <ul class="chips"><li>JavaScript / TypeScript</li><li>Python</li><li>Kotlin</li><li>SQL</li><li>Pine Script</li><li>C# / .NET</li></ul>
+          </div>
+          <div class="skill-block">
+            <h3>AI</h3>
+            <ul class="chips"><li>Claude Code CLI</li><li>MCP servers &amp; skills</li><li>Multi-agent frameworks</li></ul>
+          </div>
+          <div class="skill-block">
+            <h3>Data</h3>
+            <ul class="chips"><li>pandas</li><li>NumPy</li><li>scikit-learn</li><li>Backtesting</li></ul>
+          </div>
+          <div class="skill-block">
+            <h3>Web &amp; Mobile</h3>
+            <ul class="chips"><li>React</li><li>Next.js</li><li>PWA</li><li>Chrome MV3</li><li>Android / Compose</li></ul>
+          </div>
+          <div class="skill-block">
+            <h3>Platform</h3>
+            <ul class="chips"><li>Git</li><li>Vite</li><li>Supabase</li><li>Cloudflare</li></ul>
+          </div>
+        </div>
+
+        <!-- Education recap -->
+        <div>
+          <h2 class="sec-h">Education</h2>
+          <ul class="edu-list">
+            <li class="edu-item">
+              <h3>Carnegie Mellon University</h3>
+              <p class="meta">Information Systems · Admitted (Early Action)</p>
+              <p class="note">On leave. Also admitted to Purdue Engineering and UW–Madison CS.</p>
+            </li>
+            <li class="edu-item">
+              <h3>National Taiwan Normal University (NTNU)</h3>
+              <p class="meta">B.Sc. Computer Science &amp; Information Engineering · 2022 — 2026 (expected)</p>
+            </li>
+            <li class="edu-item">
+              <h3>Kang Chiao International School</h3>
+              <p class="meta">2016 — 2021</p>
+              <p class="note">Mayor's Award (middle school), Speaker's Award (high school).</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CONTACT ===================== -->
+    <section class="contact" id="contact" aria-labelledby="contact-h">
+      <h2 id="contact-h">Let's build something <span class="em">real.</span></h2>
+      <p>Open to internships and collaborations. The fastest way to reach me is email — I'd rather show you something working than talk about it.</p>
+      <div class="contact__actions">
+        <a class="btn btn--primary" href="mailto:stan@stan-shih.com">Email me<span aria-hidden="true">→</span></a>
+        <a class="btn btn--ghost" href="https://github.com/stantheman0128" target="_blank" rel="noopener">GitHub<span aria-hidden="true">↗</span></a>
+        <a class="btn btn--ghost" href="https://www.linkedin.com/in/po-han-stan-shih-39b713277/" target="_blank" rel="noopener">LinkedIn<span aria-hidden="true">↗</span></a>
+      </div>
+    </section>
+
+  </div><!-- /wrap -->
+
+  <footer class="foot">
+    <div class="wrap" style="display:flex; flex-wrap:wrap; gap:12px 26px; align-items:center; justify-content:space-between; width:100%; padding:0 clamp(18px,4vw,40px);">
+      <span class="mono">© 2026 Stan Shih · Po-Han Shih · Taipei, Taiwan</span>
+      <span class="foot-links">
+        <a href="mailto:stan@stan-shih.com">stan@stan-shih.com</a>
+        <a href="https://github.com/stantheman0128" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://www.linkedin.com/in/po-han-stan-shih-39b713277/" target="_blank" rel="noopener">LinkedIn</a>
+      </span>
+    </div>
+  </footer>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- top progress bar + spine fill ---------- */
+  var fill = document.getElementById("progFill");
+  var timeline = document.getElementById("timeline");
+
+  function onScroll() {
+    var doc = document.documentElement;
+    var max = (doc.scrollHeight - doc.clientHeight) || 1;
+    var pct = Math.min(1, Math.max(0, window.scrollY / max));
+    if (fill) fill.style.width = (pct * 100) + "%";
+
+    // Spine fill: progress relative to the timeline block, not the whole page.
+    if (timeline) {
+      var rect = timeline.getBoundingClientRect();
+      var vh = doc.clientHeight;
+      var total = rect.height + vh * 0.4;
+      var passed = (vh * 0.5) - rect.top;
+      var sp = Math.min(1, Math.max(0, passed / total));
+      timeline.style.setProperty("--spine-progress", (sp * 100) + "%");
+    }
+  }
+
+  var ticking = false;
+  function requestScroll() {
+    if (!ticking) {
+      window.requestAnimationFrame(function () { onScroll(); ticking = false; });
+      ticking = true;
+    }
+  }
+  window.addEventListener("scroll", requestScroll, { passive: true });
+  window.addEventListener("resize", requestScroll, { passive: true });
+  onScroll();
+
+  /* ---------- reveal-on-scroll + light the active node ---------- */
+  var revealEls = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
+  var nodes = Array.prototype.slice.call(document.querySelectorAll(".node"));
+
+  // Force a reveal target + every .reveal it contains to be visible immediately,
+  // without waiting for the IntersectionObserver. Used as the single source of
+  // truth for reduced motion AND as the deep-link / jump-link safety pass.
+  function forceReveal(el) {
+    if (!el) return;
+    if (el.classList.contains("reveal")) el.classList.add("in");
+    var inner = el.querySelectorAll(".reveal");
+    for (var i = 0; i < inner.length; i++) inner[i].classList.add("in");
+  }
+
+  // SINGLE SOURCE OF TRUTH: reduced-motion (or no IO support) → everything
+  // visible at full opacity via JS, regardless of any future CSS edit.
+  if (reduceMotion || !("IntersectionObserver" in window)) {
+    revealEls.forEach(function (el) { el.classList.add("in"); });
+    if (nodes[0]) nodes[0].classList.add("is-lit");
+  } else {
+    // rootMargin bottom is generous (-2%) so very tall nodes (e.g. #y-2026 is
+    // ~2000px) begin revealing as soon as their top edge nears the viewport,
+    // rather than waiting until a large fraction has scrolled past.
+    var revObs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("in"); revObs.unobserve(e.target); }
+      });
+    }, { rootMargin: "0px 0px -2% 0px", threshold: 0.01 });
+    revealEls.forEach(function (el) { revObs.observe(el); });
+
+    // light nodes whose marker has crossed the viewport middle
+    var litObs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        e.target.classList.toggle("is-lit", e.isIntersecting);
+      });
+    }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+    nodes.forEach(function (n) { litObs.observe(n); });
+
+    /* ----- jump-link / deep-link race hardening -----
+       A programmatic jump can land on a tall node whose cards are still at
+       opacity 0 before the observer fires. Force-reveal the target (and its
+       descendants) immediately on load with a hash, on hashchange, and on
+       any in-page jump-link click. */
+    var forceRevealFromHash = function () {
+      var id = (location.hash || "").replace(/^#/, "");
+      if (!id) return;
+      var target = document.getElementById(id);
+      if (target) forceReveal(target);
+    };
+    forceRevealFromHash();
+    window.addEventListener("hashchange", forceRevealFromHash);
+    document.addEventListener("click", function (ev) {
+      var a = ev.target && ev.target.closest ? ev.target.closest('a[href^="#"]') : null;
+      if (!a) return;
+      var id = a.getAttribute("href").slice(1);
+      if (id) forceReveal(document.getElementById(id));
+    });
+  }
+
+  /* ---------- jump strip: highlight current year ---------- */
+  var jumpLinks = Array.prototype.slice.call(document.querySelectorAll(".jump a"));
+  var linkById = {};
+  jumpLinks.forEach(function (a) {
+    var id = a.getAttribute("href").slice(1);
+    linkById[id] = a;
+  });
+
+  if ("IntersectionObserver" in window) {
+    var spyObs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        var link = linkById[e.target.id];
+        if (!link) return;
+        if (e.isIntersecting) {
+          jumpLinks.forEach(function (l) { l.removeAttribute("aria-current"); });
+          link.setAttribute("aria-current", "true");
+          // keep the active chip in view within the horizontal strip
+          if (link.scrollIntoView) {
+            try { link.scrollIntoView({ block: "nearest", inline: "nearest" }); } catch (err) {}
+          }
+        }
+      });
+    }, { rootMargin: "-40% 0px -55% 0px", threshold: 0 });
+    nodes.forEach(function (n) { spyObs.observe(n); });
+  }
+})();
+</script>
+</body>
+</html>

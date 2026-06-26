@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stan Shih — Product builder, inventor, AI-first engineer</title>
+<meta name="description" content="Stan Shih (Po-Han Shih): product builder, inventor, and AI-first engineer. Patent sold for NT$400K, 9 products shipped, ships end-to-end across web, mobile, desktop, and browser extensions.">
+<style>
+  :root{
+    --ink:#111110;        /* near-black */
+    --paper:#f4f1ea;      /* warm off-white */
+    --paper-2:#eae6dc;    /* secondary surface */
+    --orange:#ff3b00;     /* international orange / vivid red ink */
+    --orange-deep:#c42a00;
+    --rule:#111110;
+    --muted:#54524c;
+    --hair:rgba(17,17,16,.16);
+    --measure:68ch;
+    --gut:clamp(16px,4.5vw,40px);
+    --maxw:1280px;
+    --sans:"Helvetica Neue",Helvetica,Arial,"Segoe UI",Roboto,system-ui,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--sans);font-weight:400;line-height:1.5;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  a{color:inherit}
+  img{max-width:100%;display:block}
+  ::selection{background:var(--orange);color:var(--paper)}
+
+  .skip{position:absolute;left:-9999px;top:0;background:var(--ink);color:var(--paper);padding:10px 16px;z-index:50;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .skip:focus{left:8px;top:8px}
+
+  a:focus-visible,button:focus-visible,summary:focus-visible{
+    outline:3px solid var(--orange);outline-offset:3px;
+  }
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
+
+  /* ---- top meta bar ---- */
+  .meta{
+    border-bottom:2px solid var(--rule);
+    font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  }
+  .meta .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:9px;padding-bottom:9px;flex-wrap:wrap}
+  .meta b{font-weight:700}
+  .demo-mark{color:var(--paper);background:var(--orange);padding:3px 8px;font-weight:700;white-space:nowrap}
+
+  /* ---- HERO ---- */
+  .hero{border-bottom:3px solid var(--rule)}
+  .hero .wrap{padding-top:clamp(20px,4vw,44px);padding-bottom:clamp(24px,4vw,48px)}
+  .kicker{
+    display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    font-family:var(--mono);font-size:clamp(11px,1.4vw,13px);letter-spacing:.08em;text-transform:uppercase;
+    border-bottom:1px solid var(--hair);padding-bottom:12px;margin-bottom:clamp(14px,2.5vw,26px);
+  }
+  .kicker .ink{color:var(--orange);font-weight:700}
+  .kicker .kno{color:var(--orange);font-weight:700}
+  h1.name{
+    margin:0;font-weight:800;
+    font-size:clamp(56px,16.5vw,236px);
+    line-height:.84;letter-spacing:-.03em;text-transform:uppercase;
+  }
+  h1.name .lo{display:block}
+  h1.name .two{position:relative}
+  .role{
+    display:flex;flex-wrap:wrap;gap:0 .45em;align-items:baseline;
+    margin:clamp(14px,2.4vw,26px) 0 0;
+    font-weight:700;letter-spacing:0;
+    font-size:clamp(17px,4.4vw,46px);line-height:1.08;text-transform:uppercase;
+  }
+  @media(min-width:420px){ .role{letter-spacing:-.01em;line-height:1.02} }
+  .role .slash{color:var(--orange)}
+  .latin{font-family:var(--mono);font-size:clamp(11px,1.5vw,14px);letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin-top:10px}
+
+  .manifesto{
+    border-top:2px solid var(--rule);margin-top:clamp(20px,3.5vw,38px);padding-top:clamp(18px,3vw,30px);
+    display:grid;grid-template-columns:1fr;gap:clamp(16px,3vw,40px);
+  }
+  @media(min-width:760px){ .manifesto{grid-template-columns:minmax(0,1.55fr) minmax(0,1fr)} }
+  .manifesto .lead{
+    font-weight:700;letter-spacing:-.01em;
+    font-size:clamp(22px,3.6vw,40px);line-height:1.08;max-width:20ch;margin:0;
+  }
+  .manifesto .lead em{font-style:normal;color:var(--orange)}
+  .manifesto .sub{font-size:clamp(15px,1.7vw,18px);line-height:1.55;color:var(--muted);margin:0;max-width:42ch}
+  .cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+  .btn{
+    font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;
+    text-decoration:none;padding:11px 16px;border:2px solid var(--rule);background:transparent;color:var(--ink);
+    display:inline-flex;align-items:center;gap:8px;line-height:1;transition:background .12s,color .12s;
+  }
+  .btn:hover{background:var(--ink);color:var(--paper)}
+  .btn--ink{background:var(--orange);border-color:var(--orange);color:var(--paper)}
+  .btn--ink:hover{background:var(--orange-deep);border-color:var(--orange-deep);color:var(--paper)}
+  .btn .arr{font-weight:700}
+
+  /* ---- STATS strip ---- */
+  .stats{border-bottom:3px solid var(--rule);background:var(--ink);color:var(--paper)}
+  .stats ::selection{background:var(--orange);color:#fff}
+  .stats .grid{display:grid;grid-template-columns:repeat(2,1fr)}
+  @media(min-width:680px){ .stats .grid{grid-template-columns:repeat(3,1fr)} }
+  @media(min-width:1024px){ .stats .grid{grid-template-columns:repeat(6,1fr)} }
+  .stat{padding:clamp(16px,2.4vw,26px) clamp(14px,2vw,22px);border-right:1px solid rgba(244,241,234,.18);border-bottom:1px solid rgba(244,241,234,.18);display:flex;flex-direction:column}
+  .stat .v{font-weight:800;font-size:clamp(26px,3.6vw,40px);line-height:1;letter-spacing:-.02em}
+  .stat .v .u{color:var(--orange)}
+  .stat .l{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:rgba(244,241,234,.72);margin-top:auto;padding-top:8px;line-height:1.3;min-height:2.6em;display:flex;align-items:flex-end}
+
+  /* ---- generic section head ---- */
+  section{scroll-margin-top:8px}
+  .sec{border-bottom:3px solid var(--rule)}
+  .sec .wrap{padding-top:clamp(34px,5vw,72px);padding-bottom:clamp(34px,5vw,72px)}
+  .sechead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-bottom:2px solid var(--rule);padding-bottom:12px;margin-bottom:clamp(22px,3vw,40px)}
+  .sechead .no{font-family:var(--mono);font-weight:700;color:var(--orange);font-size:clamp(13px,1.6vw,16px);letter-spacing:.04em}
+  .sechead h2{margin:0;font-weight:800;text-transform:uppercase;letter-spacing:-.02em;font-size:clamp(26px,5.2vw,58px);line-height:.92}
+  .sechead .tail{margin-left:auto;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);align-self:flex-end}
+
+  /* ---- ABOUT ---- */
+  .about-grid{display:grid;grid-template-columns:1fr;gap:clamp(22px,3vw,44px)}
+  @media(min-width:820px){ .about-grid{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)} }
+  .about-lead{font-weight:700;font-size:clamp(20px,2.6vw,30px);line-height:1.18;letter-spacing:-.01em;margin:0 0 clamp(16px,2vw,22px);max-width:24ch}
+  .about-body p{font-size:clamp(15px,1.6vw,17px);line-height:1.62;max-width:var(--measure);margin:0 0 1em;color:#26241f}
+  .principles{border-top:2px solid var(--rule)}
+  .principle{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:14px 0;border-bottom:1px solid var(--hair)}
+  .principle .pn{font-family:var(--mono);font-weight:700;color:var(--orange);font-size:13px;line-height:1.5}
+  .principle h3{margin:0 0 4px;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.02em}
+  .principle p{margin:0;font-size:14px;line-height:1.5;color:var(--muted)}
+
+  /* ---- WORK index ---- */
+  .work-list{border-top:2px solid var(--rule)}
+  .work{
+    display:grid;gap:clamp(12px,2vw,28px);align-items:start;
+    grid-template-columns:1fr;
+    padding:clamp(18px,2.6vw,30px) 0;border-bottom:1px solid var(--rule);
+  }
+  @media(min-width:760px){
+    .work{grid-template-columns:84px minmax(0,1.35fr) 200px;}
+  }
+  .work__no{font-weight:800;font-size:clamp(34px,5vw,64px);line-height:.85;letter-spacing:-.03em;color:var(--ink)}
+  .work__no .sec{display:block;font-family:var(--mono);font-weight:700;font-size:clamp(11px,1.4vw,13px);letter-spacing:.06em;color:var(--muted);line-height:1;margin-bottom:6px}
+  .work__no .x{color:var(--orange)}
+  .work__main{min-width:0}
+  .work__top{display:flex;align-items:baseline;gap:10px 14px;flex-wrap:wrap}
+  .work__title{margin:0;font-weight:800;text-transform:uppercase;letter-spacing:-.015em;font-size:clamp(22px,3.4vw,38px);line-height:.98}
+  .work__yr{font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:var(--muted)}
+  .badge{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border:1.5px solid var(--ink);padding:3px 7px;line-height:1;white-space:nowrap}
+  .badge--live{background:var(--orange);border-color:var(--orange);color:var(--paper)}
+  .work__blurb{margin:12px 0 0;font-size:clamp(14px,1.6vw,16px);line-height:1.52;max-width:58ch;color:#26241f}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;list-style:none;padding:0}
+  .tags li{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);border:1px solid var(--hair);padding:3px 7px;line-height:1.2}
+  .links{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+  .lk{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;border-bottom:2px solid var(--orange);padding-bottom:1px;display:inline-flex;align-items:center;gap:5px}
+  .lk:hover{color:var(--orange)}
+  .nolink{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-top:13px}
+  /* work media */
+  .work__media{min-width:0}
+  .frame{border:2px solid var(--ink);background:var(--paper-2);overflow:hidden;position:relative}
+  .frame img{width:100%;height:100%;object-fit:cover;display:block}
+  .frame--contain{display:flex;align-items:center;justify-content:center;padding:14px;background:#fff}
+  .frame--contain img{object-fit:contain;width:100%;height:100%}
+  .frame--icon{aspect-ratio:1/1;max-width:160px;display:flex;align-items:center;justify-content:center;padding:18px;background:#fff}
+  .frame--icon img{object-fit:contain}
+  .frame--shot{aspect-ratio:16/10}
+  .frame--phone{aspect-ratio:9/16;max-width:140px}
+  /* typographic placeholder card for null image */
+  .tcard{
+    border:2px solid var(--ink);aspect-ratio:16/10;
+    background:
+      repeating-linear-gradient(135deg,transparent 0 13px,rgba(17,17,16,.07) 13px 14px);
+    display:flex;flex-direction:column;justify-content:space-between;padding:14px;
+  }
+  .tcard .tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--orange)}
+  .tcard .big{font-weight:800;font-size:clamp(28px,5vw,46px);line-height:.9;letter-spacing:-.03em;text-transform:uppercase}
+  .tcard .meta2{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+
+  /* ---- PATENT (feature block) ---- */
+  .patent{background:var(--ink);color:var(--paper)}
+  .patent ::selection{background:var(--orange);color:#fff}
+  .patent .sechead{border-color:var(--paper)}
+  .patent .sechead .tail{color:rgba(244,241,234,.6)}
+  .patent-grid{display:grid;grid-template-columns:1fr;gap:clamp(20px,3vw,40px)}
+  @media(min-width:820px){ .patent-grid{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)} }
+  .patent h3{margin:0;font-weight:800;text-transform:uppercase;letter-spacing:-.02em;font-size:clamp(26px,4.4vw,52px);line-height:.94}
+  .patent .pmeta{font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:rgba(244,241,234,.7);margin:14px 0 0;display:flex;flex-wrap:wrap;gap:6px 16px}
+  .patent .pmeta b{color:var(--orange);font-weight:700}
+  .patent .pblurb{font-size:clamp(15px,1.8vw,19px);line-height:1.55;margin:18px 0 0;max-width:46ch}
+  .hl{list-style:none;margin:0;padding:0;border-top:1px solid rgba(244,241,234,.22)}
+  .hl li{display:grid;grid-template-columns:auto 1fr;gap:12px;padding:13px 0;border-bottom:1px solid rgba(244,241,234,.22);font-size:clamp(14px,1.6vw,16px);line-height:1.4}
+  .hl li .m{color:var(--orange);font-family:var(--mono);font-weight:700}
+
+  /* ---- TABLE sections (experience / press / education) ---- */
+  .trows{border-top:2px solid var(--rule)}
+  .trow{display:grid;grid-template-columns:1fr;gap:6px 20px;padding:clamp(16px,2.2vw,24px) 0;border-bottom:1px solid var(--rule)}
+  @media(min-width:760px){
+    .trow{grid-template-columns:minmax(0,1fr) minmax(0,1.7fr) 150px;align-items:start}
+  }
+  .trow__org{font-weight:800;text-transform:uppercase;letter-spacing:-.01em;font-size:clamp(18px,2.4vw,26px);line-height:1}
+  .trow__role{font-family:var(--mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-top:7px}
+  .trow__body ul{margin:0;padding-left:1.05em}
+  .trow__body li{font-size:clamp(14px,1.55vw,16px);line-height:1.5;margin-bottom:5px;color:#26241f}
+  .trow__body li::marker{color:var(--orange)}
+  .trow__meta{font-family:var(--mono);font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);text-align:left}
+  @media(min-width:760px){ .trow__meta{text-align:right} }
+  .trow__metric{display:inline-block;margin-top:8px;font-weight:800;font-size:clamp(15px,1.8vw,20px);letter-spacing:-.01em;color:var(--ink)}
+  .trow__metric .u{color:var(--orange)}
+
+  .edu .trow{grid-template-columns:1fr}
+  @media(min-width:760px){ .edu .trow{grid-template-columns:minmax(0,1.4fr) minmax(0,1.6fr) 180px} }
+  .edu .note{font-size:clamp(13px,1.4vw,15px);line-height:1.45;color:var(--muted);margin-top:6px}
+
+  /* ---- SKILLS ---- */
+  .skills{display:grid;grid-template-columns:1fr;gap:0;border-top:2px solid var(--rule)}
+  @media(min-width:600px){ .skills{grid-template-columns:repeat(2,1fr)} }
+  @media(min-width:1000px){ .skills{grid-template-columns:repeat(3,1fr)} }
+  .skill{padding:clamp(16px,2vw,22px);border-bottom:1px solid var(--rule);border-right:1px solid var(--rule)}
+  .skill h3{margin:0 0 12px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--orange)}
+  .skill ul{list-style:none;margin:0;padding:0}
+  .skill li{font-size:14px;line-height:1.7;border-bottom:1px solid var(--hair);padding:2px 0}
+  .skill li:last-child{border-bottom:0}
+
+  /* ---- CONTACT / footer ---- */
+  .contact{background:var(--orange);color:var(--paper)}
+  .contact ::selection{background:var(--ink);color:var(--orange)}
+  .contact .wrap{padding-top:clamp(40px,6vw,90px);padding-bottom:clamp(34px,4vw,60px)}
+  .contact .small{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700}
+  .contact .small .cno{color:var(--ink)}
+  .contact h2{margin:.4em 0 0;font-weight:800;text-transform:uppercase;letter-spacing:-.03em;line-height:.86;font-size:clamp(40px,11vw,150px)}
+  .mailbtn{display:inline-flex;align-items:center;gap:10px;margin-top:clamp(18px,3vw,30px);font-weight:700;text-transform:uppercase;letter-spacing:-.01em;text-decoration:none;font-size:clamp(20px,3.6vw,40px);border-bottom:4px solid var(--paper);padding-bottom:4px}
+  .mailbtn:hover{color:var(--ink);border-color:var(--ink)}
+  .clinks{display:flex;flex-wrap:wrap;gap:10px 12px;margin-top:clamp(22px,3vw,34px)}
+  .clink{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-decoration:none;border:2px solid var(--paper);padding:10px 14px;display:inline-flex;align-items:center;gap:7px}
+  .clink:hover{background:var(--paper);color:var(--orange)}
+  .avail{margin-top:22px;font-family:var(--mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase}
+  footer{border-top:2px solid var(--paper)}
+  footer .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:16px;padding-bottom:16px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- top meta bar -->
+<div class="meta">
+  <div class="wrap">
+    <span><b>Stan Shih</b> — Po-Han Shih</span>
+    <nav aria-label="Section index" style="display:flex;gap:14px;flex-wrap:wrap">
+      <a href="#work" style="text-decoration:none">Work</a>
+      <a href="#patent" style="text-decoration:none">Patent</a>
+      <a href="#experience" style="text-decoration:none">Experience</a>
+      <a href="#contact" style="text-decoration:none">Contact</a>
+    </nav>
+    <span class="demo-mark">DEMO · Swiss / Brutalist Poster</span>
+  </div>
+</div>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">
+      <span>Taipei, Taiwan</span>
+      <span class="ink">Builder · Inventor · AI-first</span>
+      <span><span class="kno">00</span> Profile</span>
+    </div>
+    <h1 class="name"><span class="lo">Stan</span><span class="lo two">Shih<span style="color:var(--orange)">.</span></span></h1>
+    <p class="role">Product&nbsp;builder <span class="slash">/</span> Inventor <span class="slash">/</span> AI-first&nbsp;engineer</p>
+    <p class="latin">Po-Han Shih · CS @ NTNU</p>
+
+    <div class="manifesto">
+      <div>
+        <p class="lead">I find products I love — <em>then build for them.</em></p>
+        <div class="cta-row">
+          <a class="btn btn--ink" href="#work">See the work <span class="arr">↘</span></a>
+          <a class="btn" href="#contact">Contact <span class="arr">→</span></a>
+          <a class="btn" href="https://github.com/stantheman0128" rel="me noopener">GitHub <span class="arr">↗</span></a>
+        </div>
+      </div>
+      <div>
+        <p class="sub">A CS student who ships end-to-end across web, mobile, desktop, and browser extensions. AI-first by default — Claude Code, MCP servers, and multi-agent workflows are part of how I build.</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- STATS strip -->
+<section class="stats" aria-label="Key numbers">
+  <div class="wrap" style="padding:0">
+    <div class="grid">
+      <div class="stat"><div class="v">NT<span class="u">$</span>400K</div><div class="l">Patent sold</div></div>
+      <div class="stat"><div class="v">3</div><div class="l">Self-driving giants cite my patent</div></div>
+      <div class="stat"><div class="v">2.5–3.5<span class="u">M</span></div><div class="l">Monthly Dcard impressions</div></div>
+      <div class="stat"><div class="v">40<span class="u">+</span></div><div class="l">Media at a product launch</div></div>
+      <div class="stat"><div class="v">9</div><div class="l">Products shipped</div></div>
+      <div class="stat"><div class="v">220K<span class="u">+</span></div><div class="l">Campaign views created</div></div>
+    </div>
+  </div>
+</section>
+
+<main id="main">
+
+<!-- ABOUT -->
+<section class="sec" id="about" aria-labelledby="about-h">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="no">01</span>
+      <h2 id="about-h">About</h2>
+      <span class="tail">The story</span>
+    </div>
+    <div class="about-grid">
+      <div>
+        <p class="about-lead">Builder, inventor, and AI-first engineer. I make products end-to-end — and I'm happiest with something half-built on the screen in front of me.</p>
+        <div class="about-body">
+          <p>I'm a CS student at NTNU. I was admitted to Carnegie Mellon's Information Systems program on Early Action — then stepped back from it. Walking away from a school I'd worked years to reach was the hardest thing I've done, and it taught me the lesson that runs through everything since: ability means little without discipline and ownership.</p>
+          <p>So I rebuilt, on my own terms. I went deep on the things I actually love — shipping products, and lately doing it with AI, which multiplied what a single person can make. I founded a community, created for an audience, and started turning ideas into working software the same week I have them.</p>
+          <p>The way I work now: see widely, lead with value, and help before I'm asked — opportunities tend to follow. I'd rather build something real and useful than talk about it.</p>
+        </div>
+      </div>
+      <div>
+        <div class="principles">
+          <div class="principle"><span class="pn">A</span><div><h3>Ship end-to-end</h3><p>Web, mobile, desktop, extensions — whatever the product needs.</p></div></div>
+          <div class="principle"><span class="pn">B</span><div><h3>AI-first</h3><p>Claude Code, MCP servers, and multi-agent workflows are part of how I build.</p></div></div>
+          <div class="principle"><span class="pn">C</span><div><h3>Lead with value</h3><p>See widely, help first, and let opportunities follow.</p></div></div>
+          <div class="principle"><span class="pn">D</span><div><h3>Own the outcome</h3><p>Discipline over talent. I finish what I start.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WORK -->
+<section class="sec" id="work" aria-labelledby="work-h">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="no">02</span>
+      <h2 id="work-h">Selected work</h2>
+      <span class="tail">9 products · indexed</span>
+    </div>
+    <div class="work-list">
+
+      <!-- 01 Colonist -->
+      <article class="work">
+        <div class="work__no"><span class="sec">02 /</span>0<span class="x">1</span></div>
+        <div class="work__main">
+          <div class="work__top">
+            <h3 class="work__title">Colonist.io Stats Tracker</h3>
+            <span class="badge">Local tool</span>
+            <span class="work__yr">2026</span>
+          </div>
+          <p class="work__blurb">A fan-made Chrome MV3 overlay that parses Colonist's game log locally to show live dice distribution, resources, and hidden-card uncertainty.</p>
+          <ul class="tags"><li>Chrome MV3</li><li>JavaScript</li><li>MutationObserver</li><li>Local-only</li></ul>
+          <div class="links"><a class="lk" href="https://github.com/stantheman0128/stan-chrome-extensions/tree/master/colonist-stats-tracker" rel="noopener">GitHub ↗</a></div>
+        </div>
+        <div class="work__media">
+          <div class="frame frame--icon"><img src="/assets/colonist-stats-icon.png" width="128" height="128" alt="Colonist.io Stats Tracker app icon" loading="lazy" decoding="async"></div>
+        </div>
+      </article>
+
+      <!-- 02 Course Checker -->
+      <article class="work">
+        <div class="work__no"><span class="sec">02 /</span>0<span class="x">2</span></div>
+        <div class="work__main">
+          <div class="work__top">
+            <h3 class="work__title">Course Checker</h3>
+            <span class="badge badge--live">Live</span>
+            <span class="work__yr">2025</span>
+          </div>
+          <p class="work__blurb">A production PWA that checks NTNU CS graduation credits against catalog rules and transcript data.</p>
+          <ul class="tags"><li>PWA</li><li>React</li><li>TypeScript</li><li>Credit rules</li></ul>
+          <div class="links"><a class="lk" href="https://course.stan-shih.com" rel="noopener">Live ↗</a></div>
+        </div>
+        <div class="work__media">
+          <div class="frame frame--contain" style="aspect-ratio:343/361"><img src="/assets/course-hero.png" width="343" height="361" alt="Course Checker app interface" loading="lazy" decoding="async"></div>
+        </div>
+      </article>
+
+      <!-- 03 Antnest -->
+      <article class="work">
+        <div class="work__no"><span class="sec">02 /</span>0<span class="x">3</span></div>
+        <div class="work__main">
+          <div class="work__top">
+            <h3 class="work__title">Antnest Chatbot</h3>
+            <span class="badge badge--live">Production</span>
+            <span class="work__yr">2025</span>
+          </div>
+          <p class="work__blurb">A production LINE + AI support system for a real dessert shop, with Next.js, Supabase, Gemini, admin tools, and reservations.</p>
+          <ul class="tags"><li>Next.js</li><li>TypeScript</li><li>Supabase</li><li>Gemini</li><li>LINE</li></ul>
+          <div class="links">
+            <a class="lk" href="https://antnest-chatbot-0410.zeabur.app" rel="noopener">Live ↗</a>
+            <a class="lk" href="https://github.com/stantheman0128/antnest-chatbot" rel="noopener">GitHub ↗</a>
+          </div>
+        </div>
+        <div class="work__media">
+          <div class="frame frame--contain" style="aspect-ratio:820/261"><img src="/assets/antnest-logo.png" width="820" height="261" alt="Antnest Chatbot logo" loading="lazy" decoding="async"></div>
+        </div>
+      </article>
+
+      <!-- 04 LINE Notify+ -->
+      <article class="work">
+        <div class="work__no"><span class="sec">02 /</span>0<span class="x">4</span></div>
+        <div class="work__main">
+          <div class="work__top">
+            <h3 class="work__title">LINE Notify+</h3>
+            <span class="badge">In progress</span>
+            <span class="work__yr">2025</span>
+          </div>
+          <p class="work__blurb">An Android app that reshapes LINE notifications for Nothing Phone users with chat grouping, settings, and Play Store assets.</p>
+          <ul class="tags"><li>Kotlin</li><li>Compose</li><li>Android</li><li>Notifications</li></ul>
+          <div class="links"><a class="lk" href="https://github.com/stantheman0128/line-notify-plus" rel="noopener">GitHub ↗</a></div>
+        </div>
+        <div class="work__media">
+          <div class="frame frame--phone"><img src="/assets/line-notify-screenshot.png" width="1080" height="2412" alt="LINE Notify+ Android app screenshot" loading="lazy" decoding="async"></div>
+        </div>
+      </article>
+
+      <!-- 05 ClaudePulse -->
+      <article class="work">
+        <div class="work__no"><span class="sec">02 /</span>0<span class="x">5</span></div>
+        <div class="work__main">
+          <div class="work__top">
+            <h3 class="work__title">ClaudePulse</h3>
+            <span class="badge">Local tool</span>
+            <span class="work__yr">2026</span>
+          </div>
+          <p class="work__blurb">A Windows tray monitor that tracks multiple Claude Code sessions, permission waits, and idle states through local hooks.</p>
+          <ul class="tags"><li>.NET</li><li>Windows tray</li><li>HTTP hooks</li><li>AI tooling</li></ul>
+          <div class="links"><a class="lk" href="https://github.com/stantheman0128/claudepulse-win" rel="noopener">GitHub ↗</a></div>
+        </div>
+        <div class="work__media">
+          <div class="frame frame--contain" style="aspect-ratio:355/307"><img src="/assets/claudepulse-screenshot.png" width="355" height="307" alt="ClaudePulse Windows tray monitor screenshot" loading="lazy" decoding="async"></div>
+        </div>
+      </article>
+
+      <!-- 06 Traffic Lab -->
+      <article class="work">
+        <div class="work__no"><span class="sec">02 /</span>0<span class="x">6</span></div>
+        <div class="work__main">
+          <div class="work__top">
+            <h3 class="work__title">Traffic Congestion Lab</h3>
+            <span class="badge">Prototype</span>
+            <span class="work__yr">2025</span>
+          </div>
+          <p class="work__blurb">An interactive canvas lab that shows stop-and-go congestion waves from tiny braking disturbances on a three-lane stadium track.</p>
+          <ul class="tags"><li>React</li><li>Vite</li><li>Canvas</li><li>Simulation</li></ul>
+          <p class="nolink">No public link yet</p>
+        </div>
+        <div class="work__media">
+          <div class="frame frame--shot"><img src="/assets/traffic-lab-concept.png" width="1672" height="941" alt="Traffic Congestion Lab simulation concept" loading="lazy" decoding="async"></div>
+        </div>
+      </article>
+
+      <!-- 07 English Companion -->
+      <article class="work">
+        <div class="work__no"><span class="sec">02 /</span>0<span class="x">7</span></div>
+        <div class="work__main">
+          <div class="work__top">
+            <h3 class="work__title">English Companion</h3>
+            <span class="badge">In progress</span>
+            <span class="work__yr">2026</span>
+          </div>
+          <p class="work__blurb">An iPad PWA workflow for daily reading and writing practice, learner modeling, and Claude Code-assisted feedback.</p>
+          <ul class="tags"><li>Next.js</li><li>PWA</li><li>Drizzle</li><li>Postgres</li></ul>
+          <p class="nolink">No public link yet</p>
+        </div>
+        <div class="work__media">
+          <div class="frame frame--icon"><img src="/assets/english-companion-icon.png" width="512" height="512" alt="English Companion app icon" loading="lazy" decoding="async"></div>
+        </div>
+      </article>
+
+      <!-- 08 ETF / Quant -->
+      <article class="work">
+        <div class="work__no"><span class="sec">02 /</span>0<span class="x">8</span></div>
+        <div class="work__main">
+          <div class="work__top">
+            <h3 class="work__title">ETF / Quant Research</h3>
+            <span class="badge">Prototype</span>
+            <span class="work__yr">2026</span>
+          </div>
+          <p class="work__blurb">A research codebase for portfolio tracking and walk-forward quant experiments with explicit bias and overfit controls.</p>
+          <ul class="tags"><li>Next.js</li><li>Python</li><li>Backtesting</li><li>DSR</li></ul>
+          <div class="links">
+            <a class="lk" href="https://github.com/stantheman0128/etf-tracker" rel="noopener">etf-tracker ↗</a>
+            <a class="lk" href="https://github.com/stantheman0128/quant" rel="noopener">quant ↗</a>
+          </div>
+        </div>
+        <div class="work__media">
+          <div class="frame frame--shot"><img src="/assets/etf-tracker-screenshot.png" width="1280" height="720" alt="ETF tracker research dashboard screenshot" loading="lazy" decoding="async"></div>
+        </div>
+      </article>
+
+      <!-- 09 Autoresearch (null image -> typographic card) -->
+      <article class="work">
+        <div class="work__no"><span class="sec">02 /</span>0<span class="x">9</span></div>
+        <div class="work__main">
+          <div class="work__top">
+            <h3 class="work__title">Autonomous Financial API Discovery</h3>
+            <span class="badge">Research</span>
+            <span class="work__yr">2026</span>
+          </div>
+          <p class="work__blurb">An AI-agent pipeline that autonomously probes exchange APIs to surface undocumented behavior — real rate limits, degradation under extreme conditions, and cross-endpoint quota sharing.</p>
+          <ul class="tags"><li>AI agents</li><li>Autoresearch</li><li>Finance</li><li>Python</li></ul>
+          <p class="nolink">No public link yet</p>
+        </div>
+        <div class="work__media">
+          <div class="tcard" role="img" aria-label="Typographic card for Autonomous Financial API Discovery">
+            <span class="tag">Autoresearch</span>
+            <span class="big">API<br>probe</span>
+            <span class="meta2">No public link · 2026</span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- PATENT -->
+<section class="sec patent" id="patent" aria-labelledby="patent-h">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="no">03</span>
+      <h2 id="patent-h">Patent</h2>
+      <span class="tail">US &amp; TW · 2020</span>
+    </div>
+    <div class="patent-grid">
+      <div>
+        <h3>Travel Smart Collision-Avoidance Warning System</h3>
+        <p class="pmeta"><span><b>US</b> US10699576B1</span><span><b>TW</b> TWM578665U</span><span><b>Role</b> Inventor (sole)</span><span><b>Year</b> 2020</span></p>
+        <p class="pblurb">A vehicle-to-vehicle collision-warning system I invented in high school, inspired by my dad's Tesla. Granted dual patents in the US and Taiwan.</p>
+      </div>
+      <div>
+        <ul class="hl">
+          <li><span class="m">＄</span><span>Sold for NT$400,000</span></li>
+          <li><span class="m">↗</span><span>Cited by GM Cruise, Huawei, and Plus.ai in autonomous-driving patents</span></li>
+          <li><span class="m">★</span><span>Gold medal, Ukraine International Invention Expo; Silver, Poland — youngest awardee</span></li>
+          <li><span class="m">◆</span><span>International Outstanding Inventor Award; received by the President of Taiwan</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section class="sec" id="experience" aria-labelledby="exp-h">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="no">04</span>
+      <h2 id="exp-h">Experience</h2>
+      <span class="tail">Roles</span>
+    </div>
+    <div class="trows">
+      <div class="trow">
+        <div><div class="trow__org">Addin Ventures</div><div class="trow__role">Investment Intern</div></div>
+        <div class="trow__body"><ul><li>Independently sourced an overlooked startup deal (~$30M valuation), demonstrating market judgment and independent analysis.</li></ul></div>
+        <div class="trow__meta">Mar 2026 — present</div>
+      </div>
+      <div class="trow">
+        <div><div class="trow__org">Cooby</div><div class="trow__role">Chief of Staff Intern · SaaS startup</div></div>
+        <div class="trow__body"><ul>
+          <li>Found the user onboarding bottleneck and shipped a fix that cut activation time by 30%.</li>
+          <li>Handled 160+ support tickets, kept VIP customers satisfied, and helped build $10K ARR.</li>
+        </ul></div>
+        <div class="trow__meta">Feb 2024 — Oct 2024</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRESS / COMMUNITY -->
+<section class="sec" id="press" aria-labelledby="press-h">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="no">05</span>
+      <h2 id="press-h">Press &amp; community</h2>
+      <span class="tail">Reach</span>
+    </div>
+    <div class="trows">
+      <div class="trow">
+        <div><div class="trow__org">Nothing Taiwan Community</div><div class="trow__role">Founder</div></div>
+        <div class="trow__body"><ul>
+          <li>Grew the community 50% year over year.</li>
+          <li>Partnered with creators for 220K+ views and presented to 40+ media outlets at a phone launch — likely the only university student ever to present at one.</li>
+        </ul></div>
+        <div class="trow__meta">Jun 2024 — present<br><span class="trow__metric">220K<span class="u">+</span> views</span></div>
+      </div>
+      <div class="trow">
+        <div><div class="trow__org">Dcard</div><div class="trow__role">Official Business Partner &amp; Creator</div></div>
+        <div class="trow__body"><ul>
+          <li>2.5–3.5M monthly impressions.</li>
+          <li>Created sponsored content for brands including Nvidia; one post ranked top-5 by views among platform business collaborations.</li>
+        </ul></div>
+        <div class="trow__meta">Jan 2024 — present<br><span class="trow__metric">2.5–3.5<span class="u">M</span> / mo</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section class="sec edu" id="education" aria-labelledby="edu-h">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="no">06</span>
+      <h2 id="edu-h">Education</h2>
+      <span class="tail">Schools</span>
+    </div>
+    <div class="trows">
+      <div class="trow">
+        <div><div class="trow__org">Carnegie Mellon University</div><div class="trow__role">Information Systems</div></div>
+        <div><p class="note">On leave. Also admitted to Purdue Engineering and UW–Madison CS.</p></div>
+        <div class="trow__meta">Admitted (Early Action)</div>
+      </div>
+      <div class="trow">
+        <div><div class="trow__org">NTNU</div><div class="trow__role">B.Sc. Computer Science &amp; Information Engineering</div></div>
+        <div><p class="note">National Taiwan Normal University.</p></div>
+        <div class="trow__meta">2022 — 2026 (expected)</div>
+      </div>
+      <div class="trow">
+        <div><div class="trow__org">Kang Chiao Int'l School</div><div class="trow__role">Secondary</div></div>
+        <div><p class="note">Mayor's Award (middle school), Speaker's Award (high school).</p></div>
+        <div class="trow__meta">2016 — 2021</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="sec" id="skills" aria-labelledby="skills-h">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="no">07</span>
+      <h2 id="skills-h">Skills</h2>
+      <span class="tail">Toolkit</span>
+    </div>
+    <div class="skills">
+      <div class="skill"><h3>Languages</h3><ul><li>JavaScript / TypeScript</li><li>Python</li><li>Kotlin</li><li>SQL</li><li>Pine Script</li><li>C# / .NET</li></ul></div>
+      <div class="skill"><h3>AI</h3><ul><li>Claude Code CLI</li><li>MCP servers &amp; skills</li><li>Multi-agent frameworks</li></ul></div>
+      <div class="skill"><h3>Data</h3><ul><li>pandas</li><li>NumPy</li><li>scikit-learn</li><li>Backtesting</li></ul></div>
+      <div class="skill"><h3>Web &amp; Mobile</h3><ul><li>React</li><li>Next.js</li><li>PWA</li><li>Chrome MV3</li><li>Android / Compose</li></ul></div>
+      <div class="skill"><h3>Platform</h3><ul><li>Git</li><li>Vite</li><li>Supabase</li><li>Cloudflare</li></ul></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- CONTACT -->
+<section class="contact" id="contact" aria-labelledby="contact-h">
+  <div class="wrap">
+    <p class="small"><span class="cno">08</span> Contact</p>
+    <h2 id="contact-h">Let's<br>build.</h2>
+    <a class="mailbtn" href="mailto:stan@stan-shih.com">stan@stan-shih.com →</a>
+    <div class="clinks">
+      <a class="clink" href="https://github.com/stantheman0128" rel="me noopener">GitHub ↗</a>
+      <a class="clink" href="https://www.linkedin.com/in/po-han-stan-shih-39b713277/" rel="me noopener">LinkedIn ↗</a>
+    </div>
+    <p class="avail">Open to internships and collaborations · Taipei, Taiwan</p>
+  </div>
+  <footer>
+    <div class="wrap">
+      <span>© 2026 Stan Shih · Po-Han Shih</span>
+      <span>Swiss / Brutalist Poster · system type · zero web fonts</span>
+    </div>
+  </footer>
+</section>
+
+</body>
+</html>
