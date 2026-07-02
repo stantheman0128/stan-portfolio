@@ -9,9 +9,10 @@ if (params.get("theme")) localStorage.setItem(KEY, params.get("theme"));
 
 const content = await (await fetch("/data/content.json")).json();
 
-document.open();
-document.write(renderSite(content, theme));
-document.close();
+// renderSite() returns a full HTML document string. Parse it and swap the
+// document element in place of the shell, no document.write / open / close.
+const doc = new DOMParser().parseFromString(renderSite(content, theme), "text/html");
+document.replaceChild(document.importNode(doc.documentElement, true), document.documentElement);
 
 // Floating theme switch (unobtrusive, bottom-right).
 const bar = document.createElement("div");
