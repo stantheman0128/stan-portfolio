@@ -1,0 +1,232 @@
+{
+  "_note": "Single source of truth for the live site and the Studio editor. Website copy is English. Each item has: title, description (one line), detail (markdown, longer), links[], image.",
+  "profile": {
+    "name": "Stan Shih",
+    "latinName": "Po-Han Shih",
+    "role": "Product builder · Inventor · AI-first engineer",
+    "tagline": "I find products I love — then build for them.",
+    "subtagline": "CS student who ships end-to-end across web, mobile, desktop, and browser extensions. AI-first by default.",
+    "location": "Taipei, Taiwan",
+    "email": "stan@stan-shih.com",
+    "githubUrl": "https://github.com/stantheman0128",
+    "linkedinUrl": "https://www.linkedin.com/in/po-han-stan-shih-39b713277/",
+    "available": "Open to internships and collaborations"
+  },
+  "about": {
+    "short": "Builder, inventor, and AI-first engineer. I make products end-to-end — and I'm happiest with something half-built on the screen in front of me.",
+    "paragraphs": [
+      "I'm a CS student at NTNU. I was admitted to Carnegie Mellon's Information Systems program on Early Action — then stepped back from it. Walking away from a school I'd worked years to reach was the hardest thing I've done, and it taught me the lesson that runs through everything since: ability means little without discipline and ownership.",
+      "So I rebuilt, on my own terms. I went deep on the things I actually love — shipping products, and lately doing it with AI, which multiplied what a single person can make. I founded a community, created for an audience, and started turning ideas into working software the same week I have them.",
+      "The way I work now: see widely, lead with value, and help before I'm asked — opportunities tend to follow. I'd rather build something real and useful than talk about it."
+    ],
+    "principles": [
+      { "title": "Ship end-to-end", "body": "Web, mobile, desktop, extensions — whatever the product needs." },
+      { "title": "AI-first", "body": "Claude Code, MCP servers, and multi-agent workflows are part of how I build." },
+      { "title": "Lead with value", "body": "See widely, help first, and let opportunities follow." },
+      { "title": "Own the outcome", "body": "Discipline over talent. I finish what I start." }
+    ]
+  },
+  "stats": [
+    { "value": "NT$400K", "label": "Patent sold" },
+    { "value": "3", "label": "Self-driving giants cite my patent" },
+    { "value": "2.5–3.5M", "label": "Monthly Dcard impressions" },
+    { "value": "40+", "label": "Media at a product launch" },
+    { "value": "9", "label": "Products shipped" },
+    { "value": "220K+", "label": "Campaign views created" }
+  ],
+  "items": [
+    {
+      "id": "colonist-stats-tracker",
+      "title": "Colonist.io Stats Tracker",
+      "status": "Local tool",
+      "year": "2026",
+      "description": "A fan-made Chrome MV3 overlay that reads Colonist's game log locally for live stats.",
+      "detail": "Parses the in-page game log with a MutationObserver and reconstructs board state to show live dice distribution, each player's resources, and hidden-card uncertainty. Runs entirely in the browser — no data leaves the machine.",
+      "tags": ["Chrome MV3", "JavaScript", "MutationObserver", "Local-only"],
+      "image": "/assets/colonist-stats-icon.png",
+      "imageMode": "icon",
+      "links": [{ "label": "GitHub", "href": "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/colonist-stats-tracker" }]
+    },
+    {
+      "id": "course-checker",
+      "title": "Course Checker",
+      "status": "Live",
+      "year": "2025",
+      "description": "A production PWA that checks NTNU CS graduation credits against catalog rules.",
+      "detail": "Loads a transcript and the department's catalog rules, then reports remaining required credits by category. Installable as a PWA and used by real students.",
+      "tags": ["PWA", "React", "TypeScript", "Credit rules"],
+      "image": "/assets/course-hero.png",
+      "imageMode": "contain",
+      "links": [{ "label": "Live", "href": "https://course.stan-shih.com" }]
+    },
+    {
+      "id": "antnest-chatbot",
+      "title": "Antnest Chatbot",
+      "status": "Production",
+      "year": "2025",
+      "description": "A production LINE + AI support system for a real dessert shop.",
+      "detail": "Next.js + Supabase + Gemini, with admin tools and a reservation flow. Handles customer questions on LINE and hands off to staff when needed.",
+      "tags": ["Next.js", "TypeScript", "Supabase", "Gemini", "LINE"],
+      "image": "/assets/antnest-logo.png",
+      "imageMode": "contain",
+      "links": [
+        { "label": "Live", "href": "https://antnest-chatbot-0410.zeabur.app" },
+        { "label": "GitHub", "href": "https://github.com/stantheman0128/antnest-chatbot" }
+      ]
+    },
+    {
+      "id": "line-notify-plus",
+      "title": "LINE Notify+",
+      "status": "In progress",
+      "year": "2025",
+      "description": "An Android app that reshapes LINE notifications for Nothing Phone users.",
+      "detail": "Groups chat notifications, adds per-source settings, and ships with full Play Store assets. Built in Kotlin with Jetpack Compose.",
+      "tags": ["Kotlin", "Compose", "Android", "Notifications"],
+      "image": "/assets/line-notify-screenshot.png",
+      "imageMode": "",
+      "links": [{ "label": "GitHub", "href": "https://github.com/stantheman0128/line-notify-plus" }]
+    },
+    {
+      "id": "claudepulse",
+      "title": "ClaudePulse",
+      "status": "Local tool",
+      "year": "2026",
+      "description": "A Windows tray monitor for multiple Claude Code sessions.",
+      "detail": "Tracks permission waits, idle states, and activity across many concurrent Claude Code sessions via local hooks, surfaced in a lightweight .NET tray app.",
+      "tags": [".NET", "Windows tray", "HTTP hooks", "AI tooling"],
+      "image": "/assets/claudepulse-screenshot.png",
+      "imageMode": "contain",
+      "links": [{ "label": "GitHub", "href": "https://github.com/stantheman0128/claudepulse-win" }]
+    },
+    {
+      "id": "traffic-congestion-lab",
+      "title": "Traffic Congestion Lab",
+      "status": "Prototype",
+      "year": "2025",
+      "description": "An interactive canvas lab showing stop-and-go traffic waves.",
+      "detail": "Simulates how tiny braking disturbances cascade into stop-and-go congestion waves on a three-lane stadium track. Built with React and Canvas.",
+      "tags": ["React", "Vite", "Canvas", "Simulation"],
+      "image": "/assets/traffic-lab-concept.png",
+      "imageMode": "",
+      "links": []
+    },
+    {
+      "id": "english-companion",
+      "title": "English Companion",
+      "status": "In progress",
+      "year": "2026",
+      "description": "An iPad PWA workflow for daily reading and writing practice.",
+      "detail": "Models a learner over time and gives Claude Code-assisted feedback on daily reading and writing. Next.js PWA backed by Drizzle + Postgres.",
+      "tags": ["Next.js", "PWA", "Drizzle", "Postgres"],
+      "image": "/assets/english-companion-icon.png",
+      "imageMode": "icon",
+      "links": []
+    },
+    {
+      "id": "etf-quant-research",
+      "title": "ETF / Quant Research",
+      "status": "Prototype",
+      "year": "2026",
+      "description": "A research codebase for portfolio tracking and walk-forward quant experiments.",
+      "detail": "Walk-forward backtesting with explicit bias and overfit controls (deflated Sharpe). A place to test ideas honestly before trusting them.",
+      "tags": ["Next.js", "Python", "Backtesting", "DSR"],
+      "image": "/assets/etf-tracker-screenshot.png",
+      "imageMode": "",
+      "links": [
+        { "label": "etf-tracker", "href": "https://github.com/stantheman0128/etf-tracker" },
+        { "label": "quant", "href": "https://github.com/stantheman0128/quant" }
+      ]
+    },
+    {
+      "id": "autoresearch-api",
+      "title": "Autonomous Financial API Discovery",
+      "status": "Research",
+      "year": "2026",
+      "description": "An AI-agent pipeline that probes exchange APIs for undocumented behavior.",
+      "detail": "Uses autonomous research agents to surface behavior that isn't in the docs — real rate limits, degradation under extreme conditions, and cross-endpoint quota sharing.",
+      "tags": ["AI agents", "Autoresearch", "Finance", "Python"],
+      "image": null,
+      "imageMode": "",
+      "links": []
+    }
+  ],
+  "patent": {
+    "title": "Travel Smart Collision-Avoidance Warning System",
+    "ids": ["US10699576B1", "TWM578665U"],
+    "year": "2020",
+    "role": "Inventor (sole)",
+    "blurb": "A vehicle-to-vehicle collision-warning system I invented in high school, inspired by my dad's Tesla. Granted dual patents in the US and Taiwan.",
+    "highlights": [
+      "Sold for NT$400,000",
+      "Cited by GM Cruise, Huawei, and Plus.ai in autonomous-driving patents",
+      "Gold medal, Ukraine International Invention Expo; Silver, Poland — youngest awardee",
+      "International Outstanding Inventor Award; received by the President of Taiwan"
+    ]
+  },
+  "experience": [
+    {
+      "org": "Addin Ventures",
+      "role": "Investment Intern",
+      "period": "Mar 2026 — present",
+      "points": ["Independently sourced an overlooked startup deal (~$30M valuation), demonstrating market judgment and independent analysis."]
+    },
+    {
+      "org": "Cooby",
+      "role": "Chief of Staff Intern (SaaS startup)",
+      "period": "Feb 2024 — Oct 2024",
+      "points": [
+        "Found the user onboarding bottleneck and shipped a fix that cut activation time by 30%.",
+        "Handled 160+ support tickets, kept VIP customers satisfied, and helped build $10K ARR."
+      ]
+    }
+  ],
+  "press": [
+    {
+      "org": "Nothing Taiwan Community",
+      "role": "Founder",
+      "period": "Jun 2024 — present",
+      "metric": "220K+ views",
+      "points": [
+        "Grew the community 50% year over year.",
+        "Partnered with creators for 220K+ views and presented to 40+ media outlets at a phone launch — likely the only university student ever to present at one."
+      ]
+    },
+    {
+      "org": "Dcard",
+      "role": "Official Business Partner & Creator",
+      "period": "Jan 2024 — present",
+      "metric": "2.5–3.5M / month",
+      "points": [
+        "2.5–3.5M monthly impressions.",
+        "Created sponsored content for brands including Nvidia; one post ranked top-5 by views among platform business collaborations."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "school": "Carnegie Mellon University",
+      "program": "Information Systems",
+      "period": "Admitted (Early Action)",
+      "note": "On leave. Also admitted to Purdue Engineering and UW–Madison CS."
+    },
+    {
+      "school": "National Taiwan Normal University (NTNU)",
+      "program": "B.Sc. Computer Science & Information Engineering",
+      "period": "2022 — 2026 (expected)",
+      "note": ""
+    },
+    {
+      "school": "Kang Chiao International School",
+      "program": "",
+      "period": "2016 — 2021",
+      "note": "Mayor's Award (middle school), Speaker's Award (high school)."
+    }
+  ],
+  "skills": [
+    { "group": "Languages", "items": ["JavaScript / TypeScript", "Python", "Kotlin", "SQL", "Pine Script", "C# / .NET"] },
+    { "group": "AI", "items": ["Claude Code CLI", "MCP servers & skills", "Multi-agent frameworks"] },
+    { "group": "Data", "items": ["pandas", "NumPy", "scikit-learn", "Backtesting"] },
+    { "group": "Web & Mobile", "items": ["React", "Next.js", "PWA", "Chrome MV3", "Android / Compose"] },
+    { "group": "Platform", "items": ["Git", "Vite", "Supabase", "Cloudflare"] }
+  ]
+}
