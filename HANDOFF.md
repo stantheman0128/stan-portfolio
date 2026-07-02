@@ -4,7 +4,59 @@
 
 ---
 
-## Latest Session: 2026-06-06 — 交接「Tier 3 視覺化 CMS 編輯器」實作
+## Latest Session: 2026-07-02 — Live Studio 自助編輯器（HackMD 式）
+
+### 做了什麼
+- 從「純作品集」升級為「完整個人網站 + 自助編輯器」。先跑 6 設計方向探索（`demo-concepts/`），Stan 選定 **Featherweight + Minimal** 兩個。
+- **自建 Live Studio 編輯器**（左編輯／右即時預覽，像 HackMD）+ 內容/設計分離 + 兩主題 + 公開站入口。
+- 三個 commit 全推上分支 `demo/personal-site-concepts`：`dc40398`（6 demo + 第一版極簡）、`c866200`（Studio + 共用 render + 兩主題）、`7c699e6`（公開站入口）。origin/main 完全沒動。
+
+### 關鍵決策
+- **棄用 Sveltia CMS，改自建 Live Studio**：Sveltia 是「填表單 → 存 → 之後才看到結果」，Stan 要「邊改邊即時看到整個網站長出來」。→ **下個 AI 不要回去用 Sveltia/Decap。**
+- **內容/設計分離**：`data/content.json` 單一真相 → 共用 `renderSite(content, theme)` → 正式站與 Studio 右側預覽**共用同一 render 函式**（所見即所發布）。
+- **持久化走 GitHub-backed（非後端 DB）**：維持靜態/快/任何裝置可開；發布時 commit 回 repo。
+- **主題零外部資源**（系統字體、CSS/JS 全內嵌）：快、離線可用，並避開 Google Fonts 害 headless 截圖卡死。
+- **通用 portfolio（非 Colonist 專屬）**：公開內容＝作品/專利(US10699576B1)/Nothing/Dcard/CMU 成長故事/工作經歷；**排除（隱私）**＝投資/ETF 績效、完整得獎史、女友脈絡。
+
+### 目前狀態
+- 能跑嗎：**是（本機）**。Stan 雙擊 `serve-demos.cmd` 跑自己的 vite（port 5173）。
+  - Studio：`http://localhost:5173/studio.html`（左編右即時預覽、切主題、items 增刪改、localStorage 自動存、Export JSON）
+  - 公開站：`http://localhost:5173/site.html`（新主題渲染 + 右下訪客切主題）
+- 已完成（P1 + P2c，皆 Playwright/headless 實測）：內容模型、共用 render、Featherweight/Minimal 兩主題、Studio 編輯器、公開站入口。
+
+### 已知問題 / 陷阱
+- **localhost 一直掛**：Claude Preview MCP 的 dev server 綁 session、會被系統回收。解法＝Stan 自己 `serve-demos.cmd` 或 `npm run dev`（脫離 Claude session）。別再靠 `preview_start` 當常駐。
+- **在分支、不在 main**：新東西全在 `demo/personal-site-concepts`；正式站 `main`（`index.html` + `src/main.js`）仍是舊 Colonist SPA，沒動。新 session／新電腦要先 `git checkout demo/personal-site-concepts` + `npm install`。
+- **兩套內容並存**：新編輯器用 `data/content.json`；舊的 `data/site.json` + `data/projects/*.md`（給舊 index / 已棄的 Sveltia）仍在，別搞混。
+- Windows：PowerShell（`;` 不是 `&&`）；headless 截圖用 `"/c/Program Files/Google/Chrome/Application/chrome.exe"`。
+
+### 下一步（P2 收尾）
+1. **Studio「Publish」接 GitHub**：沿用現有 OAuth worker（`base_url: https://stan-portfolio-cms-auth.stanshih888.workers.dev`，見 `public/admin/config.yml`）拿 token → GitHub Contents API commit `data/content.json`。⚠️ 最終測試**要 Stan 在瀏覽器用 GitHub 登入一次**（OAuth 無法代點）。
+2. **圖片真上傳**：Studio 目前只有本機 objectURL 預覽；Publish 時把新圖 commit 到 `public/assets`。
+3. **公開站 build 期預渲染成靜態**（拿掉 `src/site/site.js` 的 `document.write`），並決定何時把 `index.html` 換成新設計。
+4. **部署 preview 網址**：`wrangler pages deploy`（wrangler 已登入 stanshih888@gmail.com；account `97cf88bf307d6a78c496e80ae99677de`），獨立 pages 專案、不碰正式站。
+5. 次要：Studio 左側補上 patent/experience/press/education/skills 的編輯（目前只做了 profile/about/items）。
+
+### 檔案地圖（本次新增，皆在分支上）
+- `data/content.json` — 內容單一真相
+- `src/render/renderSite.js`（dispatcher）、`src/render/util.js`（esc/md/realLinks）、`src/render/themes/{featherweight,minimal}.js`（`render(content)→完整HTML`）
+- `src/studio/studio.js` + `studio.html` — 編輯器
+- `src/site/site.js` + `site.html` — 公開站入口
+- `serve-demos.cmd` — 雙擊啟本機 server；`tasks/todo.md` — 進度；`demo-concepts/` — 6 設計方向 demo
+
+### 給下一個 AI 的提示
+- **不要回去用 Sveltia CMS**（Stan 明確不要表單式編輯）。
+- 別靠 Claude 管的 preview server 當常駐（會週期性掛）；要 Stan 自己終端機開。
+- 對外/不可逆動作（部署公開網址、動 main、commit）**先確認**；Stan 重視審閱權，故一切在 feature 分支。
+- 記憶檔 `project_stan_portfolio.md` 有更完整的歷史脈絡。
+
+### 建議下個 AI 用的 skill
+- 接發布/部署管線 → `guided-dev` 或 `feature-dev`；Cloudflare 部署 → `wrangler` / `cloudflare`。
+- 動 UI 手感 → `impeccable`；對外文案定稿 → `humanizer`。
+
+---
+
+## Previous Session: 2026-06-06 — 交接「Tier 3 視覺化 CMS 編輯器」實作
 
 ### 本次任務(要你做的事)
 擁有者(Stan)要的最終目標:**在這個手刻網站上加一個 `/admin` 視覺化編輯器(Git-based CMS)**,讓他之後改文字/換圖**完全不用碰程式、不用跑指令、手機也能改**,存檔後自動部署上線。他最在意的就是「**能自己做一個屬於這個站的編輯器**」。
