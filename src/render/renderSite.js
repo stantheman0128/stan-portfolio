@@ -2,12 +2,18 @@
 // Each theme exports `render(content) -> full HTML document string`.
 import { render as featherweight } from "./themes/featherweight.js";
 import { render as minimal } from "./themes/minimal.js";
+import { render as showroom } from "./themes/showroom.js";
+import { render as drenched } from "./themes/drenched.js";
+import { render as compact } from "./themes/compact.js";
 
-const THEMES = { featherweight, minimal };
+const THEMES = { featherweight, minimal, showroom, drenched, compact };
 
 export const THEMES_META = [
   { key: "featherweight", label: "Featherweight" },
   { key: "minimal", label: "Minimal" },
+  { key: "showroom", label: "Showroom" },
+  { key: "drenched", label: "Drenched" },
+  { key: "compact", label: "Compact" },
 ];
 
 export function renderSite(content, theme = "featherweight") {
