@@ -14,6 +14,16 @@ const content = await (await fetch("/data/content.json")).json();
 const doc = new DOMParser().parseFromString(renderSite(content, theme), "text/html");
 document.replaceChild(document.importNode(doc.documentElement, true), document.documentElement);
 
+// DOMParser marks <script> elements as non-executable and importNode keeps that
+// flag, so theme inline scripts (expanders, companion gaze, parade controls)
+// would silently never run. Recreate each script so the browser executes it.
+document.querySelectorAll("script").forEach((old) => {
+  const s = document.createElement("script");
+  for (const a of old.attributes) s.setAttribute(a.name, a.value);
+  s.textContent = old.textContent;
+  old.replaceWith(s);
+});
+
 // Floating theme switch (unobtrusive, bottom-right).
 const bar = document.createElement("div");
 bar.setAttribute("aria-label", "Theme");

@@ -29,6 +29,14 @@ async function freshFromTheme(theme, msg) {
 function swapDocument(html) {
   const doc = new DOMParser().parseFromString(html, "text/html");
   document.replaceChild(document.importNode(doc.documentElement, true), document.documentElement);
+  // DOMParser+importNode keeps <script> non-executable; recreate them so theme
+  // behavior (expanders, companion, parade) also works inside the editor.
+  document.querySelectorAll("script").forEach((old) => {
+    const s = document.createElement("script");
+    for (const a of old.attributes) s.setAttribute(a.name, a.value);
+    s.textContent = old.textContent;
+    old.replaceWith(s);
+  });
 }
 
 // ---------- serialization (what gets saved/exported: the page, never the chrome) ----------
