@@ -17,14 +17,7 @@
     "paragraphs": [],
     "principles": []
   },
-  "stats": [
-    { "value": "NT$400K", "label": "Patent sold" },
-    { "value": "3", "label": "Self-driving giants cite my patent" },
-    { "value": "2.5–3.5M", "label": "Monthly Dcard impressions" },
-    { "value": "40+", "label": "Media at a product launch" },
-    { "value": "7", "label": "Products shipped" },
-    { "value": "220K+", "label": "Campaign views created" }
-  ],
+  "stats": [],
   "items": [
     {
       "id": "colonist-stats-tracker",

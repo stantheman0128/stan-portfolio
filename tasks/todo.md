@@ -26,6 +26,9 @@ name (title) · description · detailed description (markdown) · links[] (label
 - [x] P1 local persistence: localStorage draft + load + export JSON
 - [x] P1 image: local object-URL preview
 - [x] P1 VERIFIED: theme toggle + live edit tested via Playwright (both pass)
+- [x] Freeform on-page editor `edit.html` (owner chose pure DOM editing over data-bound;
+      theme = starting template, artifact = static HTML; verified: edits/delete/duplicate
+      survive reload, export strips chrome). Publish for freeform = commit exported HTML.
 - [ ] P1b editable text sections beyond profile/about/items (patent/experience/press/edu/skills)
 - [ ] P2 GitHub publish: OAuth handshake + commit content.json via worker
 - [ ] P2 image upload: commit new images to public/assets
