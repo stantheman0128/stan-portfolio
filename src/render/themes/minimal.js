@@ -5,7 +5,7 @@ import { esc, md, realLinks } from "../util.js";
 import { questCSS, questBadgeHTML, questJS } from "../fx/quest.js";
 import { ctaCSS, ctaTopHTML, ctaLabHTML, ctaJS } from "../fx/cta.js";
 import { spriteCSS, spriteHTML, spriteJS } from "../fx/sprite.js";
-import { rateCSS, rateStripHTML, voicesHTML, rateJS } from "../fx/rate.js";
+import { rateCSS, rateStripHTML, rateJS } from "../fx/rate.js";
 
 // Split a tagline into "lead — <em>rest</em>" so the accent italic lands on the clause
 // after the dash. Falls back to the whole string when there's no dash.
@@ -115,14 +115,26 @@ function patentBlock(pt) {
   const ids = (pt.ids || []).map((x) => `<span class="pt-id">${esc(x)}</span>`).join("");
   const meta = [pt.role, pt.year].filter(Boolean).map(esc).join(" · ");
   const hi = (pt.highlights || []).map((h) => `<li>${esc(h)}</li>`).join("");
+  const fig = pt.image
+    ? `<figure class="pt-fig">
+        <a href="${esc(pt.image)}" target="_blank" rel="noopener">
+          <img src="${esc(pt.image)}" alt="${esc(pt.imageAlt || "Patent document, first page")}"
+            width="${pt.imageWidth | 0 || 935}" height="${pt.imageHeight | 0 || 1210}" loading="lazy" decoding="async">
+        </a>
+        <figcaption>${esc((pt.ids || [])[0] || "Patent")} · page 1 — click to zoom</figcaption>
+      </figure>`
+    : "";
   return `<section class="block" id="patent">
     <div class="block-eyebrow">Patent</div>
-    <div class="patent">
-      <h3 class="patent-title">${esc(pt.title)}</h3>
-      ${meta ? `<div class="patent-meta">${meta}</div>` : ""}
-      ${ids ? `<div class="pt-ids">${ids}</div>` : ""}
-      ${pt.blurb ? `<p class="patent-blurb">${esc(pt.blurb)}</p>` : ""}
-      ${hi ? `<ul class="patent-hi">${hi}</ul>` : ""}
+    <div class="patent${fig ? " has-fig" : ""}">
+      <div class="pt-body">
+        <h3 class="patent-title">${esc(pt.title)}</h3>
+        ${meta ? `<div class="patent-meta">${meta}</div>` : ""}
+        ${ids ? `<div class="pt-ids">${ids}</div>` : ""}
+        ${pt.blurb ? `<p class="patent-blurb">${esc(pt.blurb)}</p>` : ""}
+        ${hi ? `<ul class="patent-hi">${hi}</ul>` : ""}
+      </div>
+      ${fig}
     </div>
   </section>`;
 }
@@ -198,7 +210,8 @@ function skillsBlock(skills) {
 export function render(content) {
   const c = content || {};
   const p = c.profile || {};
-  const items = c.items || [];
+  // Cross-theme entries: each theme hides the item that IS itself.
+  const items = (c.items || []).filter((it) => it.themeExclude !== "minimal");
   const years = items.map((it) => it.year).filter(Boolean);
   const yearSpan = years.length ? `${Math.min(...years.map(Number))} — ${Math.max(...years.map(Number))}` : "";
 
@@ -221,6 +234,25 @@ export function render(content) {
 <title>${title}</title>
 <meta name="description" content="${metaDesc}">
 <meta name="build" content="${esc(String(c._build || "dev"))}">
+<script>
+// Connection-aware routing: on slow/lite environments, hand off to the
+// zero-JS twin at /fast/. ?v=full|fast is a sticky manual override.
+(function(){try{
+  if(window!==top)return;
+  var pth=location.pathname;
+  if(pth!=="/"&&pth!=="/site"&&pth!=="/site.html"&&pth!=="/index.html")return;
+  var v=new URLSearchParams(location.search).get("v");
+  if(v==="full"){try{localStorage.setItem("site-ver","full")}catch(e){}return}
+  if(v==="fast"){try{localStorage.setItem("site-ver","fast")}catch(e){}}
+  var pref=null;try{pref=localStorage.getItem("site-ver")}catch(e){}
+  if(pref==="full")return;
+  var c=navigator.connection||{};
+  var slow=c.saveData===true||["slow-2g","2g","3g"].indexOf(c.effectiveType)>-1;
+  var lowEnd=(navigator.deviceMemory||8)<=2;
+  var rd=false;try{rd=matchMedia("(prefers-reduced-data: reduce)").matches}catch(e){}
+  if(pref==="fast"||slow||lowEnd||rd)location.replace("/fast/");
+}catch(e){}})();
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f6f5f1'/%3E%3Cpolygon points='8,22 3,18 8,15' fill='%23efe7da'/%3E%3Cpolygon points='8,22 20,22 15,12' fill='%23c2522d'/%3E%3Cpolygon points='11,20 17,20 13,13' fill='%238f351f'/%3E%3Cpolygon points='20,22 26,18 21,15' fill='%23efe7da'/%3E%3Cpolygon points='26,18 29,19 26,21' fill='%2317151a'/%3E%3C/svg%3E">
 <style>
 :root{
@@ -324,6 +356,14 @@ img{max-width:100%;display:block}
 .thumb-mark{font-family:var(--serif);font-size:38px;color:var(--faint);letter-spacing:.04em}
 
 /* patent */
+.patent.has-fig{display:grid;grid-template-columns:1fr 240px;gap:36px;align-items:start}
+.pt-fig{margin:0;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  box-shadow:0 12px 34px rgba(41,31,23,.10)}
+.pt-fig a{display:block}
+.pt-fig img{width:100%;height:auto;display:block}
+.pt-fig figcaption{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--faint);padding:8px 11px;border-top:1px solid var(--line)}
+@media (max-width:640px){.patent.has-fig{grid-template-columns:1fr}.pt-fig{max-width:260px}}
 .patent-title{font-family:var(--serif);font-weight:400;font-size:clamp(22px,3.4vw,30px);
   margin:0 0 8px;line-height:1.15;letter-spacing:-.01em}
 .patent-meta{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
@@ -429,13 +469,11 @@ ${rateCSS}
   ${educationBlock(c.education)}
   ${skillsBlock(c.skills)}
 
-  ${voicesHTML}
-
   ${ctaLabHTML}
 
   <footer>
     <span>© ${new Date().getFullYear()} ${esc(p.name || "")}</span>
-    <span>Built end-to-end${p.location ? " · " + esc(p.location) : ""}</span>
+    <span>Built end-to-end${p.location ? " · " + esc(p.location) : ""} · <a id="lite-link" href="/fast/">Lite version</a></span>
   </footer>
 </div>
 
@@ -480,6 +518,11 @@ ${spriteHTML}
       });
       row.addEventListener("mouseleave", function(){ float.classList.remove("show"); });
     }
+  });
+
+  var lite = document.getElementById("lite-link");
+  if(lite) lite.addEventListener("click", function(){
+    try{ localStorage.setItem("site-ver","fast"); }catch(e){}
   });
 
   if(canHover){

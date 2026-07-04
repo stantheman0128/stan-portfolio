@@ -44,6 +44,21 @@
       "links": [{ "label": "Live", "href": "https://course.stan-shih.com" }]
     },
     {
+      "id": "etf-tracker",
+      "title": "ETF Tracker",
+      "status": "Live",
+      "year": "2025",
+      "description": "A personal dashboard that tracks Taiwan ETFs, US stocks, and BTC in one place.",
+      "detail": "Next.js + Upstash Redis with server-side price caching. Follows a real mixed portfolio — cost basis, live valuation, and per-holding breakdowns — without hammering the quote APIs.",
+      "tags": ["Next.js", "TypeScript", "Upstash Redis", "Vercel"],
+      "image": "/assets/etf-tracker-screenshot.png",
+      "imageMode": "contain",
+      "links": [
+        { "label": "Live", "href": "https://etf-tracker-seven.vercel.app" },
+        { "label": "GitHub", "href": "https://github.com/stantheman0128/etf-tracker" }
+      ]
+    },
+    {
       "id": "antnest-chatbot",
       "title": "Antnest Chatbot",
       "status": "Production",
@@ -105,6 +120,32 @@
       "image": "/assets/youtube-precise-time-icon.png",
       "imageMode": "icon",
       "links": [{ "label": "GitHub", "href": "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/youtube-video-upload-time" }]
+    },
+    {
+      "id": "site-featherweight",
+      "title": "This Site — Featherweight Edition",
+      "status": "Live",
+      "year": "2026",
+      "themeExclude": "featherweight",
+      "description": "The page you're reading has a twin built for pure speed: zero JavaScript, system fonts, nothing blocks first paint.",
+      "detail": "Same content, opposite philosophy — no hedgehog, no quest, no scripts at all. About 6 KB gzipped, ~0.2 s edge TTFB, Lighthouse 99. On a slow connection this site quietly sends you there instead.",
+      "tags": ["Zero JS", "System fonts", "6 KB gzip", "Lighthouse 99"],
+      "image": "",
+      "imageMode": "",
+      "links": [{ "label": "Visit the lite twin", "href": "/fast/" }]
+    },
+    {
+      "id": "site-minimal",
+      "title": "This Site — Interactive Edition",
+      "status": "Live",
+      "year": "2026",
+      "themeExclude": "minimal",
+      "description": "The full version of this site, with a resident hedgehog, an exploration quest, and a button that runs away from your cursor.",
+      "detail": "Warm paper and serif display on the surface; underneath, per-project ratings on Cloudflare KV, a server-gated reward, and a guide sprite with opinions. Everything this lite edition deliberately leaves out.",
+      "tags": ["Vanilla JS", "Cloudflare Pages", "KV ratings", "One hedgehog"],
+      "image": "",
+      "imageMode": "",
+      "links": [{ "label": "Visit the full version", "href": "/site?theme=minimal&v=full" }]
     }
   ],
   "patent": {
@@ -112,6 +153,10 @@
     "ids": ["US10699576B1", "TWM578665U"],
     "year": "2020",
     "role": "Inventor (sole)",
+    "image": "/assets/patent-us10699576-p1.png",
+    "imageAlt": "First page of United States patent US 10,699,576 B1",
+    "imageWidth": 935,
+    "imageHeight": 1210,
     "blurb": "A vehicle-to-vehicle collision-warning system I invented in high school, inspired by my dad's Tesla. Granted dual patents in the US and Taiwan.",
     "highlights": [
       "Sold for NT$400,000",

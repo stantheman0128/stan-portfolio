@@ -7,7 +7,8 @@ export function render(content) {
   const p = content.profile || {};
   const about = content.about || {};
   const stats = content.stats || [];
-  const items = content.items || [];
+  // Cross-theme entries: each theme hides the item that IS itself.
+  const items = (content.items || []).filter((it) => it.themeExclude !== "featherweight");
   const patent = content.patent || null;
   const experience = content.experience || [];
   const press = content.press || [];
@@ -116,6 +117,11 @@ export function render(content) {
     const highlights = (patent.highlights || [])
       .map((h) => `<li>${esc(h)}</li>`)
       .join("");
+    const fig = patent.image
+      ? `<a class="pt-img" href="${esc(patent.image)}">` +
+        `<img src="${esc(patent.image)}" alt="${esc(patent.imageAlt || "Patent document, first page")}" ` +
+        `width="${patent.imageWidth | 0 || 935}" height="${patent.imageHeight | 0 || 1210}" loading="lazy" decoding="async"></a>`
+      : "";
     patentHTML =
       `<section id="patent"><h2 class="eyebrow">Patent</h2>` +
       `<div class="patent">` +
@@ -123,6 +129,7 @@ export function render(content) {
       (stamp ? `<p class="ids">${stamp}</p>` : "") +
       (patent.blurb ? `<p class="blurb">${esc(patent.blurb)}</p>` : "") +
       (highlights ? `<ul>${highlights}</ul>` : "") +
+      fig +
       `</div></section>`;
   }
 
@@ -318,6 +325,8 @@ section{margin-top:calc(var(--space)*2.1)}
 .patent ul{margin:.9rem 0 0;padding:0;list-style:none}
 .patent li{position:relative;padding-left:1.15rem;margin-top:.42rem;color:var(--ink);font-size:var(--s0)}
 .patent li::before{content:"";position:absolute;left:0;top:.62em;width:.4rem;height:.4rem;border:var(--rule) solid var(--ink-2);border-radius:50%}
+.patent .pt-img{display:block;margin-top:1rem;max-width:13rem;border:var(--rule) solid var(--line-2);border-radius:6px;overflow:hidden}
+.patent .pt-img img{width:100%;height:auto;display:block}
 .entries{border-top:var(--rule) solid var(--line)}
 .entry{display:grid;grid-template-columns:1fr;padding:calc(var(--space)*.85) 0;border-bottom:var(--rule) solid var(--line)}
 .entry .top{display:flex;align-items:baseline;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
@@ -429,6 +438,7 @@ img{max-width:100%;height:auto}
     <span>© ${year} ${esc(p.name)}${p.latinName ? " · " + esc(p.latinName) : ""}</span>
     <span class="grow"></span>
     <span>Featherweight · system fonts · zero JS · nothing blocks first paint</span>
+    <a href="/site?theme=minimal&amp;v=full">Full interactive version &rarr;</a>
   </footer>
 
 </div>
