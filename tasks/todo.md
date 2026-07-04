@@ -53,5 +53,25 @@ Owner-approved idea, deferred. Phases:
 3. P3: per-product live numbers via daily cron Worker (CWS users, GitHub stars,
    site analytics) — only real numbers, never estimates.
 
+## Round 4 (2026-07-05) — photo reward, inline comments, hedgehog v5, routing, patent image
+- [x] Patent certificate image (Google Patents PDF p.1 → PNG) on both themes; featherweight abe-check stays 9/9
+- [x] ETF Tracker item + cross-theme twin entries (`themeExclude` filter: minimal shows the featherweight twin, and vice versa)
+- [x] Connection-aware routing: minimal auto-hands-off to /fast/ on saveData / 2g-3g / deviceMemory≤2 / prefers-reduced-data; `?v=full|fast` sticky override; footer links both ways
+- [x] Ratings: comments now render inline under each project (avg + latest 4); global "What visitors say" wall removed; KV per-visitor overwrite semantics unchanged (KV IS the ratings database)
+- [x] Photo reward: goofy face grows in the unlocked button → polaroid card → click develops the FULL photo via /api/reward; bottom EXPLORER-100 panel kept
+- [x] Server-side gate: /api/quest sessions in KV (first-seen timestamps), token minted only for humanly-paced runs (≥45s, ≥900ms gaps, count from content.json); full photo lives ONLY in KV — verified: instant replay 204, garbage/tampered token 404, paced run 200
+- [x] Hedgehog v5: hand-drawn look (feTurbulence wobble on quills, ink contour, hatching), front paw, bother-loop (walks over and boops the cursor; sulks if it fled), score-aware rating quips, chase commentary, speed-reader callout
+- [x] Asset research (5 parallel agents): no free "hand-drawn + layered + hedgehog" asset exists; Rive/DragonBones runtimes 220KB-700KB → verdict: upgrade own SVG (0KB runtime). Done.
+
+### Production launch checklist (before merging to prod)
+- [ ] Set `REWARD_SECRET` Pages secret (preview currently uses a dev fallback — tokens are forgeable there by design, placeholder photo only)
+- [ ] Upload Stan's REAL photos: replace `public/assets/reward-tease.svg` (goofy crop, public) + `wrangler kv key put asset:reward-full --path <full.jpg> --metadata '{"ct":"image/jpeg"}' --namespace-id=<prod> --remote`
+- [ ] Freeze `content._build` in tools/postbuild.mjs (every deploy currently resets visitor quest state)
+- [ ] Bind RATINGS prod KV + set EXPORT_KEY (ask Stan first)
+- [ ] /fast/ footer link points to `/site?theme=minimal&v=full` — change to `/?v=full` when minimal becomes the root page
+
 ## Review
-(to be filled after implementation)
+Round 4 verified end-to-end on https://sprite.stan-portfolio.pages.dev (deployed preview):
+15/15 render smoke checks, featherweight abe-check 9/9 (6.5KB gzip, 9 imgs lazy+dimensioned),
+API negative/positive paths via curl, full polaroid develop flow + inline comments + v=fast/full
+routing round-trip via Playwright on the live preview.
