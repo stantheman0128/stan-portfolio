@@ -36,5 +36,22 @@ name (title) · description · detailed description (markdown) · links[] (label
 - [ ] P3 verify end-to-end (add item in studio → preview → publish → deploy)
 - [ ] P3 deploy to preview URL for Stan to test
 
+## Interactive touches (2026-07-04)
+- [x] Collision-avoidance cursor (owner's patent as UX): TTC-gated amber warn ring,
+      shared fx module, applied to featherweight + minimal; reveal line in patent block.
+      Verified: fast approach fires, slow doesn't, clears after HOLD, no regressions.
+- [x] "Status Monitor · Stan" under-construction stub section (both themes).
+- [x] Featherweight: hero entrance animation + thumb hover lift (accepted trade-off:
+      no longer zero-JS; first paint still unblocked).
+
+## Roadmap — Live Action (Status Monitor · Stan)
+Owner-approved idea, deferred. Phases:
+1. P1 (no phone needed): "last shipped Xh ago" via GitHub public API (lazy fetch,
+   hide on failure) + ClaudePulse reports coding-state to a small Cloudflare Worker/KV.
+2. P2: phone reports curated states (LINE / on the move) via shortcut/webhook.
+   Privacy: coarse states only, no location, owner kill-switch.
+3. P3: per-product live numbers via daily cron Worker (CWS users, GitHub stars,
+   site analytics) — only real numbers, never estimates.
+
 ## Review
 (to be filled after implementation)

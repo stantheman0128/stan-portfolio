@@ -2,6 +2,7 @@
 // type scale, system fonts, zero external requests, no JS. Ported from the demo
 // so every value is read from `content`.
 import { esc, md, realLinks } from "../util.js";
+import { collisionCSS, collisionJS, patentNoteHTML, liveStubCSS, liveStubHTML } from "../fx/interactive.js";
 
 export function render(content) {
   const p = content.profile || {};
@@ -31,6 +32,7 @@ export function render(content) {
   const nav = [
     ["work", "Work", items.length],
     ["patent", "Patent", patent ? 1 : 0],
+    ["live", "Live", 1],
     ["about", "About", about.paragraphs && about.paragraphs.length],
     ["experience", "Experience", experience.length],
     ["community", "Community", press.length],
@@ -93,7 +95,7 @@ export function render(content) {
         `</div>`;
 
       return (
-        `<article class="item">` +
+        `<article class="item" data-cav>` +
         thumb +
         `<div class="head"><h3>${esc(it.title)}</h3>` +
         (status ? `<span class="status">${status}</span>` : "") +
@@ -123,6 +125,7 @@ export function render(content) {
       (stamp ? `<p class="ids">${stamp}</p>` : "") +
       (patent.blurb ? `<p class="blurb">${esc(patent.blurb)}</p>` : "") +
       (highlights ? `<ul>${highlights}</ul>` : "") +
+      patentNoteHTML +
       `</div></section>`;
   }
 
@@ -342,7 +345,20 @@ section{margin-top:calc(var(--space)*2.1)}
 .skills summary:hover{color:var(--ink)}
 .skills .body{padding:0 0 calc(var(--space)*.75);margin-top:-.2rem;display:flex;flex-wrap:wrap;gap:.45rem}
 .skills .body span{font-size:var(--s-1);color:var(--ink-2);border:var(--rule) solid var(--line);border-radius:99px;padding:.16rem .65rem;background:var(--bg)}
-@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+@media (prefers-reduced-motion:no-preference){
+.hero > *{animation:fwrise .55s cubic-bezier(.165,.84,.44,1) backwards}
+.hero > :nth-child(2){animation-delay:.06s}.hero > :nth-child(3){animation-delay:.12s}
+.hero > :nth-child(4){animation-delay:.18s}.hero > :nth-child(5){animation-delay:.24s}
+.hero > :nth-child(6){animation-delay:.3s}.hero > :nth-child(7){animation-delay:.36s}
+@keyframes fwrise{from{opacity:0;transform:translateY(9px)}}
+.thumb{transition:transform .18s cubic-bezier(.165,.84,.44,1)}
+.item:hover .thumb{transform:translateY(-2px)}
+}
+${collisionCSS}
+${liveStubCSS}
+.live-panel{color:var(--ink-2)}
+.live-head strong{color:var(--ink)}
 .contact{margin-top:calc(var(--space)*2.1)}
 .contact .big{font-size:var(--s2);letter-spacing:-.026em;font-weight:600;line-height:1.18;max-width:24ch;margin-bottom:.85rem}
 .contact .big a{border-bottom-width:2px}
@@ -412,6 +428,8 @@ img{max-width:100%;height:auto}
 
     ${skillsHTML}
 
+    <section id="live"><h2 class="eyebrow">Live</h2>${liveStubHTML}</section>
+
     ${contactHTML}
 
   </main>
@@ -419,10 +437,11 @@ img{max-width:100%;height:auto}
   <footer>
     <span>© ${year} ${esc(p.name)}${p.latinName ? " · " + esc(p.latinName) : ""}</span>
     <span class="grow"></span>
-    <span>Featherweight · system fonts · zero JS · one HTML request</span>
+    <span>Featherweight · system fonts · no trackers · nothing blocks first paint</span>
   </footer>
 
 </div>
+<script>${collisionJS}</script>
 </body>
 </html>`;
 }

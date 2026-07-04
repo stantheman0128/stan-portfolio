@@ -2,6 +2,7 @@
 // a numbered index of work with click-to-expand panels and a floating desktop hover preview.
 // Extended beyond the demo with About, Patent, Experience, Press, Education, Skills, and stats.
 import { esc, md, realLinks } from "../util.js";
+import { collisionCSS, collisionJS, patentNoteHTML, liveStubCSS, liveStubHTML } from "../fx/interactive.js";
 
 // Split a tagline into "lead — <em>rest</em>" so the accent italic lands on the clause
 // after the dash. Falls back to the whole string when there's no dash.
@@ -47,7 +48,7 @@ function itemRow(it, i) {
   const detail = md(it.detail);
   return `<section class="item" data-img="${esc(it.image || "")}">
     <h3 class="row-h">
-      <button class="row" type="button" aria-expanded="false">
+      <button class="row" type="button" aria-expanded="false" data-cav>
         <span class="num">${num}</span>
         <span class="title">${esc(it.title)}</span>
         <span class="meta">${metaBits}</span>
@@ -118,6 +119,7 @@ function patentBlock(pt) {
       ${ids ? `<div class="pt-ids">${ids}</div>` : ""}
       ${pt.blurb ? `<p class="patent-blurb">${esc(pt.blurb)}</p>` : ""}
       ${hi ? `<ul class="patent-hi">${hi}</ul>` : ""}
+      ${patentNoteHTML}
     </div>
   </section>`;
 }
@@ -381,6 +383,9 @@ footer{margin-top:70px;padding-top:22px;border-top:1px solid var(--line);font-fa
   .float{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+${collisionCSS}
+${liveStubCSS}
+.live-panel{color:#3a3833;background:#fffdfa}
 </style>
 </head>
 <body>
@@ -415,6 +420,11 @@ footer{margin-top:70px;padding-top:22px;border-top:1px solid var(--line);font-fa
   ${pressBlock(c.press)}
   ${educationBlock(c.education)}
   ${skillsBlock(c.skills)}
+
+  <section class="block" id="live">
+    <div class="block-eyebrow">Live</div>
+    ${liveStubHTML}
+  </section>
 
   <footer>
     <span>© ${new Date().getFullYear()} ${esc(p.name || "")}</span>
@@ -473,6 +483,7 @@ footer{margin-top:70px;padding-top:22px;border-top:1px solid var(--line);font-fa
   }
 })();
 </script>
+<script>${collisionJS}</script>
 </body>
 </html>`;
 }
