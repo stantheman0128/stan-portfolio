@@ -9,6 +9,16 @@ export default defineConfig({
   test: {
     include: ["tests/**/*.test.js"]
   },
+  build: {
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        site: "site.html",
+        studio: "studio.html",
+        edit: "edit.html"
+      }
+    }
+  },
   plugins: [
     {
       name: "portfolio-content",

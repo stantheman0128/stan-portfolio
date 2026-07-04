@@ -3,6 +3,7 @@
 // Extended beyond the demo with About, Patent, Experience, Press, Education, Skills, and stats.
 import { esc, md, realLinks } from "../util.js";
 import { liveStubCSS, liveStubHTML } from "../fx/interactive.js";
+import { questCSS, questBadgeHTML, questJS } from "../fx/quest.js";
 
 // Split a tagline into "lead — <em>rest</em>" so the accent italic lands on the clause
 // after the dash. Falls back to the whole string when there's no dash.
@@ -46,7 +47,7 @@ function itemRow(it, i) {
     .map((t) => `<span class="tag">${esc(t)}</span>`)
     .join("");
   const detail = md(it.detail);
-  return `<section class="item" data-img="${esc(it.image || "")}">
+  return `<section class="item" data-img="${esc(it.image || "")}" data-quest="${esc(it.id || "item-" + num)}">
     <h3 class="row-h">
       <button class="row" type="button" aria-expanded="false">
         <span class="num">${num}</span>
@@ -384,6 +385,7 @@ footer{margin-top:70px;padding-top:22px;border-top:1px solid var(--line);font-fa
 @media (prefers-reduced-motion:reduce){*{transition:none !important}}
 ${liveStubCSS}
 .live-panel{color:#3a3833;background:#fffdfa}
+${questCSS}
 </style>
 </head>
 <body>
@@ -406,7 +408,7 @@ ${liveStubCSS}
   <main>
     <div class="index-head">
       <span>Index — Selected Work</span>
-      ${yearSpan ? `<span>${esc(yearSpan)}</span>` : ""}
+      <span><button class="count-btn" type="button" data-n="${items.length}" title="Click to re-count">${items.length} works</button>${yearSpan ? ` · ${esc(yearSpan)}` : ""}</span>
     </div>
     <div id="list">
       ${items.map(itemRow).join("")}
@@ -431,6 +433,7 @@ ${liveStubCSS}
 </div>
 
 <div class="float" id="float" aria-hidden="true"></div>
+${questBadgeHTML}
 
 <script>
 (function(){
@@ -481,6 +484,7 @@ ${liveStubCSS}
   }
 })();
 </script>
+<script>${questJS}</script>
 </body>
 </html>`;
 }
