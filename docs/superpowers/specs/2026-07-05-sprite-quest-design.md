@@ -62,10 +62,16 @@ by pointer, keyboard, and touch equally at 100%.
   export URL anywhere.
 - Never: home address on the public site; IP/PII in stored records; CAPTCHA.
 
-## Open questions (owner)
-1. Sprite body: revive the robot SVG vs design a new creature.
-2. Reward content: secret "now building" page (recommended) / call-booking link / other.
-3. Rating scale: 1–5 (default in this spec) vs simpler cool/not-cool.
+## Decisions (2026-07-05, owner)
+1. Sprite body: DESIGN A NEW creature (robot stays retired). Design happens in Phase 4.
+2. Rating scale: 1–5 (spec default, owner did not object).
+3. Git strategy: feature branch `feat/sprite-quest` off the demo branch; preview deploys
+   to `--branch=sprite`; worktree not needed (single-line development).
+
+## Open question (owner)
+Reward content — shortlist under review: (a) secret "now building" page;
+(b) director's-commentary mode unlock (behind-the-scenes notes on every work);
+(c) priority-reply code word; (d) exploration certificate + vCard. Owner picks.
 
 ## Plan (phases, each independently verifiable)
 1. Progress v2 (dwell-guard watched, schema migration, badge % label) — no sprite yet.
