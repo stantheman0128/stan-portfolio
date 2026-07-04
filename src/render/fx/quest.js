@@ -1,15 +1,9 @@
-// Quest v2 — Progress is the source of truth (spec: 2026-07-05-sprite-quest-design.md).
-// "Watched" now means ENGAGEMENT: a work row expanded and held open ≥2.5s
-// (a bounce-open doesn't count); the patent counts after 2.5s continuously in
-// view. Scrolling past counts nothing. Free-roam scores identically to guided.
-//
-// Ownership: this module owns localStorage (quest-v2) and exposes a tiny
-// internal seam `window.QUEST` plus document CustomEvents for the CTA and
-// sprite scripts (same-document, inline):
-//   quest:update          — any state change   (detail: snapshot)
-//   quest:item-watched    — one item just counted (detail: {id, n, total})
-//   quest:items-complete  — all 8 items watched
-//   quest:complete        — items + rating done (CTA may unlock)
+// Quest v2.1 — engagement progress with LOUD feedback.
+// Changes per owner testing round: dwell lowered to 1.5s, every counted row
+// gets an instant ✓, the badge tells newcomers what to do, and the whole
+// state RESETS whenever a new build is deployed (meta[name=build] stamp,
+// injected by tools/postbuild.mjs) — handy while the owner is testing.
+// Completion = all items watched (per-project ratings are separate & optional).
 
 export const questCSS = `
 #quest{position:fixed;left:14px;bottom:14px;z-index:60;background:#fffdfa;border:1px solid #d8d0c4;border-radius:9px;padding:.55rem .8rem .6rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;letter-spacing:.04em;color:#716a62;box-shadow:0 6px 24px rgba(41,31,23,.08);max-width:15rem}
@@ -27,6 +21,7 @@ export const questCSS = `
 .count-btn{all:unset;cursor:pointer;border-bottom:1px dashed #b7b2a8;font-variant-numeric:tabular-nums}
 .count-btn:focus-visible{outline:2px solid #c2522d;outline-offset:2px}
 .q-pulse{outline:2px solid #c2522d !important;outline-offset:4px;border-radius:4px;transition:outline-color .3s}
+[data-quest].q-got .title::after{content:" \\2713";color:#c2522d;font-size:.78em;vertical-align:.08em}
 `;
 
 export const questBadgeHTML =
@@ -39,15 +34,17 @@ export const questBadgeHTML =
 
 export const questJS = `
 (function () {
-  var KEY = "quest-v2", DWELL = 2500;
+  var KEY = "quest-v2", DWELL = 1500;
+  var buildMeta = document.querySelector('meta[name="build"]');
+  var BUILD = buildMeta ? buildMeta.getAttribute("content") : "dev";
+
   var state = null;
   try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
-  if (!state || state.v !== 2) {
-    var eggs = {};
-    try { var v1 = JSON.parse(localStorage.getItem("quest-v1")); if (v1 && v1.eggs) eggs = v1.eggs; } catch (e) {}
-    state = { v: 2, watched: [], eggs: eggs, ratingDone: false, ctaUnlocked: false,
+  if (!state || state.v !== 2 || state.build !== BUILD) {
+    state = { v: 2, build: BUILD, watched: [], eggs: {}, rated: {}, ctaUnlocked: false,
               spriteDismissed: false, visits: 0, lastVisit: 0 };
   }
+  state.rated = state.rated || {};
   state.visits = (state.visits || 0) + 1;
   state.lastVisit = Date.now();
 
@@ -67,18 +64,18 @@ export const questJS = `
   function emit(name, detail) { document.dispatchEvent(new CustomEvent(name, { detail: detail || snapshot() })); }
   function snapshot() {
     return { watched: state.watched.slice(), total: TOTAL, pct: pct(),
-             ratingDone: state.ratingDone, ctaUnlocked: state.ctaUnlocked,
+             rated: state.rated, ctaUnlocked: state.ctaUnlocked,
              eggs: Object.keys(state.eggs).length, spriteDismissed: state.spriteDismissed,
              visits: state.visits };
   }
 
   var hintTimer = 0;
-  function hint(msg, sticky) {
+  function hint(msg, holdMs) {
     if (!badge) return;
     badge.classList.add("q-hinting");
     hintEl.textContent = msg;
     clearTimeout(hintTimer);
-    if (!sticky) hintTimer = setTimeout(function () { badge.classList.remove("q-hinting"); }, 5200);
+    if (holdMs !== 0) hintTimer = setTimeout(function () { badge.classList.remove("q-hinting"); }, holdMs || 5200);
   }
 
   function render(message) {
@@ -87,10 +84,11 @@ export const questJS = `
     if (state.ctaUnlocked) {
       badge.classList.add("q-done");
       countEl.textContent = "\\u2713 Fully explored";
-      hint("Graduation requirements met.", true);
-    } else if (p >= 100 && !state.ratingDone) {
+      hint("Graduation requirements met.", 0);
+    } else if (p >= 100) {
+      badge.classList.add("q-done");
       countEl.textContent = "Explored 100%";
-      hint("One thing left \\u2014 the rating.", true);
+      hint("The button up top just gave up. Go catch it.", 0);
     } else {
       countEl.textContent = "Explored " + p + "%";
       if (message) hint(message);
@@ -101,61 +99,56 @@ export const questJS = `
     save();
   }
 
-  function watched(id, label) {
+  function watched(id, el, label) {
     if (state.watched.indexOf(id) !== -1) return;
     state.watched.push(id);
+    if (el) el.classList.add("q-got");
     var n = state.watched.length;
     render(label ? "Logged: " + label : undefined);
     emit("quest:item-watched", { id: id, n: n, total: TOTAL });
     emit("quest:update");
     if (n >= TOTAL) {
       emit("quest:items-complete");
-      if (state.ratingDone) {
-        emit("quest:complete");
-        if (srEl) srEl.textContent = "Reward unlocked.";
-      } else if (srEl) {
-        srEl.textContent = "All items explored. One step remains.";
-      }
+      emit("quest:complete");
+      if (srEl) srEl.textContent = "One hundred percent. The button is catchable now.";
     }
   }
 
-  // Work rows: expand + dwell.
   rows.forEach(function (sec) {
     var id = sec.getAttribute("data-quest");
     var btn = sec.querySelector(".row");
     if (!btn) return;
+    if (state.watched.indexOf(id) !== -1) sec.classList.add("q-got");
     var timer = 0;
-    function check() {
-      clearTimeout(timer);
-      if (btn.getAttribute("aria-expanded") === "true") {
-        timer = setTimeout(function () {
-          if (btn.getAttribute("aria-expanded") === "true") {
-            watched(id, sec.querySelector(".title") && sec.querySelector(".title").textContent);
-          }
-        }, DWELL);
-      }
-    }
-    btn.addEventListener("click", function () { setTimeout(check, 50); });
+    btn.addEventListener("click", function () {
+      setTimeout(function () {
+        clearTimeout(timer);
+        if (btn.getAttribute("aria-expanded") === "true") {
+          timer = setTimeout(function () {
+            if (btn.getAttribute("aria-expanded") === "true") {
+              watched(id, sec, sec.querySelector(".title") && sec.querySelector(".title").textContent);
+            }
+          }, DWELL);
+        }
+      }, 50);
+    });
   });
 
-  // Patent: 2.5s continuously in view.
   if (patent && "IntersectionObserver" in window) {
     var pTimer = 0;
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         clearTimeout(pTimer);
         if (en.isIntersecting) {
-          pTimer = setTimeout(function () { watched("patent", "the patent"); io.disconnect(); }, DWELL);
+          pTimer = setTimeout(function () { watched("patent", patent, "the patent"); io.disconnect(); }, DWELL);
         }
       });
     }, { threshold: 0.45 });
     io.observe(patent);
   } else if (patent) {
-    // No IO support: count it on first click inside.
-    patent.addEventListener("click", function () { watched("patent", "the patent"); }, { once: true });
+    patent.addEventListener("click", function () { watched("patent", patent, "the patent"); }, { once: true });
   }
 
-  // Egg: odometer counter (kept from v1; eggs are flavor, not part of %).
   function egg(name, msg) {
     if (state.eggs[name]) return;
     state.eggs[name] = 1;
@@ -182,22 +175,19 @@ export const questJS = `
     });
   }
 
-  // Rating + CTA transitions are driven by the other modules through this seam.
   window.QUEST = {
     get: snapshot,
-    markRating: function () {
-      if (state.ratingDone) return;
-      state.ratingDone = true;
-      render();
-      emit("quest:update");
-      if (pct() >= 100) emit("quest:complete");
-    },
     markUnlocked: function () {
       if (state.ctaUnlocked) return;
       state.ctaUnlocked = true;
       render();
       emit("quest:update");
       if (srEl) srEl.textContent = "Reward unlocked.";
+    },
+    setRated: function (id, r) {
+      state.rated[id] = r;
+      save();
+      emit("quest:update");
     },
     egg: egg,
     dismissSprite: function (v) { state.spriteDismissed = !!v; save(); },
@@ -210,6 +200,10 @@ export const questJS = `
 
   render();
   emit("quest:update");
-  if (pct() >= 100 && state.ratingDone && !state.ctaUnlocked) emit("quest:complete");
+  if (pct() === 0) {
+    setTimeout(function () {
+      hint("Open any project and stay a moment \\u2014 that's how exploring counts.", 9000);
+    }, 2500);
+  }
 })();
 `;

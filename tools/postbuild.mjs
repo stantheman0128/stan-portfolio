@@ -12,6 +12,10 @@ const dist = join(root, "dist");
 
 const content = JSON.parse(readFileSync(join(root, "data", "content.json"), "utf8"));
 
+// Deploy stamp: quest state resets whenever this changes (owner is testing;
+// freeze it to a constant before a real production launch if resets hurt).
+content._build = String(Date.now());
+
 mkdirSync(join(dist, "data"), { recursive: true });
 writeFileSync(join(dist, "data", "content.json"), JSON.stringify(content));
 

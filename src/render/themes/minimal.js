@@ -5,6 +5,7 @@ import { esc, md, realLinks } from "../util.js";
 import { questCSS, questBadgeHTML, questJS } from "../fx/quest.js";
 import { ctaCSS, ctaTopHTML, ctaLabHTML, ctaJS } from "../fx/cta.js";
 import { spriteCSS, spriteHTML, spriteJS } from "../fx/sprite.js";
+import { rateCSS, rateStripHTML, voicesHTML, rateJS } from "../fx/rate.js";
 
 // Split a tagline into "lead — <em>rest</em>" so the accent italic lands on the clause
 // after the dash. Falls back to the whole string when there's no dash.
@@ -64,6 +65,7 @@ function itemRow(it, i) {
             ${detail ? `<div class="detail">${detail}</div>` : ""}
             ${tags ? `<div class="tags">${tags}</div>` : ""}
             ${itemLinks(it.links)}
+            ${rateStripHTML(esc(it.id || "item-" + num))}
           </div>
           ${itemThumb(it)}
         </div>
@@ -218,6 +220,7 @@ export function render(content) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
 <meta name="description" content="${metaDesc}">
+<meta name="build" content="${esc(String(c._build || "dev"))}">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f6f5f1'/%3E%3Cpolygon points='8,22 3,18 8,15' fill='%23efe7da'/%3E%3Cpolygon points='8,22 20,22 15,12' fill='%23c2522d'/%3E%3Cpolygon points='11,20 17,20 13,13' fill='%238f351f'/%3E%3Cpolygon points='20,22 26,18 21,15' fill='%23efe7da'/%3E%3Cpolygon points='26,18 29,19 26,21' fill='%2317151a'/%3E%3C/svg%3E">
 <style>
 :root{
@@ -388,6 +391,7 @@ footer{margin-top:70px;padding-top:22px;border-top:1px solid var(--line);font-fa
 ${questCSS}
 ${ctaCSS}
 ${spriteCSS}
+${rateCSS}
 </style>
 </head>
 <body>
@@ -424,6 +428,8 @@ ${spriteCSS}
   ${pressBlock(c.press)}
   ${educationBlock(c.education)}
   ${skillsBlock(c.skills)}
+
+  ${voicesHTML}
 
   ${ctaLabHTML}
 
@@ -488,6 +494,7 @@ ${spriteHTML}
 </script>
 <script>${questJS}</script>
 <script>${ctaJS}</script>
+<script>${rateJS}</script>
 <script>${spriteJS}</script>
 </body>
 </html>`;

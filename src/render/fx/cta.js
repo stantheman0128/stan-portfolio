@@ -1,67 +1,45 @@
-// Rubber-band CTA + rating + reward (spec: 2026-07-05-sprite-quest-design.md).
-// v2 per owner: the BUTTON lives near the top of the page (visible without
-// scrolling); the rating is NOT gated on 100% — rate whenever you like.
-// Unlock still requires both: all items watched AND a rating submitted.
-// Dodge: step 90·(1−p) px, 60+340·p ms, p² trip chance; touch hops
-// N=ceil(3·(1−p)); keyboard and reduced-motion never chase.
+// The "Read more" progress button — the Explore % and the reward button are
+// now ONE object (owner direction): the button displays live progress as a
+// fill, dodges the pointer while locked (slower as % rises), and becomes
+// plainly clickable at 100%. Rating no longer gates the unlock (per-project
+// ratings are their own thing, see fx/rate.js). Reward: the EXPLORER-100
+// priority-reply code word.
 
 export const ctaCSS = `
 #cta-top{margin:30px 0 6px}
 #cta-zone{position:relative;min-height:64px;display:flex;align-items:center}
-#cta{position:relative;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;letter-spacing:.03em;padding:.72rem 1.35rem;border:1.5px solid #17151a;border-radius:999px;background:#fffdfa;color:#17151a;cursor:pointer;transition:transform .2s cubic-bezier(.165,.84,.44,1),box-shadow .2s,border-color .2s;will-change:transform}
+#cta{position:relative;overflow:hidden;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;letter-spacing:.03em;padding:.72rem 1.35rem;border:1.5px solid #17151a;border-radius:999px;background:#fffdfa;color:#17151a;cursor:pointer;transition:transform .2s cubic-bezier(.165,.84,.44,1),box-shadow .2s,border-color .2s;will-change:transform}
+#cta .cta-fill{position:absolute;inset:0;background:rgba(194,82,45,.14);transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.165,.84,.44,1);pointer-events:none}
+#cta .cta-label,#cta .cta-pct{position:relative}
+#cta .cta-pct{margin-left:.6rem;color:#c2522d;font-variant-numeric:tabular-nums}
 #cta:focus-visible{outline:2px solid #c2522d;outline-offset:3px}
 #cta.cta-free{border-color:#c2522d;color:#c2522d;box-shadow:0 0 0 4px rgba(194,82,45,.14),0 8px 30px rgba(194,82,45,.18)}
-@media (prefers-reduced-motion:reduce){#cta{transition:none !important;transform:none !important}}
+#cta.cta-free .cta-fill{background:rgba(194,82,45,.1)}
+@media (prefers-reduced-motion:reduce){#cta{transition:none !important;transform:none !important}#cta .cta-fill{transition:none}}
 #cta-note{margin-top:10px;font-size:12.5px;color:#8b877f;min-height:1.4em}
-#lab{margin-top:56px;border-top:1px solid rgba(23,22,26,.12);padding-top:34px}
-#lab .lab-eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#b7b2a8;margin-bottom:18px}
-#rating{margin:6px auto 0;max-width:26rem;text-align:center}
-#rating.sent .r-stars button{cursor:default}
-#rating .r-q{font-size:15px;color:#3a3833;margin:0 0 12px}
-#rating .r-stars{display:flex;justify-content:center;gap:6px}
-#rating .r-stars button{all:unset;cursor:pointer;font-size:26px;line-height:1;color:#d8d0c4;padding:4px;border-radius:6px}
-#rating .r-stars button.on,#rating .r-stars button:hover,#rating .r-stars button:focus-visible{color:#c2522d}
-#rating .r-stars button:focus-visible{outline:2px solid #c2522d;outline-offset:2px}
-#rating textarea{margin-top:12px;width:100%;box-sizing:border-box;border:1px solid #d8d0c4;border-radius:8px;padding:.6rem .7rem;font:inherit;font-size:13.5px;background:#fffdfa;resize:vertical;min-height:56px}
-#rating .r-send{margin-top:10px;font-family:ui-monospace,monospace;font-size:13px;border:1.5px solid #17151a;border-radius:999px;background:#17151a;color:#fffdfa;padding:.5rem 1.2rem;cursor:pointer}
-#rating .r-send:disabled{opacity:.4;cursor:default}
-#rating .r-priv{margin-top:8px;font-size:11px;color:#b7b2a8}
-#rating .hp-field{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
-#reward{display:none;margin:30px auto 0;max-width:30rem;border:1.5px solid #426c53;border-radius:12px;padding:1.3rem 1.4rem;background:#fbfdf9}
+#lab{margin-top:44px}
+#reward{display:none;margin:10px auto 0;max-width:30rem;border:1.5px solid #426c53;border-radius:12px;padding:1.3rem 1.4rem;background:#fbfdf9}
 #reward.on{display:block}
 #reward h3{margin:0 0 8px;font-size:17px;color:#2c4a38}
 #reward p{margin:.4rem 0;font-size:14px;color:#3a3833;line-height:1.65}
 #reward code{font-family:ui-monospace,monospace;font-size:15px;font-weight:700;letter-spacing:.06em;background:#e9f1ea;border-radius:6px;padding:.15rem .5rem;color:#2c4a38}
 `;
 
-// Near the top of the page — the game hook is visible immediately.
 export const ctaTopHTML = `
 <div id="cta-top" aria-label="The reward game">
   <div id="cta-zone">
-    <button id="cta" type="button" aria-describedby="cta-note">catch me</button>
+    <button id="cta" type="button" aria-describedby="cta-note">
+      <span class="cta-fill" aria-hidden="true"></span>
+      <span class="cta-label">Read more</span>
+      <span class="cta-pct">0%</span>
+    </button>
   </div>
   <p id="cta-note"></p>
 </div>
 `;
 
-// Bottom section: rating (always available) + the reward panel.
 export const ctaLabHTML = `
-<section id="lab" aria-label="Rating and reward">
-  <div class="lab-eyebrow">Rate it</div>
-  <div id="rating" aria-label="Rate this site">
-    <p class="r-q">Was this cool? Rate it any time.</p>
-    <div class="r-stars" role="radiogroup" aria-label="Rating from 1 to 5">
-      <button type="button" data-star="1" aria-label="1 of 5">★</button>
-      <button type="button" data-star="2" aria-label="2 of 5">★</button>
-      <button type="button" data-star="3" aria-label="3 of 5">★</button>
-      <button type="button" data-star="4" aria-label="4 of 5">★</button>
-      <button type="button" data-star="5" aria-label="5 of 5">★</button>
-    </div>
-    <textarea maxlength="280" placeholder="Anything to add? (optional)" aria-label="Comment"></textarea>
-    <input class="hp-field" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-    <div><button class="r-send" type="button" disabled>Send it</button></div>
-    <p class="r-priv">Anonymous feedback — we don't record who you are.</p>
-  </div>
+<section id="lab" aria-label="Reward">
   <div id="reward" role="region" aria-label="Reward unlocked">
     <h3>You actually explored everything.</h3>
     <p>That earns you a priority channel. Mention the code word</p>
@@ -76,23 +54,34 @@ export const ctaJS = `
 (function () {
   var cta = document.getElementById("cta");
   var note = document.getElementById("cta-note");
-  var rating = document.getElementById("rating");
   var reward = document.getElementById("reward");
   if (!cta || !window.QUEST) return;
+  var fill = cta.querySelector(".cta-fill");
+  var labelEl = cta.querySelector(".cta-label");
+  var pctEl = cta.querySelector(".cta-pct");
 
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var startTs = Date.now();
   var q = window.QUEST.get();
   var tx = 0, ty = 0, hops = 0;
 
   function p() { return Math.min(1, q.pct / 100); }
-  function unlocked() { return q.pct >= 100 && q.ratingDone; }
+  function unlocked() { return q.pct >= 100; }
 
-  function label() {
-    if (q.ctaUnlocked || unlocked()) { cta.textContent = "\\u2192 open the reward"; cta.classList.add("cta-free"); return; }
-    var v = p();
-    cta.textContent = v < 0.25 ? "catch me" : v < 0.5 ? "getting warmer" : v < 0.75 ? "almost had it" : "okay, one more";
-    cta.setAttribute("aria-label", "Reward locked \\u2014 keep exploring (" + q.pct + "%)");
+  function paint() {
+    fill.style.transform = "scaleX(" + p() + ")";
+    pctEl.textContent = q.pct + "%";
+    if (q.ctaUnlocked) {
+      labelEl.textContent = "\\u2713 unlocked";
+      pctEl.textContent = "";
+      cta.classList.add("cta-free");
+    } else if (unlocked()) {
+      labelEl.textContent = "Read more \\u2014 it's yours";
+      cta.classList.add("cta-free");
+      cta.setAttribute("aria-label", "Open the reward");
+    } else {
+      labelEl.textContent = "Read more";
+      cta.setAttribute("aria-label", "Read more \\u2014 locked until fully explored (" + q.pct + "%)");
+    }
   }
 
   function clampMove(nx, ny) {
@@ -113,7 +102,7 @@ export const ctaJS = `
       var dx = cx - e.clientX, dy = cy - e.clientY;
       var d = Math.hypot(dx, dy);
       if (d > 120 || d === 0) return;
-      if (Math.random() < p() * p()) return; // trips — a near-catch moment
+      if (Math.random() < p() * p()) return; // trips — near-catch
       var step = 90 * (1 - p());
       if (step < 2) return;
       cta.style.transitionDuration = (60 + 340 * p()) + "ms";
@@ -125,8 +114,7 @@ export const ctaJS = `
     if (q.ctaUnlocked || unlocked()) {
       window.QUEST.markUnlocked();
       reward.classList.add("on");
-      cta.classList.add("cta-free");
-      cta.textContent = "\\u2713 unlocked";
+      paint();
       cta.disabled = true;
       reward.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
       document.dispatchEvent(new CustomEvent("cta:opened"));
@@ -147,46 +135,10 @@ export const ctaJS = `
     }
   });
 
-  // Rating — available immediately, no progress gate.
-  var stars = [].slice.call(rating.querySelectorAll("[data-star]"));
-  var send = rating.querySelector(".r-send");
-  var comment = rating.querySelector("textarea");
-  var hp = rating.querySelector(".hp-field");
-  var chosen = 0;
-  stars.forEach(function (s) {
-    s.addEventListener("click", function () {
-      if (rating.classList.contains("sent")) return;
-      chosen = parseInt(s.getAttribute("data-star"), 10);
-      stars.forEach(function (x, i) { x.classList.toggle("on", i < chosen); });
-      send.disabled = false;
-    });
-  });
-  send.addEventListener("click", function () {
-    if (!chosen) return;
-    send.disabled = true;
-    send.textContent = "Sent \\u2713";
-    rating.classList.add("sent");
-    try {
-      fetch("/api/rating", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ r: chosen, c: (comment.value || "").slice(0, 280),
-          t: "minimal", p: location.pathname, ms: Date.now() - startTs, hp: hp.value || "" }),
-        keepalive: true
-      }).catch(function () {});
-    } catch (e) {}
-    window.QUEST.markRating(); // unlocks regardless of network outcome
-  });
-
   function sync() {
     q = window.QUEST.get();
-    label();
-    if (q.ratingDone && !rating.classList.contains("sent")) {
-      rating.classList.add("sent");
-      send.disabled = true;
-      send.textContent = "Sent \\u2713";
-    }
-    if (q.ctaUnlocked) { reward.classList.add("on"); cta.textContent = "\\u2713 unlocked"; cta.disabled = true; }
+    paint();
+    if (q.ctaUnlocked) { reward.classList.add("on"); cta.disabled = true; }
     else if (unlocked()) {
       cta.style.transitionDuration = "300ms";
       clampMove(0, 0);
@@ -196,5 +148,8 @@ export const ctaJS = `
   document.addEventListener("quest:update", sync);
   document.addEventListener("quest:complete", sync);
   sync();
+  if (!unlocked() && !q.ctaUnlocked) {
+    note.textContent = "This button is a coward. Explore the projects to slow it down.";
+  }
 })();
 `;
