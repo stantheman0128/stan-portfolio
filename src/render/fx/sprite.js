@@ -1,44 +1,58 @@
-// The guide sprite v3 — a hedgehog (owner decision; the bird retired).
-// Layered SVG rig, "2.5D" liveliness without any 3D dependency:
-//   • travels by TUCKING INTO A BALL and rolling, unrolls on arrival
-//   • pokes the thing it suggests (nose-first nudge)
-//   • sometimes freezes, then suddenly turns its head to look AT you
-//   • breathes, blinks, sniffs on idle; flips to face travel direction
-// Tab moods (title + favicon swap, eager-vs-homesick) carried over.
-// Decorative: aria-hidden; quest info lives in the badge / SR live region.
+// The guide sprite v4 — hedgehog, second pass on owner feedback.
+// More dimensional: radial/linear gradients for form, a two-tone quill coat
+// with a darker under-layer, a soft contact shadow that reacts to hops, and
+// a proper black BEAD eye with a highlight (no bulging sclera).
+// More alive: short trips are a leggy little SCURRY, long trips are the
+// ball-roll; idle life now includes sudden look-at-you, sniffing around,
+// and an ear scratch. Tab moods and bubble behavior carried over.
 
 export const spriteCSS = `
 #sprite{position:fixed;left:0;top:0;z-index:70;width:92px;pointer-events:none;will-change:transform;transition:transform 1.15s cubic-bezier(.33,.75,.35,1)}
+#sprite.s-scurrying{transition-duration:.72s;transition-timing-function:cubic-bezier(.45,.05,.55,.95)}
 #sprite svg{display:block;overflow:visible;transition:transform .35s}
 #sprite.s-face-left svg{transform:scaleX(-1)}
 @media (prefers-reduced-motion:reduce){#sprite{transition:none}}
-#sprite .hh,#sprite .ball{transition:opacity .25s}
+#sprite .hh,#sprite .ball{transition:opacity .22s}
 #sprite .ball{opacity:0}
 #sprite.s-roll .hh{opacity:0}
 #sprite.s-roll .ball{opacity:1}
 #sprite .hh-face{transform-origin:78px 62px;transition:transform .45s cubic-bezier(.165,.84,.44,1)}
-#sprite .hh-pupil{transition:transform .3s}
-#sprite .hh-lid{transform-origin:88px 57px;transform:scaleY(0)}
-#sprite.s-sleep{opacity:.55}
+#sprite .hh-eye{transition:transform .3s}
+#sprite .hh-lid{transform-origin:88px 58px;transform:scaleY(0)}
+#sprite .hh-shadow{transform-origin:56px 90px;transition:transform .3s,opacity .3s}
+#sprite.s-sleep{opacity:.6}
 #sprite.s-sleep .hh-face{transform:rotate(14deg) translateY(3px)}
 @media (prefers-reduced-motion:no-preference){
-  #sprite.s-idle .hh{animation:hh-breathe 3.6s ease-in-out infinite;transform-origin:52px 78px}
-  @keyframes hh-breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.035)}}
+  #sprite.s-idle .hh-body{animation:hh-breathe 3.6s ease-in-out infinite;transform-origin:52px 78px}
+  @keyframes hh-breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.03)}}
   #sprite .hh-lid{animation:hh-blink 5.4s infinite}
   @keyframes hh-blink{0%,94%,100%{transform:scaleY(0)}96%,98%{transform:scaleY(1)}}
   #sprite.s-idle .hh-nose{animation:hh-sniff 7.5s infinite}
   @keyframes hh-sniff{0%,90%,100%{transform:translate(0,0)}92%,96%{transform:translate(1.3px,-.8px)}94%,98%{transform:translate(-.6px,.5px)}}
-  #sprite.s-look .hh-face{transform:rotate(-11deg) scale(1.06)}
-  #sprite.s-look .hh-pupil{transform:translate(-1.6px,.8px) scale(1.35)}
+  #sprite.s-look .hh-face{transform:rotate(-12deg) translate(-2px,-1px) scale(1.05)}
+  #sprite.s-look .hh-eye{transform:scale(1.3)}
+  #sprite.s-sniffa .hh-face{animation:hh-sniffa 1.6s ease-in-out 1}
+  @keyframes hh-sniffa{0%,100%{transform:rotate(0)}30%{transform:rotate(9deg) translate(2px,3px)}65%{transform:rotate(-6deg) translate(-1px,-1px)}}
+  #sprite.s-scratch .hh-legB{animation:hh-scr 1.2s ease-in-out 1;transform-origin:70px 78px}
+  #sprite.s-scratch .hh-body{animation:hh-scrb 1.2s ease-in-out 1;transform-origin:52px 78px}
+  @keyframes hh-scr{0%,100%{transform:rotate(0)}20%,40%,60%,80%{transform:rotate(38deg)}30%,50%,70%{transform:rotate(10deg)}}
+  @keyframes hh-scrb{0%,100%{transform:rotate(0)}25%,75%{transform:rotate(-3deg)}}
   #sprite.s-yay .hh{animation:hh-hop .34s ease-out 2}
+  #sprite.s-yay .hh-shadow{animation:hh-shadowhop .34s ease-out 2}
   @keyframes hh-hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  @keyframes hh-shadowhop{0%,100%{transform:scaleX(1);opacity:.22}50%{transform:scaleX(.72);opacity:.1}}
   #sprite.s-poke .hh{animation:hh-poke .5s ease-in-out 2}
   @keyframes hh-poke{0%,100%{transform:translateX(0)}45%{transform:translateX(9px) rotate(2deg)}}
+  #sprite.s-scurrying .hh-legA{animation:hh-run .16s linear infinite;transform-origin:40px 78px}
+  #sprite.s-scurrying .hh-legB{animation:hh-run .16s linear infinite reverse;transform-origin:70px 78px}
+  @keyframes hh-run{0%,100%{transform:rotate(16deg)}50%{transform:rotate(-16deg)}}
+  #sprite.s-scurrying .hh{animation:hh-jog .32s ease-in-out infinite}
+  @keyframes hh-jog{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
   #sprite.s-roll .ball{animation:hh-spin .55s linear infinite;transform-origin:52px 62px}
   @keyframes hh-spin{to{transform:rotate(360deg)}}
 }
 @media (prefers-reduced-motion:reduce){
-  #sprite.s-look .hh-face{transform:rotate(-11deg)}
+  #sprite.s-look .hh-face{transform:rotate(-12deg)}
 }
 #bubble{position:fixed;left:0;top:0;z-index:71;max-width:15.5rem;background:#fffdfa;border:1px solid #d8d0c4;border-radius:11px 11px 11px 3px;padding:.65rem .8rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.55;color:#3a3833;box-shadow:0 8px 28px rgba(41,31,23,.12);display:none}
 #bubble.on{display:block}
@@ -55,39 +69,66 @@ export const spriteCSS = `
 export const spriteHTML = `
 <div id="sprite" class="s-idle" aria-hidden="true">
   <svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="hgQuill" cx="42%" cy="30%" r="80%">
+        <stop offset="0%" stop-color="#b0563a"/>
+        <stop offset="55%" stop-color="#8f351f"/>
+        <stop offset="100%" stop-color="#6b2515"/>
+      </radialGradient>
+      <linearGradient id="hgFace" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#f8f2e7"/>
+        <stop offset="100%" stop-color="#e0d3bd"/>
+      </linearGradient>
+      <linearGradient id="hgBelly" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#f4ecdd"/>
+        <stop offset="100%" stop-color="#d9cbb2"/>
+      </linearGradient>
+      <radialGradient id="hgBall" cx="38%" cy="32%" r="85%">
+        <stop offset="0%" stop-color="#b0563a"/>
+        <stop offset="60%" stop-color="#8f351f"/>
+        <stop offset="100%" stop-color="#5f2012"/>
+      </radialGradient>
+    </defs>
+    <ellipse class="hh-shadow" cx="56" cy="90" rx="34" ry="5" fill="#17151a" opacity=".22"/>
     <g class="hh">
-      <g class="hh-quills">
-        <path d="M20 74 Q14 46 34 34 Q52 22 74 32 Q88 38 90 52 L88 74 Z" fill="#8f351f"/>
-        <polygon points="22,52 12,40 28,42" fill="#8f351f"/>
-        <polygon points="30,40 24,26 40,32" fill="#8f351f"/>
-        <polygon points="44,32 42,16 56,26" fill="#8f351f"/>
-        <polygon points="60,28 64,13 72,27" fill="#8f351f"/>
-        <polygon points="74,32 84,20 84,36" fill="#8f351f"/>
-        <polygon points="16,62 5,56 16,50" fill="#8f351f"/>
-      </g>
-      <path d="M88 74 L88 52 Q92 44 104 52 Q112 58 106 68 Q100 76 88 74 Z" fill="#efe7da" stroke="#d8d0c4" stroke-width="1"/>
-      <g class="hh-face">
-        <circle class="hh-nose" cx="107" cy="60" r="3.4" fill="#17151a"/>
-        <g>
-          <circle cx="88" cy="57" r="4.6" fill="#fffdfa" stroke="#d8d0c4" stroke-width=".8"/>
-          <circle class="hh-pupil" cx="89.4" cy="57.4" r="2.2" fill="#17151a"/>
-          <rect class="hh-lid" x="83" y="52" width="10.5" height="10" rx="5" fill="#efe7da"/>
+      <g class="hh-body">
+        <g class="hh-quills">
+          <path d="M22 76 Q14 48 34 34 Q52 22 74 32 Q88 38 90 54 L88 76 Z" fill="#5f2012"/>
+          <path d="M20 74 Q14 46 34 32 Q52 20 74 30 Q88 36 90 52 L88 74 Z" fill="url(#hgQuill)"/>
+          <polygon points="22,52 10,40 27,41" fill="url(#hgQuill)"/>
+          <polygon points="30,40 23,25 40,31" fill="url(#hgQuill)"/>
+          <polygon points="44,31 41,14 56,25" fill="url(#hgQuill)"/>
+          <polygon points="60,27 64,11 73,26" fill="url(#hgQuill)"/>
+          <polygon points="74,31 85,19 85,35" fill="url(#hgQuill)"/>
+          <polygon points="16,62 4,56 15,49" fill="url(#hgQuill)"/>
+          <path d="M30 34 L26 27 M46 27 L44 19 M62 24 L64 16 M76 30 L82 23" stroke="#c98a6b" stroke-width="1.1" stroke-linecap="round" fill="none" opacity=".7"/>
         </g>
-        <path d="M84 48 Q86 43 90 46 Q88 49 84 48 Z" fill="#d8b9a4"/>
+        <path d="M88 76 L88 52 Q92 44 104 52 Q112 58 106 68 Q100 77 88 76 Z" fill="url(#hgFace)" stroke="#cbbda6" stroke-width=".8"/>
+        <g class="hh-face">
+          <circle class="hh-nose" cx="107" cy="60" r="3.6" fill="#241d1a"/>
+          <circle cx="105.8" cy="58.8" r="1" fill="#5a504a"/>
+          <g class="hh-eye">
+            <circle cx="89" cy="58" r="3" fill="#17151a"/>
+            <circle cx="88" cy="57" r="1" fill="#fffdfa"/>
+          </g>
+          <rect class="hh-lid" x="85" y="54" width="8" height="8" rx="4" fill="url(#hgFace)"/>
+          <path d="M84 48 Q86 43 90 46 Q88 49 84 48 Z" fill="#d8b9a4"/>
+          <path d="M96 66 Q99 67.5 102 66.5" stroke="#b59a7e" stroke-width=".9" fill="none" stroke-linecap="round"/>
+        </g>
+        <path d="M28 76 Q52 84 86 76 L84 80 Q52 88 30 80 Z" fill="url(#hgBelly)"/>
       </g>
-      <path d="M28 74 Q52 82 86 74 L84 78 Q52 86 30 78 Z" fill="#efe7da"/>
-      <line x1="40" y1="78" x2="39" y2="88" stroke="#17151a" stroke-width="1.6"/>
-      <line x1="70" y1="78" x2="72" y2="88" stroke="#17151a" stroke-width="1.6"/>
+      <line class="hh-legA" x1="40" y1="78" x2="39" y2="89" stroke="#241d1a" stroke-width="1.8" stroke-linecap="round"/>
+      <line class="hh-legB" x1="70" y1="78" x2="72" y2="89" stroke="#241d1a" stroke-width="1.8" stroke-linecap="round"/>
     </g>
     <g class="ball">
-      <circle cx="52" cy="62" r="30" fill="#8f351f"/>
-      <polygon points="52,30 46,18 60,22" fill="#8f351f"/>
-      <polygon points="76,42 88,34 84,48" fill="#8f351f"/>
-      <polygon points="80,70 93,72 84,82" fill="#8f351f"/>
-      <polygon points="52,94 48,105 62,100" fill="#8f351f"/>
-      <polygon points="28,82 16,88 22,74" fill="#8f351f"/>
-      <polygon points="24,46 12,40 22,32" fill="#8f351f"/>
-      <circle cx="52" cy="62" r="14" fill="#a2492f"/>
+      <circle cx="52" cy="64" r="29" fill="url(#hgBall)"/>
+      <polygon points="52,32 46,19 60,24" fill="url(#hgBall)"/>
+      <polygon points="76,44 88,36 84,50" fill="url(#hgBall)"/>
+      <polygon points="80,72 93,74 84,84" fill="url(#hgBall)"/>
+      <polygon points="52,96 48,107 62,102" fill="url(#hgBall)"/>
+      <polygon points="28,84 16,90 22,76" fill="url(#hgBall)"/>
+      <polygon points="24,48 12,42 22,34" fill="url(#hgBall)"/>
+      <circle cx="45" cy="56" r="10" fill="#b0563a" opacity=".5"/>
     </g>
   </svg>
 </div>
@@ -111,7 +152,7 @@ export const spriteJS = `
   var dismissed = q.spriteDismissed;
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var lastBubble = 0, suggests = 0, lastScroll = 0, bubbleTimer = 0;
-  var mode = "idle", flying = false, x = 0, y = 0, faceLeft = false;
+  var mode = "idle", moving = false, x = 0, y = 0, faceLeft = false;
   addEventListener("scroll", function () { lastScroll = Date.now(); }, { passive: true });
 
   var W = 92;
@@ -123,6 +164,7 @@ export const spriteJS = `
     mode = m;
     sprite.className = "s-" + m + (faceLeft ? " s-face-left" : "");
   }
+  function addFlag(cls, on) { sprite.classList.toggle(cls, on); }
   function face(left) {
     faceLeft = left;
     sprite.classList.toggle("s-face-left", left);
@@ -137,24 +179,27 @@ export const spriteJS = `
     if (instant || reduce) requestAnimationFrame(function () { sprite.style.transition = ""; });
     if (bubble.classList.contains("on")) placeBubble();
   }
-  // Roll there as a ball; unroll on arrival.
-  function rollTo(nx, ny, then) {
+  // Short trips: scurry on little legs. Long trips: ball-roll.
+  function travel(nx, ny, then) {
     if (reduce) { place(nx, ny); if (then) then(); return; }
-    flying = true;
-    setMode("roll");
+    var dist = Math.hypot(nx - x, ny - y);
+    moving = true;
+    var scurry = dist < 230;
+    if (scurry) { setMode("idle"); addFlag("s-scurrying", true); }
+    else setMode("roll");
     place(nx, ny);
     setTimeout(function () {
-      flying = false;
+      moving = false;
+      addFlag("s-scurrying", false);
       setMode("idle");
       if (bubble.classList.contains("on")) placeBubble();
       if (then) then();
-    }, 1200);
+    }, scurry ? 780 : 1200);
   }
   var h0 = home();
   place(h0.x, h0.y, true);
-  addEventListener("resize", function () { if (!flying) { var h = home(); place(h.x, h.y, true); } });
+  addEventListener("resize", function () { if (!moving) { var h = home(); place(h.x, h.y, true); } });
 
-  // Free roam — occasional relocations.
   function anchors() {
     var w = vw(), h = vh();
     return [
@@ -168,30 +213,38 @@ export const spriteJS = `
   }
   (function roamLoop() {
     setTimeout(function () {
-      if (!dismissed && mode === "idle" && !flying && !document.hidden &&
+      if (!dismissed && mode === "idle" && !moving && !document.hidden &&
           !bubble.classList.contains("on") && !reduce &&
           Date.now() - lastScroll > 3000) {
         var a = anchors()[Math.floor(Math.random() * 6)];
-        if (Math.abs(a.x - x) + Math.abs(a.y - y) > 60) rollTo(a.x, a.y);
+        if (Math.abs(a.x - x) + Math.abs(a.y - y) > 60) travel(a.x, a.y);
       }
       roamLoop();
-    }, 18000 + Math.random() * 14000);
+    }, 15000 + Math.random() * 12000);
   })();
 
-  // Idle micro-life: freeze… then suddenly turn and look at you. Or a tiny hop.
+  // Idle life, richer and more frequent: sudden look-at-you, sniff around,
+  // scratch an ear, or a tiny hop.
   (function lifeLoop() {
     setTimeout(function () {
-      if (!dismissed && mode === "idle" && !flying && !document.hidden) {
-        if (Math.random() < 0.62) {
+      if (!dismissed && mode === "idle" && !moving && !document.hidden) {
+        var roll = Math.random();
+        if (roll < 0.4) {
           setMode("look");
-          setTimeout(function () { if (mode === "look") setMode("idle"); }, 1400);
+          setTimeout(function () { if (mode === "look") setMode("idle"); }, 1500);
+        } else if (roll < 0.65) {
+          setMode("sniffa");
+          setTimeout(function () { if (mode === "sniffa") setMode("idle"); }, 1700);
+        } else if (roll < 0.85 && !reduce) {
+          setMode("scratch");
+          setTimeout(function () { if (mode === "scratch") setMode("idle"); }, 1300);
         } else if (!reduce) {
           setMode("yay");
           setTimeout(function () { if (mode === "yay") setMode("idle"); }, 800);
         }
       }
       lifeLoop();
-    }, 8000 + Math.random() * 8000);
+    }, 6000 + Math.random() * 7000);
   })();
 
   function placeBubble() {
@@ -228,12 +281,10 @@ export const spriteJS = `
     dismissed = true;
     window.QUEST.dismissSprite(true);
     hide();
-    setMode("sleep");
     var h = home();
-    rollTo(h.x, h.y, function () { setMode("sleep"); });
+    travel(h.x, h.y, function () { setMode("sleep"); });
   });
 
-  // Suggest: roll over, POKE the row, then speak.
   var SUGGEST_LINES = [
     "This one's my favourite. Peek inside?",
     "Want to look at this one next?",
@@ -260,8 +311,8 @@ export const spriteJS = `
     var destX = Math.min(vw() - W - 10, r.right + 4);
     var destY = Math.max(10, r.top + r.height / 2 - 52);
     if (r.top < 0 || r.bottom > vh()) { destX = x; destY = y; }
-    rollTo(destX, destY, function () {
-      face(true); // face the content
+    travel(destX, destY, function () {
+      face(true);
       setMode("poke");
       window.QUEST.pulse(t);
       setTimeout(function () {
@@ -271,7 +322,6 @@ export const spriteJS = `
     });
   }
 
-  // Quest reactions.
   document.addEventListener("quest:item-watched", function (e) {
     setMode("yay");
     say("Nice. That's " + e.detail.n + " of " + e.detail.total + ".", null, { force: true });
@@ -293,7 +343,6 @@ export const spriteJS = `
     setTimeout(function () { setMode("idle"); }, 2200);
   });
 
-  // Tab moods: title + favicon while away; eager vs homesick on return.
   document.addEventListener("click", function (e) {
     var a = e.target.closest && e.target.closest("a[href^='http']");
     if (a && a.host !== location.host) {
@@ -327,7 +376,6 @@ export const spriteJS = `
     }
   });
 
-  // Welcome / return.
   if (dismissed) {
     setMode("sleep");
   } else if (q.visits <= 1 && q.pct === 0) {

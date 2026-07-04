@@ -1,22 +1,22 @@
-// The "Read more" progress button — the Explore % and the reward button are
-// now ONE object (owner direction): the button displays live progress as a
-// fill, dodges the pointer while locked (slower as % rises), and becomes
-// plainly clickable at 100%. Rating no longer gates the unlock (per-project
-// ratings are their own thing, see fx/rate.js). Reward: the EXPLORER-100
-// priority-reply code word.
+// The "Read more" progress button — now the ONE progress object on the page
+// (the old bottom-left badge is gone). It shows live %, renders every quest
+// message on its note line, and dodges with personality: spring easing,
+// a lean-into-the-dash tilt, squash-and-stretch, and an occasional sideways
+// juke instead of a straight flee. Catchable at 100%.
 
 export const ctaCSS = `
 #cta-top{margin:30px 0 6px}
 #cta-zone{position:relative;min-height:64px;display:flex;align-items:center}
-#cta{position:relative;overflow:hidden;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;letter-spacing:.03em;padding:.72rem 1.35rem;border:1.5px solid #17151a;border-radius:999px;background:#fffdfa;color:#17151a;cursor:pointer;transition:transform .2s cubic-bezier(.165,.84,.44,1),box-shadow .2s,border-color .2s;will-change:transform}
+#cta{position:relative;overflow:hidden;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;letter-spacing:.03em;padding:.72rem 1.35rem;border:1.5px solid #17151a;border-radius:999px;background:#fffdfa;color:#17151a;cursor:pointer;will-change:transform;transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,border-color .2s}
 #cta .cta-fill{position:absolute;inset:0;background:rgba(194,82,45,.14);transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.165,.84,.44,1);pointer-events:none}
-#cta .cta-label,#cta .cta-pct{position:relative}
-#cta .cta-pct{margin-left:.6rem;color:#c2522d;font-variant-numeric:tabular-nums}
+#cta .cta-inner{position:relative;display:inline-flex;align-items:baseline;gap:.6rem;transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
+#cta .cta-pct{color:#c2522d;font-variant-numeric:tabular-nums}
+#cta.cta-dash .cta-inner{transform:scaleX(1.07) skewX(-4deg)}
 #cta:focus-visible{outline:2px solid #c2522d;outline-offset:3px}
 #cta.cta-free{border-color:#c2522d;color:#c2522d;box-shadow:0 0 0 4px rgba(194,82,45,.14),0 8px 30px rgba(194,82,45,.18)}
-#cta.cta-free .cta-fill{background:rgba(194,82,45,.1)}
-@media (prefers-reduced-motion:reduce){#cta{transition:none !important;transform:none !important}#cta .cta-fill{transition:none}}
-#cta-note{margin-top:10px;font-size:12.5px;color:#8b877f;min-height:1.4em}
+@media (prefers-reduced-motion:reduce){#cta{transition:none !important;transform:none !important}#cta .cta-fill{transition:none}#cta .cta-inner{transition:none;transform:none !important}}
+#cta-note{margin-top:10px;font-size:12.5px;color:#8b877f;min-height:1.4em;transition:opacity .25s}
+#cta-note.flash{color:#c2522d}
 #lab{margin-top:44px}
 #reward{display:none;margin:10px auto 0;max-width:30rem;border:1.5px solid #426c53;border-radius:12px;padding:1.3rem 1.4rem;background:#fbfdf9}
 #reward.on{display:block}
@@ -26,12 +26,11 @@ export const ctaCSS = `
 `;
 
 export const ctaTopHTML = `
-<div id="cta-top" aria-label="The reward game">
+<div id="cta-top" aria-label="Exploration progress and reward">
   <div id="cta-zone">
     <button id="cta" type="button" aria-describedby="cta-note">
       <span class="cta-fill" aria-hidden="true"></span>
-      <span class="cta-label">Read more</span>
-      <span class="cta-pct">0%</span>
+      <span class="cta-inner"><span class="cta-label">Read more</span><span class="cta-pct">0%</span></span>
     </button>
   </div>
   <p id="cta-note"></p>
@@ -62,10 +61,28 @@ export const ctaJS = `
 
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var q = window.QUEST.get();
-  var tx = 0, ty = 0, hops = 0;
+  var tx = 0, ty = 0, hops = 0, dashTimer = 0, lastJuke = 0;
 
   function p() { return Math.min(1, q.pct / 100); }
   function unlocked() { return q.pct >= 100; }
+
+  // The one message line. Quest events land here (badge is gone).
+  var noteTimer = 0, defaultNote = "This button is a coward. Explore the projects to slow it down.";
+  function setNote(msg, sticky) {
+    note.textContent = msg;
+    note.classList.add("flash");
+    clearTimeout(noteTimer);
+    if (!sticky) noteTimer = setTimeout(function () {
+      note.classList.remove("flash");
+      note.textContent = statusNote();
+    }, 4200);
+  }
+  function statusNote() {
+    if (q.ctaUnlocked) return "Code word delivered. Spend it well.";
+    if (unlocked()) return "It stopped moving. Go on.";
+    return defaultNote;
+  }
+  document.addEventListener("quest:note", function (e) { setNote(e.detail.msg); });
 
   function paint() {
     fill.style.transform = "scaleX(" + p() + ")";
@@ -91,7 +108,14 @@ export const ctaJS = `
     var maxLeft = baseLeft - 12;
     tx = Math.max(-maxLeft, Math.min(maxRight, nx));
     ty = Math.max(-34, Math.min(96, ny));
-    cta.style.transform = "translate(" + tx + "px," + ty + "px)";
+    var tilt = Math.max(-7, Math.min(7, (nx - tx) * 0.02 + (Math.random() * 6 - 3)));
+    cta.style.transform = "translate(" + tx + "px," + ty + "px) rotate(" + tilt + "deg)";
+    cta.classList.add("cta-dash");
+    clearTimeout(dashTimer);
+    dashTimer = setTimeout(function () {
+      cta.classList.remove("cta-dash");
+      cta.style.transform = "translate(" + tx + "px," + ty + "px)";
+    }, 220);
   }
 
   if (!reduce && matchMedia("(hover: hover) and (pointer: fine)").matches) {
@@ -105,8 +129,19 @@ export const ctaJS = `
       if (Math.random() < p() * p()) return; // trips — near-catch
       var step = 90 * (1 - p());
       if (step < 2) return;
+      var ux = dx / d, uy = dy / d;
+      // One flee in ~4 is a sideways JUKE instead of a straight run.
+      var now = Date.now();
+      if (now - lastJuke > 900 && Math.random() < 0.25) {
+        lastJuke = now;
+        var side = Math.random() < 0.5 ? 1 : -1;
+        var jx = -uy * side, jy = ux * side;
+        cta.style.transitionDuration = (50 + 200 * p()) + "ms";
+        clampMove(tx + jx * step * 1.2, ty + jy * step * 0.8);
+        return;
+      }
       cta.style.transitionDuration = (60 + 340 * p()) + "ms";
-      clampMove(tx + (dx / d) * step, ty + (dy / d) * step);
+      clampMove(tx + ux * step, ty + uy * step);
     }, { passive: true });
   }
 
@@ -121,17 +156,17 @@ export const ctaJS = `
       return;
     }
     if (e.detail === 0) {
-      note.textContent = "Keyboard user, huh. Respect \\u2014 no chasing for you. Finish exploring and I'm all yours. (" + q.pct + "%)";
+      setNote("Keyboard user, huh. Respect \\u2014 no chasing for you. Finish exploring and I'm all yours. (" + q.pct + "%)");
     } else if (matchMedia("(hover: none)").matches && !reduce) {
       var n = Math.ceil(3 * (1 - p()));
       if (hops < n) {
         hops++;
         cta.style.transitionDuration = "180ms";
         clampMove((Math.random() * 2 - 1) * 120, Math.random() * 80);
-        note.textContent = "Nope. Explore more first \\u2014 " + q.pct + "%.";
+        setNote("Nope. Explore more first \\u2014 " + q.pct + "%.");
       }
     } else {
-      note.textContent = "Explore everything first \\u2014 you're at " + q.pct + "%.";
+      setNote("Explore everything first \\u2014 you're at " + q.pct + "%.");
     }
   });
 
@@ -141,15 +176,15 @@ export const ctaJS = `
     if (q.ctaUnlocked) { reward.classList.add("on"); cta.disabled = true; }
     else if (unlocked()) {
       cta.style.transitionDuration = "300ms";
-      clampMove(0, 0);
-      note.textContent = "It stopped moving. Go on.";
+      cta.classList.remove("cta-dash");
+      tx = 0; ty = 0;
+      cta.style.transform = "translate(0px,0px)";
+      note.textContent = statusNote();
     }
   }
   document.addEventListener("quest:update", sync);
   document.addEventListener("quest:complete", sync);
   sync();
-  if (!unlocked() && !q.ctaUnlocked) {
-    note.textContent = "This button is a coward. Explore the projects to slow it down.";
-  }
+  note.textContent = statusNote();
 })();
 `;

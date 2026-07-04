@@ -17,6 +17,8 @@ export async function onRequestPost({ request, env }) {
     if (b.hp) return OK(); // honeypot
     const id = String(b.id || "");
     if (!ID_RE.test(id)) return OK();
+    const voter = String(b.v || "");
+    if (!/^[a-z0-9]{8,40}$/.test(voter)) return OK();
     const r = b.r | 0;
     if (r < 1 || r > 10) return OK();
     if ((b.ms | 0) < 3000) return OK(); // server-side minimum time-on-page
@@ -35,8 +37,11 @@ export async function onRequestPost({ request, env }) {
       c: String(b.c || "").slice(0, 140),
       ts: Math.floor(Date.now() / 1000),
     };
-    const key = "pr:" + id + ":" + new Date().toISOString() + ":" + Math.random().toString(36).slice(2, 8);
-    await env.RATINGS.put(key, JSON.stringify(rec));
+    // One vote per visitor per project: the key is derived from the anonymous
+    // voter token, so re-rating OVERWRITES the previous vote (no box stuffing).
+    const vDigest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(voter + ":" + id));
+    const vHash = [...new Uint8Array(vDigest)].slice(0, 10).map((x) => x.toString(16).padStart(2, "0")).join("");
+    await env.RATINGS.put("pr:" + id + ":" + vHash, JSON.stringify(rec));
   } catch (e) {
     // Losing a rating beats surfacing an error.
   }
