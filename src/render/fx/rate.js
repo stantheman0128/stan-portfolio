@@ -1,9 +1,9 @@
-// Per-project ratings v2 (owner round 3):
-// After you rate, the strip collapses INTO the result — "You: 8/10 · current
-// average 8.4/10 (12 votes)" — with a Change button to re-rate. Votes are
-// keyed server-side by an anonymous per-visitor token, so re-rating REPLACES
-// your old vote instead of stuffing the box. The bottom wall now shows only
-// what people SAID (comments); averages live inline where you rated.
+// Per-project ratings v3 (owner round 4):
+// Comments now live INLINE under each project — the global "What visitors
+// say" wall is gone. Each strip lazily fills its own wall (avg + up to 4
+// latest comments for THAT project) from one shared aggregate fetch.
+// Votes stay keyed server-side by the anonymous per-visitor token, so
+// re-rating REPLACES the old vote instead of stuffing the box.
 
 export const rateCSS = `
 .rate{margin-top:14px;padding-top:12px;border-top:1px dashed #e3dccf;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
@@ -27,12 +27,11 @@ export const rateCSS = `
 .rate .rate-edit{all:unset;cursor:pointer;font-size:11.5px;color:#8b877f;border-bottom:1px dashed #b7b2a8}
 .rate .rate-edit:hover,.rate .rate-edit:focus-visible{color:#c2522d;border-color:#c2522d}
 .rate .rate-edit:focus-visible{outline:2px solid #c2522d;outline-offset:2px}
-#voices{margin-top:56px;border-top:1px solid rgba(23,22,26,.12);padding-top:34px}
-#voices .lab-eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#b7b2a8;margin-bottom:18px}
-#voices .v-empty{font-size:13px;color:#8b877f}
-#voices .v-comments{display:flex;flex-direction:column;gap:10px}
-#voices .v-c{border:1px solid #e9e2d5;border-radius:9px;padding:.6rem .8rem;font-size:13px;color:#3a3833;background:#fffdfa}
-#voices .v-c .v-meta{font-family:ui-monospace,monospace;font-size:10.5px;color:#b7b2a8;margin-top:.3rem}
+.rate .rate-wall{margin-top:12px;display:none;flex-direction:column;gap:8px}
+.rate .rate-wall.on{display:flex}
+.rate .rw-head{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#b7b2a8}
+.rate .rw-c{border:1px solid #e9e2d5;border-radius:9px;padding:.5rem .7rem;font-size:12.5px;color:#3a3833;background:#fffdfa}
+.rate .rw-c .rw-meta{font-family:ui-monospace,monospace;font-size:10.5px;color:#b7b2a8;margin-top:.25rem}
 `;
 
 export function rateStripHTML(id) {
@@ -50,16 +49,10 @@ export function rateStripHTML(id) {
     `<span class="rate-you"></span><span class="rate-avg"></span>` +
     `<button class="rate-edit" type="button">Change</button>` +
     `</div>` +
+    `<div class="rate-wall" aria-label="What visitors said"></div>` +
     `</div>`
   );
 }
-
-export const voicesHTML = `
-<section id="voices" aria-label="What visitors say">
-  <div class="lab-eyebrow">What visitors say</div>
-  <div id="voices-body"><p class="v-empty">Loading…</p></div>
-</section>
-`;
 
 export const rateJS = `
 (function () {
@@ -74,11 +67,51 @@ export const rateJS = `
     aggP = aggP || fetch("/api/rating").then(function (r) {
       if (!r.ok) throw 0;
       return r.json();
-    }).catch(function () { return { projects: {}, latest: [] }; });
+    }).catch(function () { return { projects: {} }; });
     return aggP;
   }
 
-  [].slice.call(document.querySelectorAll(".rate")).forEach(function (box) {
+  var boxes = [].slice.call(document.querySelectorAll(".rate"));
+
+  // Each project's comments render right under its own strip — no global wall.
+  function fillWall(box, data) {
+    var wall = box.querySelector(".rate-wall");
+    if (!wall) return;
+    var s = data.projects && data.projects[box.getAttribute("data-rate")];
+    var comments = (s && s.comments) || [];
+    wall.replaceChildren();
+    if (!s || !s.n || !comments.length) { wall.classList.remove("on"); return; }
+    var head = document.createElement("div");
+    head.className = "rw-head";
+    head.textContent = "Visitors \\u00b7 " + s.avg.toFixed(1) + "/10 (" + s.n + (s.n === 1 ? " vote)" : " votes)");
+    wall.appendChild(head);
+    comments.forEach(function (c) {
+      var el = document.createElement("div");
+      el.className = "rw-c";
+      var txt = document.createElement("div");
+      txt.textContent = "\\u201C" + c.c + "\\u201D";
+      var meta = document.createElement("div");
+      meta.className = "rw-meta";
+      meta.textContent = c.r + "/10";
+      el.appendChild(txt); el.appendChild(meta);
+      wall.appendChild(el);
+    });
+    wall.classList.add("on");
+  }
+  var wallsLoaded = false;
+  function loadWalls(fresh) {
+    wallsLoaded = true;
+    agg(fresh).then(function (data) {
+      boxes.forEach(function (box) { fillWall(box, data); });
+    });
+  }
+  // Lazy: first expanded panel or a quiet moment, whichever comes first.
+  document.addEventListener("click", function (e) {
+    if (!wallsLoaded && e.target.closest && e.target.closest(".row")) loadWalls();
+  });
+  setTimeout(function () { if (!wallsLoaded) loadWalls(); }, 4500);
+
+  boxes.forEach(function (box) {
     var id = box.getAttribute("data-rate");
     var dots = [].slice.call(box.querySelectorAll(".rate-dots button"));
     var input = box.querySelector("input");
@@ -135,50 +168,10 @@ export const rateJS = `
         }).catch(function () {});
       } catch (e) {}
       window.QUEST.setRated(id, chosen);
-      setTimeout(function () { agg(true); }, 1200); // refresh shared cache lazily
+      setTimeout(function () { loadWalls(true); }, 1500); // refresh avg + walls
       showResult(chosen);
       document.dispatchEvent(new CustomEvent("rate:sent", { detail: { id: id, r: chosen } }));
     });
   });
-
-  // The wall: comments only (averages live inline where you rated).
-  var body = document.getElementById("voices-body");
-  if (!body) return;
-  function titleFor(id) {
-    var sec = document.querySelector('[data-quest="' + id + '"]');
-    var t = sec && sec.querySelector(".title");
-    return t ? t.textContent : id;
-  }
-  function load() {
-    agg().then(function (data) {
-      body.replaceChildren();
-      var comments = (data.latest || []).filter(function (c) { return c.c; });
-      if (!comments.length) {
-        var p0 = document.createElement("p");
-        p0.className = "v-empty";
-        p0.textContent = "Nothing here yet \\u2014 rate a project above and say something.";
-        body.appendChild(p0);
-        return;
-      }
-      var wrap = document.createElement("div");
-      wrap.className = "v-comments";
-      comments.forEach(function (c) {
-        var el = document.createElement("div");
-        el.className = "v-c";
-        var txt = document.createElement("div"); txt.textContent = "\\u201C" + c.c + "\\u201D";
-        var meta = document.createElement("div"); meta.className = "v-meta";
-        meta.textContent = titleFor(c.id) + " \\u00b7 " + c.r + "/10";
-        el.appendChild(txt); el.appendChild(meta);
-        wrap.appendChild(el);
-      });
-      body.appendChild(wrap);
-    });
-  }
-  if ("IntersectionObserver" in window) {
-    var io = new IntersectionObserver(function (en) {
-      if (en[0].isIntersecting) { io.disconnect(); load(); }
-    }, { rootMargin: "200px" });
-    io.observe(document.getElementById("voices"));
-  } else { load(); }
 })();
 `;

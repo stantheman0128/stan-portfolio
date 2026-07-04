@@ -74,23 +74,22 @@ export async function onRequestGet({ request, env }) {
     });
   }
 
-  // Public aggregate.
+  // Public aggregate: per-project count/avg plus that project's own latest
+  // comments (the site shows them inline under each project — no global wall).
   const projects = {};
   for (const row of rows) {
-    const s = (projects[row.id] ||= { n: 0, sum: 0 });
+    const s = (projects[row.id] ||= { n: 0, sum: 0, comments: [] });
     s.n++;
     s.sum += row.r;
+    if (row.c) s.comments.push({ r: row.r, c: row.c, ts: row.ts });
   }
   for (const id of Object.keys(projects)) {
-    projects[id] = { n: projects[id].n, avg: projects[id].sum / projects[id].n };
+    const s = projects[id];
+    s.comments.sort((a, b) => b.ts - a.ts);
+    projects[id] = { n: s.n, avg: s.sum / s.n, comments: s.comments.slice(0, 4) };
   }
-  const latest = rows
-    .filter((row) => row.c)
-    .sort((a, b) => b.ts - a.ts)
-    .slice(0, 10)
-    .map((row) => ({ id: row.id, r: row.r, c: row.c, ts: row.ts }));
 
-  return new Response(JSON.stringify({ projects, latest }), {
+  return new Response(JSON.stringify({ projects }), {
     headers: {
       "content-type": "application/json",
       "cache-control": "public, max-age=60",
