@@ -4,6 +4,8 @@
 import { esc, md, realLinks } from "../util.js";
 import { liveStubCSS, liveStubHTML } from "../fx/interactive.js";
 import { questCSS, questBadgeHTML, questJS } from "../fx/quest.js";
+import { ctaCSS, ctaHTML, ctaJS } from "../fx/cta.js";
+import { spriteCSS, spriteHTML, spriteJS } from "../fx/sprite.js";
 
 // Split a tagline into "lead — <em>rest</em>" so the accent italic lands on the clause
 // after the dash. Falls back to the whole string when there's no dash.
@@ -386,6 +388,8 @@ footer{margin-top:70px;padding-top:22px;border-top:1px solid var(--line);font-fa
 ${liveStubCSS}
 .live-panel{color:#3a3833;background:#fffdfa}
 ${questCSS}
+${ctaCSS}
+${spriteCSS}
 </style>
 </head>
 <body>
@@ -426,6 +430,8 @@ ${questCSS}
     ${liveStubHTML}
   </section>
 
+  ${ctaHTML}
+
   <footer>
     <span>© ${new Date().getFullYear()} ${esc(p.name || "")}</span>
     <span>Built end-to-end${p.location ? " · " + esc(p.location) : ""}</span>
@@ -434,6 +440,7 @@ ${questCSS}
 
 <div class="float" id="float" aria-hidden="true"></div>
 ${questBadgeHTML}
+${spriteHTML}
 
 <script>
 (function(){
@@ -485,6 +492,8 @@ ${questBadgeHTML}
 })();
 </script>
 <script>${questJS}</script>
+<script>${ctaJS}</script>
+<script>${spriteJS}</script>
 </body>
 </html>`;
 }
