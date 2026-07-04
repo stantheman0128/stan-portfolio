@@ -33,6 +33,17 @@ export const questJS = `
   state.visits = (state.visits || 0) + 1;
   state.lastVisit = Date.now();
 
+  // Fire-and-forget mirror of progress to the server; the photo reward is
+  // minted server-side from THESE events, never from client-claimed state.
+  function report(payload) {
+    payload.v = state.voter;
+    try {
+      fetch("/api/quest", { method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload), keepalive: true }).catch(function () {});
+    } catch (e) {}
+  }
+  report({ e: "start" });
+
   var srEl = document.getElementById("quest-sr");
   var rows = [].slice.call(document.querySelectorAll("[data-quest]"));
   var patent = document.getElementById("patent");
@@ -61,6 +72,7 @@ export const questJS = `
   function watched(id, el, label) {
     if (state.watched.indexOf(id) !== -1) return;
     state.watched.push(id);
+    report({ e: "item", id: id });
     if (el) el.classList.add("q-got");
     var n = state.watched.length;
     render();
@@ -148,6 +160,15 @@ export const questJS = `
       emit("quest:update");
     },
     egg: egg,
+    claim: function (cb) {
+      try {
+        fetch("/api/quest", { method: "POST", headers: { "content-type": "application/json" },
+          body: JSON.stringify({ v: state.voter, e: "claim" }) })
+          .then(function (r) { return r.status === 200 ? r.json() : null; })
+          .then(function (j) { cb(j && j.t ? j.t : null); })
+          .catch(function () { cb(null); });
+      } catch (e) { cb(null); }
+    },
     dismissSprite: function (v) { state.spriteDismissed = !!v; save(); },
     pulse: function (el) {
       if (!el) return;

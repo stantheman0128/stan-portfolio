@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 500">
+  <defs>
+    <filter id="rt-rough" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="11" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3"/>
+    </filter>
+  </defs>
+  <rect width="420" height="500" fill="#efe7da"/>
+  <g filter="url(#rt-rough)">
+    <!-- goofy placeholder face: replace this file with Stan's real goofy crop -->
+    <circle cx="210" cy="215" r="130" fill="#f8f2e7" stroke="#3a2a22" stroke-width="4"/>
+    <path d="M110 160 Q140 120 190 132" fill="none" stroke="#3a2a22" stroke-width="6" stroke-linecap="round"/>
+    <path d="M240 128 Q290 118 308 152" fill="none" stroke="#3a2a22" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="160" cy="195" r="26" fill="#fffdfa" stroke="#3a2a22" stroke-width="4"/>
+    <circle cx="168" cy="202" r="9" fill="#17151a"/>
+    <circle cx="262" cy="188" r="16" fill="#fffdfa" stroke="#3a2a22" stroke-width="4"/>
+    <circle cx="258" cy="192" r="6" fill="#17151a"/>
+    <path d="M150 285 Q210 320 272 278" fill="none" stroke="#3a2a22" stroke-width="6" stroke-linecap="round"/>
+    <path d="M226 296 q18 34 -8 44 q-22 8 -26 -18" fill="#c2522d" stroke="#3a2a22" stroke-width="4"/>
+  </g>
+  <text x="210" y="420" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="20" letter-spacing="3" fill="#8b877f">GOOFY PLACEHOLDER</text>
+  <text x="210" y="450" text-anchor="middle" font-family="ui-monospace,Consolas,monospace" font-size="14" fill="#b7b2a8">the real photo is coming</text>
+</svg>
