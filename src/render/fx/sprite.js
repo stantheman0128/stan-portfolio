@@ -1,10 +1,11 @@
-// The guide sprite v4 — hedgehog, second pass on owner feedback.
-// More dimensional: radial/linear gradients for form, a two-tone quill coat
-// with a darker under-layer, a soft contact shadow that reacts to hops, and
-// a proper black BEAD eye with a highlight (no bulging sclera).
-// More alive: short trips are a leggy little SCURRY, long trips are the
-// ball-roll; idle life now includes sudden look-at-you, sniffing around,
-// and an ear scratch. Tab moods and bubble behavior carried over.
+// The guide sprite v5 — hedgehog, third pass on owner feedback.
+// Hand-drawn 立繪 feel with ZERO runtime cost (asset research verdict: no
+// free layered asset beats upgrading our own SVG): a feTurbulence+
+// feDisplacementMap filter gives every line a pencil wobble, ink contours
+// and hatching read as pen strokes, and a front PAW joins the layered
+// puppet so it can physically poke things — including your cursor.
+// New behaviors: a bother-loop that walks over and boops the mouse,
+// score-aware rating quips, chase commentary, and a speed-reader callout.
 
 export const spriteCSS = `
 #sprite{position:fixed;left:0;top:0;z-index:70;width:92px;pointer-events:none;will-change:transform;transition:transform 1.15s cubic-bezier(.33,.75,.35,1)}
@@ -43,6 +44,8 @@ export const spriteCSS = `
   @keyframes hh-shadowhop{0%,100%{transform:scaleX(1);opacity:.22}50%{transform:scaleX(.72);opacity:.1}}
   #sprite.s-poke .hh{animation:hh-poke .5s ease-in-out 2}
   @keyframes hh-poke{0%,100%{transform:translateX(0)}45%{transform:translateX(9px) rotate(2deg)}}
+  #sprite.s-poke .hh-paw{animation:hh-jab .5s ease-in-out 2;transform-origin:84px 73px}
+  @keyframes hh-jab{0%,100%{transform:rotate(0)}45%{transform:rotate(-52deg)}}
   #sprite.s-scurrying .hh-legA{animation:hh-run .16s linear infinite;transform-origin:40px 78px}
   #sprite.s-scurrying .hh-legB{animation:hh-run .16s linear infinite reverse;transform-origin:70px 78px}
   @keyframes hh-run{0%,100%{transform:rotate(16deg)}50%{transform:rotate(-16deg)}}
@@ -88,13 +91,17 @@ export const spriteHTML = `
         <stop offset="60%" stop-color="#8f351f"/>
         <stop offset="100%" stop-color="#5f2012"/>
       </radialGradient>
+      <filter id="hhRough" x="-15%" y="-15%" width="130%" height="130%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="7" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="2.4"/>
+      </filter>
     </defs>
     <ellipse class="hh-shadow" cx="56" cy="90" rx="34" ry="5" fill="#17151a" opacity=".22"/>
     <g class="hh">
       <g class="hh-body">
-        <g class="hh-quills">
+        <g class="hh-quills" filter="url(#hhRough)">
           <path d="M22 76 Q14 48 34 34 Q52 22 74 32 Q88 38 90 54 L88 76 Z" fill="#5f2012"/>
-          <path d="M20 74 Q14 46 34 32 Q52 20 74 30 Q88 36 90 52 L88 74 Z" fill="url(#hgQuill)"/>
+          <path d="M20 74 Q14 46 34 32 Q52 20 74 30 Q88 36 90 52 L88 74 Z" fill="url(#hgQuill)" stroke="#4a2415" stroke-width="1"/>
           <polygon points="22,52 10,40 27,41" fill="url(#hgQuill)"/>
           <polygon points="30,40 23,25 40,31" fill="url(#hgQuill)"/>
           <polygon points="44,31 41,14 56,25" fill="url(#hgQuill)"/>
@@ -102,8 +109,9 @@ export const spriteHTML = `
           <polygon points="74,31 85,19 85,35" fill="url(#hgQuill)"/>
           <polygon points="16,62 4,56 15,49" fill="url(#hgQuill)"/>
           <path d="M30 34 L26 27 M46 27 L44 19 M62 24 L64 16 M76 30 L82 23" stroke="#c98a6b" stroke-width="1.1" stroke-linecap="round" fill="none" opacity=".7"/>
+          <path d="M30 62 l7 -4 M40 67 l7 -4 M52 70 l7 -4 M64 70 l7 -4 M26 52 l6 -4" stroke="#4a2415" stroke-width=".8" stroke-linecap="round" fill="none" opacity=".45"/>
         </g>
-        <path d="M88 76 L88 52 Q92 44 104 52 Q112 58 106 68 Q100 77 88 76 Z" fill="url(#hgFace)" stroke="#cbbda6" stroke-width=".8"/>
+        <path d="M88 76 L88 52 Q92 44 104 52 Q112 58 106 68 Q100 77 88 76 Z" fill="url(#hgFace)" stroke="#b09a7c" stroke-width="1"/>
         <g class="hh-face">
           <circle class="hh-nose" cx="107" cy="60" r="3.6" fill="#241d1a"/>
           <circle cx="105.8" cy="58.8" r="1" fill="#5a504a"/>
@@ -116,11 +124,12 @@ export const spriteHTML = `
           <path d="M96 66 Q99 67.5 102 66.5" stroke="#b59a7e" stroke-width=".9" fill="none" stroke-linecap="round"/>
         </g>
         <path d="M28 76 Q52 84 86 76 L84 80 Q52 88 30 80 Z" fill="url(#hgBelly)"/>
+        <path class="hh-paw" d="M84 73 Q90 76 93 81" stroke="#241d1a" stroke-width="1.9" fill="none" stroke-linecap="round"/>
       </g>
       <line class="hh-legA" x1="40" y1="78" x2="39" y2="89" stroke="#241d1a" stroke-width="1.8" stroke-linecap="round"/>
       <line class="hh-legB" x1="70" y1="78" x2="72" y2="89" stroke="#241d1a" stroke-width="1.8" stroke-linecap="round"/>
     </g>
-    <g class="ball">
+    <g class="ball" filter="url(#hhRough)">
       <circle cx="52" cy="64" r="29" fill="url(#hgBall)"/>
       <polygon points="52,32 46,19 60,24" fill="url(#hgBall)"/>
       <polygon points="76,44 88,36 84,50" fill="url(#hgBall)"/>
@@ -153,7 +162,29 @@ export const spriteJS = `
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var lastBubble = 0, suggests = 0, lastScroll = 0, bubbleTimer = 0;
   var mode = "idle", moving = false, x = 0, y = 0, faceLeft = false;
-  addEventListener("scroll", function () { lastScroll = Date.now(); }, { passive: true });
+  var mouse = null;
+  addEventListener("pointermove", function (e) {
+    mouse = { x: e.clientX, y: e.clientY, t: Date.now() };
+  }, { passive: true });
+
+  // Scroll tracking doubles as a speed-reader detector: >2800px inside ~0.8s
+  // while the quest is unfinished earns one (rationed) callout.
+  var fastWin = [], lastSpeedQuip = 0;
+  addEventListener("scroll", function () {
+    var nowS = Date.now();
+    lastScroll = nowS;
+    fastWin.push({ t: nowS, y: scrollY });
+    while (fastWin.length && nowS - fastWin[0].t > 800) fastWin.shift();
+    if (Math.abs(scrollY - fastWin[0].y) > 2800 && nowS - lastSpeedQuip > 45000 && !dismissed) {
+      var qq = window.QUEST.get();
+      if (qq.pct < 100) {
+        lastSpeedQuip = nowS;
+        setTimeout(function () {
+          say("Speed-reading, huh. The check marks can tell.", null, { force: true });
+        }, 700);
+      }
+    }
+  }, { passive: true });
 
   var W = 92;
   function vw() { return document.documentElement.clientWidth; }
@@ -289,7 +320,9 @@ export const spriteJS = `
     "This one's my favourite. Peek inside?",
     "Want to look at this one next?",
     "Psst \\u2014 this one has a good story.",
-    "One more? This one's quick."
+    "One more? This one's quick.",
+    "You scrolled right past this one. It noticed.",
+    "I don't make the rules \\u2014 but this one's worth a click."
   ];
   function nextTarget() {
     q = window.QUEST.get();
@@ -302,7 +335,7 @@ export const spriteJS = `
     return null;
   }
   function suggest(force) {
-    if (dismissed || suggests >= 3) return;
+    if (dismissed || suggests >= 4) return;
     var t = nextTarget();
     if (!t) return;
     suggests++;
@@ -322,6 +355,67 @@ export const spriteJS = `
     });
   }
 
+  // Bother-loop: every so often the hedgehog walks over and BOOPS the cursor.
+  // If the cursor flees before it arrives, it takes that personally.
+  var BOTHER_LINES = [
+    "Boop.",
+    "Whatcha doing up here?",
+    "This cursor looked unattended. It's mine now.",
+    "Found you.",
+    "Don't mind me. Actually \\u2014 do mind me."
+  ];
+  var MISS_LINES = [
+    "\\u2026it was right here a second ago.",
+    "Rude. I came all this way.",
+    "Fine. Didn't want that cursor anyway."
+  ];
+  (function botherLoop() {
+    setTimeout(function () {
+      if (!dismissed && mode === "idle" && !moving && !document.hidden &&
+          !bubble.classList.contains("on") && !reduce && mouse &&
+          matchMedia("(hover: hover) and (pointer: fine)").matches &&
+          Math.random() < 0.5) {
+        var target = { x: mouse.x, y: mouse.y };
+        travel(Math.max(6, target.x - 100), Math.max(6, target.y - 34), function () {
+          var fled = mouse && Math.hypot(mouse.x - target.x, mouse.y - target.y) > 180;
+          if (fled) {
+            setMode("look");
+            say(MISS_LINES[Math.floor(Math.random() * MISS_LINES.length)], null, { force: true });
+            setTimeout(function () { if (mode === "look") setMode("idle"); }, 1800);
+          } else {
+            face(false);
+            setMode("poke");
+            say(BOTHER_LINES[Math.floor(Math.random() * BOTHER_LINES.length)], null, { force: true });
+            setTimeout(function () { if (mode === "poke") setMode("idle"); }, 1200);
+          }
+          setTimeout(function () {
+            if (mode === "idle" && !moving && !bubble.classList.contains("on") && Math.random() < 0.5) {
+              var h = home();
+              travel(h.x, h.y);
+            }
+          }, 4600);
+        });
+      }
+      botherLoop();
+    }, 26000 + Math.random() * 26000);
+  })();
+
+  // Chase commentary: the CTA emits (throttled) when it's being hunted.
+  var CHASE_LINES = [
+    "It does that to everyone.",
+    "Chasing never works. Exploring does.",
+    "It can smell unfinished business."
+  ];
+  var lastChaseQuip = 0;
+  document.addEventListener("cta:chase", function (e) {
+    var now = Date.now();
+    if (dismissed || now - lastChaseQuip < 40000 || Math.random() < 0.4) return;
+    lastChaseQuip = now;
+    setMode("look");
+    say(CHASE_LINES[Math.floor(Math.random() * CHASE_LINES.length)] + " (" + e.detail.pct + "%, by the way.)", null, { force: true });
+    setTimeout(function () { if (mode === "look") setMode("idle"); }, 2200);
+  });
+
   document.addEventListener("quest:item-watched", function (e) {
     setMode("yay");
     say("Nice. That's " + e.detail.n + " of " + e.detail.total + ".", null, { force: true });
@@ -334,13 +428,24 @@ export const spriteJS = `
   });
   document.addEventListener("cta:opened", function () {
     setMode("yay");
-    say("Caught it! Enjoy the code word \\u2014 you're one of very few.", null, { force: true, hold: 8000 });
+    say("Caught it! Code word's yours \\u2014 and click that photo. Trust me.", null, { force: true, hold: 8000 });
+    setTimeout(function () { setMode("idle"); }, 2600);
+  });
+  document.addEventListener("photo:developed", function () {
+    setMode("yay");
+    say("There he is. Worth every click, right?", null, { force: true, hold: 7000 });
     setTimeout(function () { setMode("sleep"); }, 6000);
   });
+  // Rating quips scale with the score — a 2/10 is taken PERSONALLY.
   document.addEventListener("rate:sent", function (e) {
-    setMode("yay");
-    say("Logged \\u2014 " + e.detail.r + "/10. Everyone will see that one.", null, { force: true });
-    setTimeout(function () { setMode("idle"); }, 2200);
+    var r = e.detail.r, line;
+    if (r <= 3) line = "A " + r + "/10?! I LIVE here, you know. \\u2026Logged anyway.";
+    else if (r <= 6) line = r + "/10 \\u2014 noted. Harsh, but noted.";
+    else if (r <= 8) line = "Logged \\u2014 " + r + "/10. Everyone will see that one.";
+    else line = r + "/10 \\u2014 excellent taste. I helped with that one, you know.";
+    setMode(r <= 3 ? "look" : "yay");
+    say(line, null, { force: true });
+    setTimeout(function () { setMode("idle"); }, 2400);
   });
 
   document.addEventListener("click", function (e) {
@@ -382,7 +487,7 @@ export const spriteJS = `
     setTimeout(function () {
       say("Oh, hi. Didn't hear you come in. Want the tour, or shall I just hang back?", [
         { label: "Show me around", go: function () { suggest(true); } },
-        { label: "I'll explore", go: function () { suggests = 3; setMode("sleep"); setTimeout(function () { setMode("idle"); }, 8000); } }
+        { label: "I'll explore", go: function () { suggests = 4; setMode("sleep"); setTimeout(function () { setMode("idle"); }, 8000); } }
       ], { force: true });
     }, 900);
   } else if (q.ctaUnlocked) {
