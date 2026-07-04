@@ -1,0 +1,20 @@
+# Cloudflare Pages config for stan-portfolio.
+# Bindings for the rating endpoint (functions/api/rating.js).
+# Production and preview use SEPARATE KV namespaces so test ratings from the
+# demo/sprite branch previews never pollute the real data.
+# EXPORT_KEY (owner-only export) is a Pages secret, set via:
+#   wrangler pages secret put EXPORT_KEY --project-name=stan-portfolio
+
+name = "stan-portfolio"
+pages_build_output_dir = "dist"
+
+# Production environment bindings.
+[[kv_namespaces]]
+binding = "RATINGS"
+id = "6ac0b3e4dc6d4b89a010abb0b5dbfe65"
+
+# Preview environments (all non-production branch deploys: demo, sprite, ...).
+[env.preview]
+[[env.preview.kv_namespaces]]
+binding = "RATINGS"
+id = "0f18e001510f41faa6c476809cbab224"
