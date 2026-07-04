@@ -90,7 +90,7 @@ export const questJS = `
       hint("Graduation requirements met.", true);
     } else if (p >= 100 && !state.ratingDone) {
       countEl.textContent = "Explored 100%";
-      hint("One thing left \\u2014 the rating below.", true);
+      hint("One thing left \\u2014 the rating.", true);
     } else {
       countEl.textContent = "Explored " + p + "%";
       if (message) hint(message);
@@ -110,7 +110,12 @@ export const questJS = `
     emit("quest:update");
     if (n >= TOTAL) {
       emit("quest:items-complete");
-      if (srEl) srEl.textContent = "All items explored. One step remains.";
+      if (state.ratingDone) {
+        emit("quest:complete");
+        if (srEl) srEl.textContent = "Reward unlocked.";
+      } else if (srEl) {
+        srEl.textContent = "All items explored. One step remains.";
+      }
     }
   }
 

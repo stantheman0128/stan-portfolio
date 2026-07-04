@@ -1,22 +1,22 @@
 // Rubber-band CTA + rating + reward (spec: 2026-07-05-sprite-quest-design.md).
-// The button dodges the pointer at a speed inversely proportional to quest
-// progress: step = 90·(1−p) px, transition 60+340·p ms, settleChance = p².
-// Keyboard users can always focus/activate (witty acknowledgment pre-100%).
-// Touch: hops N = ceil(3·(1−p)) taps before yielding. Reduced motion: never
-// moves at all. Unlock condition: all items watched AND rating submitted.
-// Reward (owner decision "C"): a priority-reply code word — no PII.
+// v2 per owner: the BUTTON lives near the top of the page (visible without
+// scrolling); the rating is NOT gated on 100% — rate whenever you like.
+// Unlock still requires both: all items watched AND a rating submitted.
+// Dodge: step 90·(1−p) px, 60+340·p ms, p² trip chance; touch hops
+// N=ceil(3·(1−p)); keyboard and reduced-motion never chase.
 
 export const ctaCSS = `
-#lab{margin-top:56px;border-top:1px solid rgba(23,22,26,.12);padding-top:34px}
-#lab .lab-eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#b7b2a8;margin-bottom:18px}
-#cta-zone{position:relative;min-height:120px;display:flex;align-items:center;justify-content:center}
+#cta-top{margin:30px 0 6px}
+#cta-zone{position:relative;min-height:64px;display:flex;align-items:center}
 #cta{position:relative;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;letter-spacing:.03em;padding:.72rem 1.35rem;border:1.5px solid #17151a;border-radius:999px;background:#fffdfa;color:#17151a;cursor:pointer;transition:transform .2s cubic-bezier(.165,.84,.44,1),box-shadow .2s,border-color .2s;will-change:transform}
 #cta:focus-visible{outline:2px solid #c2522d;outline-offset:3px}
 #cta.cta-free{border-color:#c2522d;color:#c2522d;box-shadow:0 0 0 4px rgba(194,82,45,.14),0 8px 30px rgba(194,82,45,.18)}
 @media (prefers-reduced-motion:reduce){#cta{transition:none !important;transform:none !important}}
-#cta-note{margin-top:14px;text-align:center;font-size:12.5px;color:#8b877f;min-height:1.4em}
-#rating{display:none;margin:26px auto 0;max-width:26rem;text-align:center}
-#rating.on{display:block}
+#cta-note{margin-top:10px;font-size:12.5px;color:#8b877f;min-height:1.4em}
+#lab{margin-top:56px;border-top:1px solid rgba(23,22,26,.12);padding-top:34px}
+#lab .lab-eyebrow{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#b7b2a8;margin-bottom:18px}
+#rating{margin:6px auto 0;max-width:26rem;text-align:center}
+#rating.sent .r-stars button{cursor:default}
 #rating .r-q{font-size:15px;color:#3a3833;margin:0 0 12px}
 #rating .r-stars{display:flex;justify-content:center;gap:6px}
 #rating .r-stars button{all:unset;cursor:pointer;font-size:26px;line-height:1;color:#d8d0c4;padding:4px;border-radius:6px}
@@ -34,15 +34,22 @@ export const ctaCSS = `
 #reward code{font-family:ui-monospace,monospace;font-size:15px;font-weight:700;letter-spacing:.06em;background:#e9f1ea;border-radius:6px;padding:.15rem .5rem;color:#2c4a38}
 `;
 
-export const ctaHTML = `
-<section id="lab" aria-label="The reward">
-  <div class="lab-eyebrow">One more thing</div>
+// Near the top of the page — the game hook is visible immediately.
+export const ctaTopHTML = `
+<div id="cta-top" aria-label="The reward game">
   <div id="cta-zone">
     <button id="cta" type="button" aria-describedby="cta-note">catch me</button>
   </div>
   <p id="cta-note"></p>
+</div>
+`;
+
+// Bottom section: rating (always available) + the reward panel.
+export const ctaLabHTML = `
+<section id="lab" aria-label="Rating and reward">
+  <div class="lab-eyebrow">Rate it</div>
   <div id="rating" aria-label="Rate this site">
-    <p class="r-q">You've seen everything. Was this cool?</p>
+    <p class="r-q">Was this cool? Rate it any time.</p>
     <div class="r-stars" role="radiogroup" aria-label="Rating from 1 to 5">
       <button type="button" data-star="1" aria-label="1 of 5">★</button>
       <button type="button" data-star="2" aria-label="2 of 5">★</button>
@@ -69,7 +76,6 @@ export const ctaJS = `
 (function () {
   var cta = document.getElementById("cta");
   var note = document.getElementById("cta-note");
-  var zone = document.getElementById("cta-zone");
   var rating = document.getElementById("rating");
   var reward = document.getElementById("reward");
   if (!cta || !window.QUEST) return;
@@ -90,15 +96,15 @@ export const ctaJS = `
   }
 
   function clampMove(nx, ny) {
-    var zr = zone.getBoundingClientRect(), br = cta.getBoundingClientRect();
-    var maxX = Math.max(40, (window.innerWidth - br.width) / 2 - 24);
-    var maxY = 90;
-    tx = Math.max(-maxX, Math.min(maxX, nx));
-    ty = Math.max(-maxY, Math.min(maxY, ny));
+    var br = cta.getBoundingClientRect();
+    var baseLeft = br.left - tx, baseTop = br.top - ty;
+    var maxRight = document.documentElement.clientWidth - baseLeft - br.width - 12;
+    var maxLeft = baseLeft - 12;
+    tx = Math.max(-maxLeft, Math.min(maxRight, nx));
+    ty = Math.max(-34, Math.min(96, ny));
     cta.style.transform = "translate(" + tx + "px," + ty + "px)";
   }
 
-  // Pointer dodge (mouse only; never under reduced motion).
   if (!reduce && matchMedia("(hover: hover) and (pointer: fine)").matches) {
     document.addEventListener("pointermove", function (e) {
       if (unlocked() || q.ctaUnlocked) return;
@@ -107,7 +113,7 @@ export const ctaJS = `
       var dx = cx - e.clientX, dy = cy - e.clientY;
       var d = Math.hypot(dx, dy);
       if (d > 120 || d === 0) return;
-      if (Math.random() < p() * p()) return; // it "trips" — near-catch moment
+      if (Math.random() < p() * p()) return; // trips — a near-catch moment
       var step = 90 * (1 - p());
       if (step < 2) return;
       cta.style.transitionDuration = (60 + 340 * p()) + "ms";
@@ -126,16 +132,14 @@ export const ctaJS = `
       document.dispatchEvent(new CustomEvent("cta:opened"));
       return;
     }
-    // Not unlocked yet:
     if (e.detail === 0) {
-      // keyboard activation
       note.textContent = "Keyboard user, huh. Respect \\u2014 no chasing for you. Finish exploring and I'm all yours. (" + q.pct + "%)";
     } else if (matchMedia("(hover: none)").matches && !reduce) {
       var n = Math.ceil(3 * (1 - p()));
       if (hops < n) {
         hops++;
         cta.style.transitionDuration = "180ms";
-        clampMove((Math.random() * 2 - 1) * 120, (Math.random() * 2 - 1) * 70);
+        clampMove((Math.random() * 2 - 1) * 120, Math.random() * 80);
         note.textContent = "Nope. Explore more first \\u2014 " + q.pct + "%.";
       }
     } else {
@@ -143,7 +147,7 @@ export const ctaJS = `
     }
   });
 
-  // Rating.
+  // Rating — available immediately, no progress gate.
   var stars = [].slice.call(rating.querySelectorAll("[data-star]"));
   var send = rating.querySelector(".r-send");
   var comment = rating.querySelector("textarea");
@@ -151,6 +155,7 @@ export const ctaJS = `
   var chosen = 0;
   stars.forEach(function (s) {
     s.addEventListener("click", function () {
+      if (rating.classList.contains("sent")) return;
       chosen = parseInt(s.getAttribute("data-star"), 10);
       stars.forEach(function (x, i) { x.classList.toggle("on", i < chosen); });
       send.disabled = false;
@@ -160,6 +165,7 @@ export const ctaJS = `
     if (!chosen) return;
     send.disabled = true;
     send.textContent = "Sent \\u2713";
+    rating.classList.add("sent");
     try {
       fetch("/api/rating", {
         method: "POST",
@@ -169,17 +175,19 @@ export const ctaJS = `
         keepalive: true
       }).catch(function () {});
     } catch (e) {}
-    rating.classList.add("sent");
     window.QUEST.markRating(); // unlocks regardless of network outcome
   });
 
   function sync() {
     q = window.QUEST.get();
     label();
-    if (q.pct >= 100 && !q.ratingDone && !q.ctaUnlocked) rating.classList.add("on");
-    if (q.ratingDone) { rating.classList.remove("on"); }
+    if (q.ratingDone && !rating.classList.contains("sent")) {
+      rating.classList.add("sent");
+      send.disabled = true;
+      send.textContent = "Sent \\u2713";
+    }
     if (q.ctaUnlocked) { reward.classList.add("on"); cta.textContent = "\\u2713 unlocked"; cta.disabled = true; }
-    if (unlocked() && !q.ctaUnlocked) {
+    else if (unlocked()) {
       cta.style.transitionDuration = "300ms";
       clampMove(0, 0);
       note.textContent = "It stopped moving. Go on.";
