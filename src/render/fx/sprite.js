@@ -1,61 +1,48 @@
-// The guide sprite v5 — hedgehog, third pass on owner feedback.
-// Hand-drawn 立繪 feel with ZERO runtime cost (asset research verdict: no
-// free layered asset beats upgrading our own SVG): a feTurbulence+
-// feDisplacementMap filter gives every line a pencil wobble, ink contours
-// and hatching read as pen strokes, and a front PAW joins the layered
-// puppet so it can physically poke things — including your cursor.
-// New behaviors: a bother-loop that walks over and boops the mouse,
+// The guide sprite v6 — licensed LottieFiles hedgehog (cand1, Lottie Simple
+// License), baked at build time into a 24-frame WebP strip by
+// tools/bake-sprite.mjs. Still ZERO animation runtime: the idle loop is a
+// steps() background-position cycle, and every behavior mode is re-expressed
+// as a container-level transform (v5's hand-built SVG puppet lives in git
+// history). Behavior engine unchanged: bother-loop that boops the mouse,
 // score-aware rating quips, chase commentary, and a speed-reader callout.
+// Layer contract: #sprite = position (JS) > .skin = flip > .pose = mode
+// animations > .sheet = frame cycle; .hh-shadow is a sibling CSS ellipse.
 
 export const spriteCSS = `
 #sprite{position:fixed;left:0;top:0;z-index:70;width:92px;pointer-events:none;will-change:transform;transition:transform 1.15s cubic-bezier(.33,.75,.35,1)}
 #sprite.s-scurrying{transition-duration:.72s;transition-timing-function:cubic-bezier(.45,.05,.55,.95)}
-#sprite svg{display:block;overflow:visible;transition:transform .35s}
-#sprite.s-face-left svg{transform:scaleX(-1)}
-@media (prefers-reduced-motion:reduce){#sprite{transition:none}}
-#sprite .hh,#sprite .ball{transition:opacity .22s}
-#sprite .ball{opacity:0}
-#sprite.s-roll .hh{opacity:0}
-#sprite.s-roll .ball{opacity:1}
-#sprite .hh-face{transform-origin:78px 62px;transition:transform .45s cubic-bezier(.165,.84,.44,1)}
-#sprite .hh-eye{transition:transform .3s}
-#sprite .hh-lid{transform-origin:88px 58px;transform:scaleY(0)}
-#sprite .hh-shadow{transform-origin:56px 90px;transition:transform .3s,opacity .3s}
+#sprite .skin{width:92px;height:104px;transition:transform .35s}
+#sprite.s-face-left .skin{transform:scaleX(-1)}
+#sprite .pose{width:100%;height:100%;transition:transform .45s cubic-bezier(.165,.84,.44,1)}
+#sprite .sheet{width:100%;height:100%;background:url(/assets/sprite-hedgehog.webp) 0 0/2400% 100% no-repeat}
+#sprite .hh-shadow{position:absolute;left:15%;bottom:-3px;width:70%;height:8px;border-radius:50%;background:#17151a;opacity:.22;filter:blur(1px);transition:transform .3s,opacity .3s}
 #sprite.s-sleep{opacity:.6}
-#sprite.s-sleep .hh-face{transform:rotate(14deg) translateY(3px)}
+#sprite.s-sleep .pose{transform:rotate(10deg) translateY(3px)}
+#sprite.s-sleep .sheet{animation-play-state:paused}
+@media (prefers-reduced-motion:reduce){#sprite{transition:none}}
 @media (prefers-reduced-motion:no-preference){
-  #sprite.s-idle .hh-body{animation:hh-breathe 3.6s ease-in-out infinite;transform-origin:52px 78px}
-  @keyframes hh-breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.03)}}
-  #sprite .hh-lid{animation:hh-blink 5.4s infinite}
-  @keyframes hh-blink{0%,94%,100%{transform:scaleY(0)}96%,98%{transform:scaleY(1)}}
-  #sprite.s-idle .hh-nose{animation:hh-sniff 7.5s infinite}
-  @keyframes hh-sniff{0%,90%,100%{transform:translate(0,0)}92%,96%{transform:translate(1.3px,-.8px)}94%,98%{transform:translate(-.6px,.5px)}}
-  #sprite.s-look .hh-face{transform:rotate(-12deg) translate(-2px,-1px) scale(1.05)}
-  #sprite.s-look .hh-eye{transform:scale(1.3)}
-  #sprite.s-sniffa .hh-face{animation:hh-sniffa 1.6s ease-in-out 1}
-  @keyframes hh-sniffa{0%,100%{transform:rotate(0)}30%{transform:rotate(9deg) translate(2px,3px)}65%{transform:rotate(-6deg) translate(-1px,-1px)}}
-  #sprite.s-scratch .hh-legB{animation:hh-scr 1.2s ease-in-out 1;transform-origin:70px 78px}
-  #sprite.s-scratch .hh-body{animation:hh-scrb 1.2s ease-in-out 1;transform-origin:52px 78px}
-  @keyframes hh-scr{0%,100%{transform:rotate(0)}20%,40%,60%,80%{transform:rotate(38deg)}30%,50%,70%{transform:rotate(10deg)}}
-  @keyframes hh-scrb{0%,100%{transform:rotate(0)}25%,75%{transform:rotate(-3deg)}}
-  #sprite.s-yay .hh{animation:hh-hop .34s ease-out 2}
+  #sprite .sheet{animation:hh-cycle 1.92s steps(24,jump-none) infinite}
+  @keyframes hh-cycle{from{background-position-x:0%}to{background-position-x:100%}}
+  #sprite.s-look .pose{transform:rotate(-6deg) scale(1.06)}
+  #sprite.s-sniffa .pose{animation:hh-sniffa 1.6s ease-in-out 1}
+  @keyframes hh-sniffa{0%,100%{transform:rotate(0)}30%{transform:rotate(7deg) translate(2px,3px)}65%{transform:rotate(-5deg) translate(-1px,-1px)}}
+  #sprite.s-scratch .pose{animation:hh-scr 1.2s ease-in-out 1}
+  @keyframes hh-scr{0%,100%{transform:rotate(0)}20%,40%,60%,80%{transform:rotate(6deg) translateX(2px)}30%,50%,70%{transform:rotate(-3deg)}}
+  #sprite.s-yay .pose{animation:hh-hop .34s ease-out 2}
   #sprite.s-yay .hh-shadow{animation:hh-shadowhop .34s ease-out 2}
   @keyframes hh-hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
   @keyframes hh-shadowhop{0%,100%{transform:scaleX(1);opacity:.22}50%{transform:scaleX(.72);opacity:.1}}
-  #sprite.s-poke .hh{animation:hh-poke .5s ease-in-out 2}
-  @keyframes hh-poke{0%,100%{transform:translateX(0)}45%{transform:translateX(9px) rotate(2deg)}}
-  #sprite.s-poke .hh-paw{animation:hh-jab .5s ease-in-out 2;transform-origin:84px 73px}
-  @keyframes hh-jab{0%,100%{transform:rotate(0)}45%{transform:rotate(-52deg)}}
-  #sprite.s-scurrying .hh-legA{animation:hh-run .16s linear infinite;transform-origin:40px 78px}
-  #sprite.s-scurrying .hh-legB{animation:hh-run .16s linear infinite reverse;transform-origin:70px 78px}
-  @keyframes hh-run{0%,100%{transform:rotate(16deg)}50%{transform:rotate(-16deg)}}
-  #sprite.s-scurrying .hh{animation:hh-jog .32s ease-in-out infinite}
-  @keyframes hh-jog{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
-  #sprite.s-roll .ball{animation:hh-spin .55s linear infinite;transform-origin:52px 62px}
+  #sprite.s-poke .pose{animation:hh-poke .5s ease-in-out 2}
+  @keyframes hh-poke{0%,100%{transform:translateX(0)}45%{transform:translateX(9px) rotate(3deg)}}
+  #sprite.s-scurrying .pose{animation:hh-jog .32s ease-in-out infinite}
+  @keyframes hh-jog{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-2.5px) rotate(2deg)}}
+  #sprite.s-scurrying .sheet{animation-duration:.8s}
+  #sprite.s-roll .pose{animation:hh-spin .7s linear infinite}
   @keyframes hh-spin{to{transform:rotate(360deg)}}
+  #sprite.s-roll .hh-shadow{opacity:.12}
 }
 @media (prefers-reduced-motion:reduce){
-  #sprite.s-look .hh-face{transform:rotate(-12deg)}
+  #sprite.s-look .pose{transform:rotate(-6deg)}
 }
 #bubble{position:fixed;left:0;top:0;z-index:71;max-width:15.5rem;background:#fffdfa;border:1px solid #d8d0c4;border-radius:11px 11px 11px 3px;padding:.65rem .8rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.55;color:#3a3833;box-shadow:0 8px 28px rgba(41,31,23,.12);display:none}
 #bubble.on{display:block}
@@ -66,80 +53,13 @@ export const spriteCSS = `
 #bubble .b-chips button:hover,#bubble .b-chips button:focus-visible{background:#17151a;color:#fffdfa}
 #bubble .b-chips button:focus-visible{outline:2px solid #c2522d;outline-offset:2px}
 @media print{#sprite,#bubble{display:none !important}}
-@media (max-width:640px){#sprite{width:68px}}
+@media (max-width:640px){#sprite{width:68px}#sprite .skin{width:68px;height:77px}}
 `;
 
 export const spriteHTML = `
 <div id="sprite" class="s-idle" aria-hidden="true">
-  <svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <radialGradient id="hgQuill" cx="42%" cy="30%" r="80%">
-        <stop offset="0%" stop-color="#b0563a"/>
-        <stop offset="55%" stop-color="#8f351f"/>
-        <stop offset="100%" stop-color="#6b2515"/>
-      </radialGradient>
-      <linearGradient id="hgFace" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#f8f2e7"/>
-        <stop offset="100%" stop-color="#e0d3bd"/>
-      </linearGradient>
-      <linearGradient id="hgBelly" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#f4ecdd"/>
-        <stop offset="100%" stop-color="#d9cbb2"/>
-      </linearGradient>
-      <radialGradient id="hgBall" cx="38%" cy="32%" r="85%">
-        <stop offset="0%" stop-color="#b0563a"/>
-        <stop offset="60%" stop-color="#8f351f"/>
-        <stop offset="100%" stop-color="#5f2012"/>
-      </radialGradient>
-      <filter id="hhRough" x="-15%" y="-15%" width="130%" height="130%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="7" result="n"/>
-        <feDisplacementMap in="SourceGraphic" in2="n" scale="2.4"/>
-      </filter>
-    </defs>
-    <ellipse class="hh-shadow" cx="56" cy="90" rx="34" ry="5" fill="#17151a" opacity=".22"/>
-    <g class="hh">
-      <g class="hh-body">
-        <g class="hh-quills" filter="url(#hhRough)">
-          <path d="M22 76 Q14 48 34 34 Q52 22 74 32 Q88 38 90 54 L88 76 Z" fill="#5f2012"/>
-          <path d="M20 74 Q14 46 34 32 Q52 20 74 30 Q88 36 90 52 L88 74 Z" fill="url(#hgQuill)" stroke="#4a2415" stroke-width="1"/>
-          <polygon points="22,52 10,40 27,41" fill="url(#hgQuill)"/>
-          <polygon points="30,40 23,25 40,31" fill="url(#hgQuill)"/>
-          <polygon points="44,31 41,14 56,25" fill="url(#hgQuill)"/>
-          <polygon points="60,27 64,11 73,26" fill="url(#hgQuill)"/>
-          <polygon points="74,31 85,19 85,35" fill="url(#hgQuill)"/>
-          <polygon points="16,62 4,56 15,49" fill="url(#hgQuill)"/>
-          <path d="M30 34 L26 27 M46 27 L44 19 M62 24 L64 16 M76 30 L82 23" stroke="#c98a6b" stroke-width="1.1" stroke-linecap="round" fill="none" opacity=".7"/>
-          <path d="M30 62 l7 -4 M40 67 l7 -4 M52 70 l7 -4 M64 70 l7 -4 M26 52 l6 -4" stroke="#4a2415" stroke-width=".8" stroke-linecap="round" fill="none" opacity=".45"/>
-        </g>
-        <path d="M88 76 L88 52 Q92 44 104 52 Q112 58 106 68 Q100 77 88 76 Z" fill="url(#hgFace)" stroke="#b09a7c" stroke-width="1"/>
-        <g class="hh-face">
-          <circle class="hh-nose" cx="107" cy="60" r="3.6" fill="#241d1a"/>
-          <circle cx="105.8" cy="58.8" r="1" fill="#5a504a"/>
-          <g class="hh-eye">
-            <circle cx="89" cy="58" r="3" fill="#17151a"/>
-            <circle cx="88" cy="57" r="1" fill="#fffdfa"/>
-          </g>
-          <rect class="hh-lid" x="85" y="54" width="8" height="8" rx="4" fill="url(#hgFace)"/>
-          <path d="M84 48 Q86 43 90 46 Q88 49 84 48 Z" fill="#d8b9a4"/>
-          <path d="M96 66 Q99 67.5 102 66.5" stroke="#b59a7e" stroke-width=".9" fill="none" stroke-linecap="round"/>
-        </g>
-        <path d="M28 76 Q52 84 86 76 L84 80 Q52 88 30 80 Z" fill="url(#hgBelly)"/>
-        <path class="hh-paw" d="M84 73 Q90 76 93 81" stroke="#241d1a" stroke-width="1.9" fill="none" stroke-linecap="round"/>
-      </g>
-      <line class="hh-legA" x1="40" y1="78" x2="39" y2="89" stroke="#241d1a" stroke-width="1.8" stroke-linecap="round"/>
-      <line class="hh-legB" x1="70" y1="78" x2="72" y2="89" stroke="#241d1a" stroke-width="1.8" stroke-linecap="round"/>
-    </g>
-    <g class="ball" filter="url(#hhRough)">
-      <circle cx="52" cy="64" r="29" fill="url(#hgBall)"/>
-      <polygon points="52,32 46,19 60,24" fill="url(#hgBall)"/>
-      <polygon points="76,44 88,36 84,50" fill="url(#hgBall)"/>
-      <polygon points="80,72 93,74 84,84" fill="url(#hgBall)"/>
-      <polygon points="52,96 48,107 62,102" fill="url(#hgBall)"/>
-      <polygon points="28,84 16,90 22,76" fill="url(#hgBall)"/>
-      <polygon points="24,48 12,42 22,34" fill="url(#hgBall)"/>
-      <circle cx="45" cy="56" r="10" fill="#b0563a" opacity=".5"/>
-    </g>
-  </svg>
+  <div class="hh-shadow"></div>
+  <div class="skin"><div class="pose"><div class="sheet"></div></div></div>
 </div>
 <div id="bubble" role="presentation">
   <button class="b-x" type="button" aria-label="Stop guiding me">&times;</button>
@@ -189,7 +109,7 @@ export const spriteJS = `
   var W = 92;
   function vw() { return document.documentElement.clientWidth; }
   function vh() { return document.documentElement.clientHeight; }
-  function home() { return { x: vw() - W - 16, y: vh() - 104 }; }
+  function home() { return { x: vw() - W - 16, y: vh() - 128 }; }
 
   function setMode(m) {
     mode = m;
@@ -202,7 +122,7 @@ export const spriteJS = `
   }
   function place(nx, ny, instant) {
     nx = Math.max(6, Math.min(vw() - W - 6, nx));
-    ny = Math.max(6, Math.min(vh() - 100, ny));
+    ny = Math.max(6, Math.min(vh() - 116, ny));
     if (Math.abs(nx - x) > 4) face(nx < x);
     x = nx; y = ny;
     if (instant || reduce) sprite.style.transition = "none";

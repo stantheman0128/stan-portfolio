@@ -63,6 +63,15 @@ Owner-approved idea, deferred. Phases:
 - [x] Hedgehog v5: hand-drawn look (feTurbulence wobble on quills, ink contour, hatching), front paw, bother-loop (walks over and boops the cursor; sulks if it fled), score-aware rating quips, chase commentary, speed-reader callout
 - [x] Asset research (5 parallel agents): no free "hand-drawn + layered + hedgehog" asset exists; Rive/DragonBones runtimes 220KB-700KB → verdict: upgrade own SVG (0KB runtime). Done.
 
+## Round 5 (2026-07-05) — mascot swap + UI/interaction fixes
+- [x] Mascot: hand-built SVG hedgehog replaced with licensed LottieFiles hedgehog (cand1, Lottie Simple License), baked at build time into `public/assets/sprite-hedgehog.webp` (24 frames, 139 KB, `npm run bake:sprite`); behavior engine untouched — the 11 mode classes are the skin/bones contract (plan: docs/superpowers/plans/2026-07-05-hedgehog-lottie-skin.md)
+- [ ] Photo IS the progress bar: the dodging object becomes the photo itself (Read more button retires)
+- [ ] Unlock animation: blur -> sharp "develop"
+- [ ] More elegant evasion motion for the dodging object
+- [ ] Remove the old placeholder whitespace
+- [ ] Avatar goes in the empty slot right of the title (no extra button)
+- [ ] Photo upload entry for Stan; reward photo stays KV-only (asset:reward-full, no guessable URL)
+
 ### Production launch checklist (before merging to prod)
 - [ ] Set `REWARD_SECRET` Pages secret (preview currently uses a dev fallback — tokens are forgeable there by design, placeholder photo only)
 - [ ] Upload Stan's REAL photos: replace `public/assets/reward-tease.svg` (goofy crop, public) + `wrangler kv key put asset:reward-full --path <full.jpg> --metadata '{"ct":"image/jpeg"}' --namespace-id=<prod> --remote`
