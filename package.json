@@ -6,11 +6,14 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build && node tools/postbuild.mjs",
+    "bake:sprite": "node tools/bake-sprite.mjs",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
     "deploy:cms-auth": "wrangler deploy --config cms-auth/wrangler.jsonc"
   },
   "devDependencies": {
+    "lottie-web": "^5.13.0",
+    "puppeteer-core": "^25.3.0",
     "vite": "^8.0.14",
     "vitest": "^4.0.16",
     "wrangler": "^4.98.0",
