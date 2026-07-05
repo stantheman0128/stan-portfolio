@@ -343,12 +343,12 @@ export const spriteJS = `
   });
   document.addEventListener("quest:complete", function () {
     setMode("yay");
-    say("That's everything \\u2014 the button up top just gave up. Go catch it.", null, { force: true, hold: 7000 });
+    say("That's everything \\u2014 the photo up top just stopped running. Go catch it.", null, { force: true, hold: 7000 });
     setTimeout(function () { setMode("idle"); }, 2600);
   });
   document.addEventListener("cta:opened", function () {
     setMode("yay");
-    say("Caught it! Code word's yours \\u2014 and click that photo. Trust me.", null, { force: true, hold: 8000 });
+    say("Caught it! Code word's yours \\u2014 now watch it develop.", null, { force: true, hold: 8000 });
     setTimeout(function () { setMode("idle"); }, 2600);
   });
   document.addEventListener("photo:developed", function () {

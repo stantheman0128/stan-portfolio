@@ -65,10 +65,11 @@ Owner-approved idea, deferred. Phases:
 
 ## Round 5 (2026-07-05) — mascot swap + UI/interaction fixes
 - [x] Mascot: hand-built SVG hedgehog replaced with licensed LottieFiles hedgehog (cand1, Lottie Simple License), baked at build time into `public/assets/sprite-hedgehog.webp` (24 frames, 139 KB, `npm run bake:sprite`); behavior engine untouched — the 11 mode classes are the skin/bones contract (plan: docs/superpowers/plans/2026-07-05-hedgehog-lottie-skin.md)
-- [ ] Photo IS the progress bar: the dodging object becomes the photo itself (Read more button retires)
-- [ ] Unlock animation: blur -> sharp "develop"
-- [ ] More elegant evasion motion for the dodging object
-- [ ] Remove the old placeholder whitespace
+- [x] Photo IS the progress bar: always-visible polaroid replaces the Read more button; blur 16px->3px maps to quest pct (paint() in fx/cta.js); caption `developing · N%`
+- [x] Unlock animation: catch click -> token fetch -> blur(13px)->0 develop over 1.1s; fail path degrades to sharp tease + retry caption; reload-after-catch = `caught · tap to develop` at 3px blur
+- [x] More elegant evasion: damped rAF glide (no spring overshoot), lean-into-travel rotation, shadow lift while moving, smooth arc jukes; trips/step-shrink/touch-hops/keyboard+reduced-motion exemptions kept
+- [x] Placeholder whitespace removed: no hidden photo-card, no layout jump; one object from first paint
+- [ ] (spotted in QA, pre-existing) minimal 375px: INDEX header row overlaps "9 WORKS · 2025-2026" — fix with wrap/stack
 - [ ] Avatar goes in the empty slot right of the title (no extra button)
 - [ ] Photo upload entry for Stan; reward photo stays KV-only (asset:reward-full, no guessable URL)
 

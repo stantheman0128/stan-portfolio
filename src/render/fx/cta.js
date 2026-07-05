@@ -1,34 +1,30 @@
-// The "Read more" progress button — the ONE progress object on the page.
-// It shows live %, renders every quest message on its note line, and dodges
-// with personality: spring easing, a lean-into-the-dash tilt, squash-and-
-// stretch, and an occasional sideways juke. Catchable at 100%, where it grows
-// Stan's goofy face; clicking it drops a polaroid that DEVELOPS into the full
-// photo — fetched through /api/reward with a server-minted token, so the real
-// image has no guessable URL. The code-word panel at the bottom stays.
+// The photo IS the progress bar — the ONE progress object on the page.
+// A small polaroid sits below the hero from the first paint: blurred while
+// locked, and it literally DEVELOPS (blur 16px -> 3px) as the visitor
+// explores. It dodges the cursor with a damped rAF glide (paper sliding on a
+// desk — no spring overshoot), leans into its direction of travel, and lifts
+// while moving. At 100% it stops, gets caught with a click, and the full
+// photo arrives through /api/reward with a server-minted token (no guessable
+// URL); the reveal is one long blur-to-sharp develop. The code-word panel at
+// the bottom stays. Events kept for the sprite: cta:chase, cta:opened,
+// photo:developed.
 
 export const ctaCSS = `
 #cta-top{margin:30px 0 6px}
-#cta-zone{position:relative;min-height:64px;display:flex;align-items:center}
-#cta{position:relative;overflow:hidden;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;letter-spacing:.03em;padding:.72rem 1.35rem;border:1.5px solid #17151a;border-radius:999px;background:#fffdfa;color:#17151a;cursor:pointer;will-change:transform;transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,border-color .2s}
-#cta .cta-fill{position:absolute;inset:0;background:rgba(194,82,45,.14);transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.165,.84,.44,1);pointer-events:none}
-#cta .cta-inner{position:relative;display:inline-flex;align-items:center;gap:.55rem;transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
-#cta .cta-pct{color:#c2522d;font-variant-numeric:tabular-nums}
-#cta .cta-face{display:none;width:24px;height:24px;border-radius:50%;border:1px solid rgba(194,82,45,.45);background:#efe7da;object-fit:cover}
-#cta.cta-free .cta-face{display:block}
-#cta.cta-dash .cta-inner{transform:scaleX(1.07) skewX(-4deg)}
-#cta:focus-visible{outline:2px solid #c2522d;outline-offset:3px}
-#cta.cta-free{border-color:#c2522d;color:#c2522d;box-shadow:0 0 0 4px rgba(194,82,45,.14),0 8px 30px rgba(194,82,45,.18)}
-@media (prefers-reduced-motion:reduce){#cta{transition:none !important;transform:none !important}#cta .cta-fill{transition:none}#cta .cta-inner{transition:none;transform:none !important}}
+#cta-zone{position:relative;min-height:200px;display:flex;align-items:flex-start}
+#photo{margin:0;display:inline-block;background:#fffdfa;border:1px solid #d8d0c4;border-radius:4px;padding:8px 8px 6px;box-shadow:0 10px 30px rgba(41,31,23,.14);transform:rotate(-2deg);will-change:transform;cursor:pointer}
+#photo.ph-lift{box-shadow:0 22px 54px rgba(41,31,23,.22)}
+#photo.ph-free{border-color:#c2522d;box-shadow:0 0 0 4px rgba(194,82,45,.14),0 10px 34px rgba(194,82,45,.2)}
+#photo-btn{all:unset;display:block;cursor:pointer}
+#photo-btn:focus-visible{outline:2px solid #c2522d;outline-offset:4px}
+#photo-img{width:120px;height:auto;display:block;border-radius:2px;background:#efe7da;filter:blur(var(--dev-blur,16px)) saturate(var(--dev-sat,.5));transition:filter .6s cubic-bezier(.25,1,.5,1)}
+#photo.ph-develop #photo-img{transition:filter 1.1s cubic-bezier(.16,1,.3,1)}
+#photo-cap{margin:6px 0 0;max-width:120px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;line-height:1.5;color:#6f6b62;font-variant-numeric:tabular-nums}
+#photo.ph-free #photo-cap{color:#c2522d}
+@media (prefers-reduced-motion:reduce){#photo{transform:rotate(-2deg) !important}#photo-img{transition:none}}
+@media (max-width:640px){#photo-img{width:104px}#photo-cap{max-width:104px}#cta-zone{min-height:180px}}
 #cta-note{margin-top:10px;font-size:12.5px;color:#8b877f;min-height:1.4em;transition:opacity .25s}
 #cta-note.flash{color:#c2522d}
-#photo-card{margin:14px 0 0;display:inline-block;background:#fffdfa;border:1px solid #d8d0c4;border-radius:4px;padding:10px 10px 8px;box-shadow:0 16px 44px rgba(41,31,23,.18);transform:rotate(-2deg)}
-#photo-card[hidden]{display:none}
-#photo-btn{all:unset;cursor:pointer;display:block}
-#photo-btn:focus-visible{outline:2px solid #c2522d;outline-offset:3px}
-#photo-img{width:210px;height:auto;display:block;border-radius:2px;background:#efe7da;transition:filter .9s ease}
-#photo-img.developing{filter:blur(13px) saturate(.4)}
-#photo-cap{margin:8px 0 0;max-width:210px;font-family:ui-monospace,monospace;font-size:11px;line-height:1.5;color:#8b877f}
-@media (prefers-reduced-motion:reduce){#photo-img{transition:none}}
 #lab{margin-top:44px}
 #reward{display:none;margin:10px auto 0;max-width:30rem;border:1.5px solid #426c53;border-radius:12px;padding:1.3rem 1.4rem;background:#fbfdf9}
 #reward.on{display:block}
@@ -40,18 +36,14 @@ export const ctaCSS = `
 export const ctaTopHTML = `
 <div id="cta-top" aria-label="Exploration progress and reward">
   <div id="cta-zone">
-    <button id="cta" type="button" aria-describedby="cta-note">
-      <span class="cta-fill" aria-hidden="true"></span>
-      <span class="cta-inner"><img class="cta-face" src="/assets/reward-tease.svg" alt="" width="24" height="24"><span class="cta-label">Read more</span><span class="cta-pct">0%</span></span>
-    </button>
+    <figure id="photo">
+      <button id="photo-btn" type="button" aria-describedby="cta-note">
+        <img id="photo-img" src="/assets/reward-tease.svg" alt="A photo of Stan, still developing" width="420" height="500">
+      </button>
+      <figcaption id="photo-cap">developing &middot; 0%</figcaption>
+    </figure>
   </div>
   <p id="cta-note"></p>
-  <figure id="photo-card" hidden>
-    <button id="photo-btn" type="button">
-      <img id="photo-img" src="/assets/reward-tease.svg" alt="Stan, goofy decoy portrait" width="420" height="500">
-    </button>
-    <figcaption id="photo-cap">That's the decoy me. Click the photo to develop the real one.</figcaption>
-  </figure>
 </div>
 `;
 
@@ -69,27 +61,23 @@ export const ctaLabHTML = `
 
 export const ctaJS = `
 (function () {
-  var cta = document.getElementById("cta");
+  var photo = document.getElementById("photo");
+  var btn = document.getElementById("photo-btn");
+  var img = document.getElementById("photo-img");
+  var cap = document.getElementById("photo-cap");
   var note = document.getElementById("cta-note");
   var reward = document.getElementById("reward");
-  if (!cta || !window.QUEST) return;
-  var fill = cta.querySelector(".cta-fill");
-  var labelEl = cta.querySelector(".cta-label");
-  var pctEl = cta.querySelector(".cta-pct");
-  var photoCard = document.getElementById("photo-card");
-  var photoBtn = document.getElementById("photo-btn");
-  var photoImg = document.getElementById("photo-img");
-  var photoCap = document.getElementById("photo-cap");
+  if (!photo || !window.QUEST) return;
 
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var q = window.QUEST.get();
-  var tx = 0, ty = 0, hops = 0, dashTimer = 0, lastJuke = 0, lastChase = 0;
+  var hops = 0, lastJuke = 0, lastChase = 0;
 
   function p() { return Math.min(1, q.pct / 100); }
   function unlocked() { return q.pct >= 100; }
 
   // The one message line. Quest events land here.
-  var noteTimer = 0, defaultNote = "This button is a coward. Explore the projects to slow it down.";
+  var noteTimer = 0, defaultNote = "Camera-shy. It develops \\u2014 and calms down \\u2014 as you explore the works.";
   function setNote(msg, sticky) {
     note.textContent = msg;
     note.classList.add("flash");
@@ -100,89 +88,115 @@ export const ctaJS = `
     }, 4200);
   }
   function statusNote() {
-    if (q.ctaUnlocked) return "Code word delivered. The photo below is the other half of the prize.";
-    if (unlocked()) return "It stopped moving. Go on.";
+    if (q.ctaUnlocked) {
+      return developed
+        ? "Code word delivered. And that's the real me, fully developed."
+        : "Code word delivered. The photo's ready when you are \\u2014 tap it.";
+    }
+    if (unlocked()) return "It stopped running. Go catch it.";
     return defaultNote;
   }
   document.addEventListener("quest:note", function (e) { setNote(e.detail.msg); });
 
+  // Blur IS the progress bar: 16px at 0% develops down to 3px at 100%.
+  var developing = false, developed = false;
   function paint() {
-    fill.style.transform = "scaleX(" + p() + ")";
-    pctEl.textContent = q.pct + "%";
+    if (!developed) {
+      photo.style.setProperty("--dev-blur", (16 - 13 * p()).toFixed(1) + "px");
+      photo.style.setProperty("--dev-sat", (0.5 + 0.5 * p()).toFixed(2));
+    }
     if (q.ctaUnlocked) {
-      labelEl.textContent = "\\u2713 unlocked";
-      pctEl.textContent = "";
-      cta.classList.add("cta-free");
+      photo.classList.add("ph-free");
+      if (!developing && !developed) cap.textContent = "caught \\u00b7 tap to develop";
+      btn.setAttribute("aria-label", developed ? "The full photo of Stan" : "Tap to develop the full photo");
     } else if (unlocked()) {
-      labelEl.textContent = "Read more \\u2014 it's yours";
-      cta.classList.add("cta-free");
-      cta.setAttribute("aria-label", "Open the reward");
+      photo.classList.add("ph-free");
+      cap.textContent = "100% \\u00b7 catch it";
+      btn.setAttribute("aria-label", "Catch the photo to develop it");
     } else {
-      labelEl.textContent = "Read more";
-      cta.setAttribute("aria-label", "Read more \\u2014 locked until fully explored (" + q.pct + "%)");
+      cap.textContent = "developing \\u00b7 " + q.pct + "%";
+      btn.setAttribute("aria-label", "A photo developing as you explore \\u2014 " + q.pct + "% \\u2014 it dodges until you finish");
     }
   }
 
-  // The polaroid: tease is a public asset; the FULL photo only ever arrives
-  // through /api/reward with a token the server mints from ITS record of the
+  // The tease is a public asset; the FULL photo only ever arrives through
+  // /api/reward with a token the server mints from ITS record of the
   // visitor's exploration — client-side state can't forge it.
-  var developing = false, developed = false;
   function develop() {
     if (developing || developed) return;
     developing = true;
-    photoCap.textContent = "Developing\\u2026";
-    photoImg.classList.add("developing");
+    cap.textContent = "developing the real one\\u2026";
+    photo.classList.add("ph-develop");
+    photo.style.setProperty("--dev-blur", "13px");
+    photo.style.setProperty("--dev-sat", ".4");
     window.QUEST.claim(function (t) {
       if (!t) return developFail();
       fetch("/api/reward?t=" + encodeURIComponent(t))
         .then(function (r) { if (!r.ok) throw 0; return r.blob(); })
         .then(function (blob) {
-          photoImg.onload = function () {
-            photoImg.classList.remove("developing");
-            photoImg.onload = null;
+          img.onload = function () {
+            img.onload = null;
+            photo.style.setProperty("--dev-blur", "0px");
+            photo.style.setProperty("--dev-sat", "1");
+            developed = true;
+            developing = false;
+            cap.textContent = "the full Stan \\u00b7 you earned this";
+            img.alt = "Stan, the full portrait";
+            note.textContent = statusNote();
+            document.dispatchEvent(new CustomEvent("photo:developed"));
           };
-          photoImg.src = URL.createObjectURL(blob);
-          photoImg.alt = "Stan, the full portrait";
-          photoCap.textContent = "The full Stan. You've earned this.";
-          developed = true;
-          developing = false;
-          document.dispatchEvent(new CustomEvent("photo:developed"));
+          img.src = URL.createObjectURL(blob);
         })
         .catch(developFail);
     });
   }
   function developFail() {
     developing = false;
-    photoImg.classList.remove("developing");
-    photoCap.textContent = "Hmm \\u2014 the vault isn't answering. Wander around a little and try again.";
+    photo.classList.remove("ph-develop");
+    photo.style.setProperty("--dev-blur", "0px");
+    photo.style.setProperty("--dev-sat", "1");
+    cap.textContent = "vault's not answering \\u2014 try the photo again";
   }
-  photoBtn.addEventListener("click", develop);
 
-  function clampMove(nx, ny) {
-    var br = cta.getBoundingClientRect();
-    var baseLeft = br.left - tx, baseTop = br.top - ty;
+  // Evasion v2: a damped glide instead of spring steps. pointermove nudges a
+  // goal point; a rAF loop eases the polaroid toward it and leans it into the
+  // direction of travel. Reads as paper sliding on a desk, not a startled UI.
+  var tx = 0, ty = 0, gx = 0, gy = 0, lean = 0, raf = 0;
+  function glide() {
+    raf = 0;
+    var dx = gx - tx, dy = gy - ty;
+    tx += dx * 0.16;
+    ty += dy * 0.16;
+    var targetLean = Math.max(-6, Math.min(6, dx * 0.05));
+    lean += (targetLean - lean) * 0.2;
+    photo.style.transform = "translate(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px) rotate(" + (-2 + lean).toFixed(2) + "deg)";
+    if (Math.hypot(dx, dy) > 0.5 || Math.abs(lean - targetLean) > 0.1) {
+      raf = requestAnimationFrame(glide);
+    } else {
+      tx = gx; ty = gy; lean = 0;
+      photo.style.transform = "translate(" + tx + "px," + ty + "px) rotate(-2deg)";
+      photo.classList.remove("ph-lift");
+    }
+  }
+  function driftTo(nx, ny) {
+    var br = photo.getBoundingClientRect();
+    var baseLeft = br.left - tx;
     var maxRight = document.documentElement.clientWidth - baseLeft - br.width - 12;
     var maxLeft = baseLeft - 12;
-    tx = Math.max(-maxLeft, Math.min(maxRight, nx));
-    ty = Math.max(-34, Math.min(96, ny));
-    var tilt = Math.max(-7, Math.min(7, (nx - tx) * 0.02 + (Math.random() * 6 - 3)));
-    cta.style.transform = "translate(" + tx + "px," + ty + "px) rotate(" + tilt + "deg)";
-    cta.classList.add("cta-dash");
-    clearTimeout(dashTimer);
-    dashTimer = setTimeout(function () {
-      cta.classList.remove("cta-dash");
-      cta.style.transform = "translate(" + tx + "px," + ty + "px)";
-    }, 220);
+    gx = Math.max(-maxLeft, Math.min(maxRight, nx));
+    gy = Math.max(-40, Math.min(110, ny));
+    photo.classList.add("ph-lift");
+    if (!raf) raf = requestAnimationFrame(glide);
   }
 
   if (!reduce && matchMedia("(hover: hover) and (pointer: fine)").matches) {
     document.addEventListener("pointermove", function (e) {
       if (unlocked() || q.ctaUnlocked) return;
-      var br = cta.getBoundingClientRect();
+      var br = photo.getBoundingClientRect();
       var cx = br.left + br.width / 2, cy = br.top + br.height / 2;
       var dx = cx - e.clientX, dy = cy - e.clientY;
       var d = Math.hypot(dx, dy);
-      if (d > 120 || d === 0) return;
+      if (d > 130 || d === 0) return;
       var now = Date.now();
       if (now - lastChase > 20000) {
         lastChase = now;
@@ -192,38 +206,36 @@ export const ctaJS = `
       var step = 90 * (1 - p());
       if (step < 2) return;
       var ux = dx / d, uy = dy / d;
-      // One flee in ~4 is a sideways JUKE instead of a straight run.
+      // One flee in ~4 becomes a sideways arc instead of a straight slide.
       if (now - lastJuke > 900 && Math.random() < 0.25) {
         lastJuke = now;
         var side = Math.random() < 0.5 ? 1 : -1;
-        var jx = -uy * side, jy = ux * side;
-        cta.style.transitionDuration = (50 + 200 * p()) + "ms";
-        clampMove(tx + jx * step * 1.2, ty + jy * step * 0.8);
+        driftTo(gx + (ux * 0.4 - uy * side) * step, gy + (uy * 0.4 + ux * side) * step * 0.7);
         return;
       }
-      cta.style.transitionDuration = (60 + 340 * p()) + "ms";
-      clampMove(tx + ux * step, ty + uy * step);
+      driftTo(gx + ux * step, gy + uy * step * 0.7);
     }, { passive: true });
   }
 
-  cta.addEventListener("click", function (e) {
+  btn.addEventListener("click", function (e) {
     if (q.ctaUnlocked || unlocked()) {
+      var firstCatch = !q.ctaUnlocked;
       window.QUEST.markUnlocked();
+      q = window.QUEST.get();
       reward.classList.add("on");
-      photoCard.hidden = false;
       paint();
-      cta.disabled = true;
-      document.dispatchEvent(new CustomEvent("cta:opened"));
+      note.textContent = statusNote();
+      if (firstCatch) document.dispatchEvent(new CustomEvent("cta:opened"));
+      develop();
       return;
     }
     if (e.detail === 0) {
-      setNote("Keyboard user, huh. Respect \\u2014 no chasing for you. Finish exploring and I'm all yours. (" + q.pct + "%)");
+      setNote("Keyboard user, huh. Respect \\u2014 no chasing for you. Finish exploring and it holds still. (" + q.pct + "%)");
     } else if (matchMedia("(hover: none)").matches && !reduce) {
       var n = Math.ceil(3 * (1 - p()));
       if (hops < n) {
         hops++;
-        cta.style.transitionDuration = "180ms";
-        clampMove((Math.random() * 2 - 1) * 120, Math.random() * 80);
+        driftTo((Math.random() * 2 - 1) * 120, Math.random() * 90);
         setNote("Nope. Explore more first \\u2014 " + q.pct + "%.");
       }
     } else {
@@ -231,18 +243,20 @@ export const ctaJS = `
     }
   });
 
+  function settleHome() {
+    gx = 0; gy = 0;
+    photo.classList.add("ph-lift");
+    if (!reduce && !raf) raf = requestAnimationFrame(glide);
+    if (reduce) { tx = ty = 0; photo.classList.remove("ph-lift"); }
+  }
   function sync() {
     q = window.QUEST.get();
     paint();
     if (q.ctaUnlocked) {
       reward.classList.add("on");
-      photoCard.hidden = false;
-      cta.disabled = true;
+      settleHome();
     } else if (unlocked()) {
-      cta.style.transitionDuration = "300ms";
-      cta.classList.remove("cta-dash");
-      tx = 0; ty = 0;
-      cta.style.transform = "translate(0px,0px)";
+      settleHome();
       note.textContent = statusNote();
     }
   }

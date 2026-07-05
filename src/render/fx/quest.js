@@ -1,5 +1,5 @@
 // Quest v2.2 — the separate badge is GONE (owner: one thing, not two).
-// Progress lives inside the Read-more button (fx/cta.js); this module keeps
+// Progress lives inside the developing polaroid (fx/cta.js); this module keeps
 // the source of truth, row check marks, the SR live region, and routes all
 // human-facing messages through a `quest:note` event that the CTA renders.
 // Deploy-stamp reset (meta[name=build]) stays while the owner is testing.
@@ -81,7 +81,7 @@ export const questJS = `
     if (n >= TOTAL) {
       emit("quest:items-complete");
       emit("quest:complete");
-      if (srEl) srEl.textContent = "One hundred percent. The button is catchable now.";
+      if (srEl) srEl.textContent = "One hundred percent. The photo is catchable now.";
     }
   }
 
