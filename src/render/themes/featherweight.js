@@ -437,11 +437,24 @@ img{max-width:100%;height:auto}
   <footer>
     <span>© ${year} ${esc(p.name)}${p.latinName ? " · " + esc(p.latinName) : ""}</span>
     <span class="grow"></span>
-    <span>Featherweight · system fonts · zero JS · nothing blocks first paint</span>
+    <span>Featherweight · system fonts · <span id="fw-speed">nothing blocks first paint</span></span>
     <a href="/site?theme=minimal&amp;v=full">Full interactive version &rarr;</a>
   </footer>
 
 </div>
+<script>
+(function(){
+  function done(){
+    var nav = performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
+    var ms = nav && nav.domContentLoadedEventEnd ? nav.domContentLoadedEventEnd : performance.now();
+    var n = isFinite(ms) && ms > 0 ? Math.round(ms) : 0;
+    var el = document.getElementById("fw-speed");
+    if (el) el.textContent = "became usable in ~" + n + " ms · one tiny timer";
+  }
+  if (document.readyState === "complete") done();
+  else addEventListener("load", done);
+})();
+</script>
 </body>
 </html>`;
 }

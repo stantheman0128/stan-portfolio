@@ -128,8 +128,8 @@
       "year": "2026",
       "themeExclude": "featherweight",
       "description": "The page you're reading has a twin built for pure speed: zero JavaScript, system fonts, nothing blocks first paint.",
-      "detail": "Same content, opposite philosophy — no hedgehog, no quest, no scripts at all. About 6 KB gzipped, ~0.2 s edge TTFB, Lighthouse 99. On a slow connection this site quietly sends you there instead.",
-      "tags": ["Zero JS", "System fonts", "6 KB gzip", "Lighthouse 99"],
+      "detail": "Same content, opposite philosophy — no hedgehog, no quest, just one line that times itself. About 6 KB gzipped, ~0.2 s edge TTFB, Lighthouse 99. On a slow connection this site quietly sends you there instead.",
+      "tags": ["~1 line JS", "System fonts", "6 KB gzip", "Lighthouse 99"],
       "image": "",
       "imageMode": "",
       "links": [{ "label": "Visit the lite twin", "href": "/fast/" }]
