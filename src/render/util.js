@@ -19,3 +19,10 @@ export function md(src) {
 
 // Only confirmed links — hide "#TODO-" placeholders, matching the live-site convention.
 export const realLinks = (links) => (links || []).filter((l) => l && l.href && !String(l.href).startsWith("#TODO"));
+
+// Round a millisecond duration into a display string like "~42 ms"; non-finite
+// or non-positive input reads "~0 ms". Featherweight's inline timer mirrors this.
+export function formatSpeed(ms) {
+  const n = Number.isFinite(ms) && ms > 0 ? Math.round(ms) : 0;
+  return "~" + n + " ms";
+}
