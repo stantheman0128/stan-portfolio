@@ -3,11 +3,10 @@
 // locked, and it literally DEVELOPS (blur 16px -> 3px) as the visitor
 // explores. It dodges the cursor with a damped rAF glide (paper sliding on a
 // desk — no spring overshoot), leans into its direction of travel, and lifts
-// while moving. At 100% it stops, gets caught with a click, and the full
-// photo arrives through /api/reward with a server-minted token (no guessable
-// URL); the reveal is one long blur-to-sharp develop. The code-word panel at
-// the bottom stays. Events kept for the sprite: cta:chase, cta:opened,
-// photo:developed.
+// while moving. At 100% it stops and gets caught with a click. The photo is a
+// public asset now (a friendly easter egg, not a secret), so there is no token
+// gate. The code-word panel at the bottom stays. Events kept for the sprite:
+// cta:chase, cta:opened, photo:developed.
 
 export const ctaCSS = `
 #cta-top{margin:30px 0 6px}
@@ -116,9 +115,8 @@ export const ctaJS = `
     }
   }
 
-  // The tease is a public asset; the FULL photo only ever arrives through
-  // /api/reward with a token the server mints from ITS record of the
-  // visitor's exploration — client-side state can't forge it.
+  // Catch at 100% just settles the reveal fully sharp; the photo is a public
+  // asset, so there's no token to fetch.
   function develop() {
     if (developed) return;
     if (shatter) shatter.setStep(q.total);
