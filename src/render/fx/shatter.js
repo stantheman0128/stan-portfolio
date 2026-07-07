@@ -25,3 +25,21 @@ export function voronoiCells(w, h, seeds) {
   }
   return cells;
 }
+
+// One cumulative-clarity curve per cell across `steps` unlocks. Each step's
+// increment is random, so cells develop at different paces; the last step is
+// pinned to 1 so every shard is fully sharp once exploration completes.
+export function revealSchedule(cellCount, steps, rnd = Math.random) {
+  const out = [];
+  for (let c = 0; c < cellCount; c++) {
+    const inc = [];
+    let sum = 0;
+    for (let s = 0; s < steps; s++) { const v = 0.15 + rnd(); inc.push(v); sum += v; }
+    let cum = 0;
+    const row = [];
+    for (let s = 0; s < steps; s++) { cum += inc[s] / sum; row.push(cum); }
+    row[steps - 1] = 1;
+    out.push(row);
+  }
+  return out;
+}
