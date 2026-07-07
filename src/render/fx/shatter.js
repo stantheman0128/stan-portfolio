@@ -114,3 +114,15 @@ export function createShatterReveal(canvas, imgSrc, opts = {}) {
 
   return { setStep: apply, recut };
 }
+
+// Inline-script form for the Minimal theme's <script> injection. The tested
+// functions above are serialized (single source of truth, no hand-copied twin)
+// into a global window.Shatter that cta.js's inline script can call, the same
+// way it reaches window.QUEST. .name keeps the wiring minify-safe.
+export const shatterJS = `
+${randomSeeds.toString()}
+${voronoiCells.toString()}
+${revealSchedule.toString()}
+${createShatterReveal.toString()}
+window.Shatter = { createShatterReveal: ${createShatterReveal.name} };
+`;

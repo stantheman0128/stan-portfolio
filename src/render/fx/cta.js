@@ -17,8 +17,7 @@ export const ctaCSS = `
 #photo.ph-free{border-color:#c2522d;box-shadow:0 0 0 4px rgba(194,82,45,.14),0 10px 34px rgba(194,82,45,.2)}
 #photo-btn{all:unset;display:block;cursor:pointer}
 #photo-btn:focus-visible{outline:2px solid #c2522d;outline-offset:4px}
-#photo-img{width:120px;height:auto;display:block;border-radius:2px;background:#efe7da;filter:blur(var(--dev-blur,16px)) saturate(var(--dev-sat,.5));transition:filter .6s cubic-bezier(.25,1,.5,1)}
-#photo.ph-develop #photo-img{transition:filter 1.1s cubic-bezier(.16,1,.3,1)}
+#photo-img{width:120px;height:auto;display:block;border-radius:2px;background:#efe7da}
 #photo-cap{margin:6px 0 0;max-width:120px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;line-height:1.5;color:#6f6b62;font-variant-numeric:tabular-nums}
 #photo.ph-free #photo-cap{color:#c2522d}
 @media (prefers-reduced-motion:reduce){#photo{transform:rotate(-2deg) !important}#photo-img{transition:none}}
@@ -38,7 +37,7 @@ export const ctaTopHTML = `
   <div id="cta-zone">
     <figure id="photo">
       <button id="photo-btn" type="button" aria-describedby="cta-note">
-        <img id="photo-img" src="/assets/reward-tease.svg" alt="A photo of Stan, still developing" width="420" height="500">
+        <canvas id="photo-img" width="300" height="360" role="img" aria-label="A photo of Stan, developing as you explore"></canvas>
       </button>
       <figcaption id="photo-cap">developing &middot; 0%</figcaption>
     </figure>
@@ -72,6 +71,7 @@ export const ctaJS = `
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var q = window.QUEST.get();
   var hops = 0, lastJuke = 0, lastChase = 0;
+  var shatter = window.Shatter ? window.Shatter.createShatterReveal(img, "/assets/reward-photo.jpg", { steps: Math.max(1, q.total), reduce: reduce }) : null;
 
   function p() { return Math.min(1, q.pct / 100); }
   function unlocked() { return q.pct >= 100; }
@@ -101,10 +101,7 @@ export const ctaJS = `
   // Blur IS the progress bar: 16px at 0% develops down to 3px at 100%.
   var developing = false, developed = false;
   function paint() {
-    if (!developed) {
-      photo.style.setProperty("--dev-blur", (16 - 13 * p()).toFixed(1) + "px");
-      photo.style.setProperty("--dev-sat", (0.5 + 0.5 * p()).toFixed(2));
-    }
+    if (shatter && !developed) shatter.setStep(unlocked() ? q.total : q.watched.length);
     if (q.ctaUnlocked) {
       photo.classList.add("ph-free");
       if (!developing && !developed) cap.textContent = "caught \\u00b7 tap to develop";
@@ -123,39 +120,12 @@ export const ctaJS = `
   // /api/reward with a token the server mints from ITS record of the
   // visitor's exploration — client-side state can't forge it.
   function develop() {
-    if (developing || developed) return;
-    developing = true;
-    cap.textContent = "developing the real one\\u2026";
-    photo.classList.add("ph-develop");
-    photo.style.setProperty("--dev-blur", "13px");
-    photo.style.setProperty("--dev-sat", ".4");
-    window.QUEST.claim(function (t) {
-      if (!t) return developFail();
-      fetch("/api/reward?t=" + encodeURIComponent(t))
-        .then(function (r) { if (!r.ok) throw 0; return r.blob(); })
-        .then(function (blob) {
-          img.onload = function () {
-            img.onload = null;
-            photo.style.setProperty("--dev-blur", "0px");
-            photo.style.setProperty("--dev-sat", "1");
-            developed = true;
-            developing = false;
-            cap.textContent = "the full Stan \\u00b7 you earned this";
-            img.alt = "Stan, the full portrait";
-            note.textContent = statusNote();
-            document.dispatchEvent(new CustomEvent("photo:developed"));
-          };
-          img.src = URL.createObjectURL(blob);
-        })
-        .catch(developFail);
-    });
-  }
-  function developFail() {
-    developing = false;
-    photo.classList.remove("ph-develop");
-    photo.style.setProperty("--dev-blur", "0px");
-    photo.style.setProperty("--dev-sat", "1");
-    cap.textContent = "vault's not answering \\u2014 try the photo again";
+    if (developed) return;
+    if (shatter) shatter.setStep(q.total);
+    developed = true;
+    cap.textContent = "the full Stan \\u00b7 you earned this";
+    note.textContent = statusNote();
+    document.dispatchEvent(new CustomEvent("photo:developed"));
   }
 
   // Evasion v2: a damped glide instead of spring steps. pointermove nudges a

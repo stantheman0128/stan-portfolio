@@ -4,6 +4,7 @@
 import { esc, md, realLinks } from "../util.js";
 import { questCSS, questBadgeHTML, questJS } from "../fx/quest.js";
 import { ctaCSS, ctaTopHTML, ctaLabHTML, ctaJS } from "../fx/cta.js";
+import { shatterJS } from "../fx/shatter.js";
 import { spriteCSS, spriteHTML, spriteJS } from "../fx/sprite.js";
 import { rateCSS, rateStripHTML, rateJS } from "../fx/rate.js";
 
@@ -536,6 +537,7 @@ ${spriteHTML}
 })();
 </script>
 <script>${questJS}</script>
+<script>${shatterJS}</script>
 <script>${ctaJS}</script>
 <script>${rateJS}</script>
 <script>${spriteJS}</script>
