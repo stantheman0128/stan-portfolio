@@ -1,7 +1,7 @@
 // Minimal / kafagoz theme — warm paper, serif display with a terracotta italic accent,
 // a numbered index of work with click-to-expand panels and a floating desktop hover preview.
 // Extended beyond the demo with About, Patent, Experience, Press, Education, Skills, and stats.
-import { esc, md, realLinks, bindAttr } from "../util.js";
+import { esc, md, realLinks, bindAttr, editLinksHTML } from "../util.js";
 import { questCSS, questBadgeHTML, questJS } from "../fx/quest.js";
 import { ctaCSS, ctaTopHTML, ctaLabHTML, ctaJS } from "../fx/cta.js";
 import { shatterJS } from "../fx/shatter.js";
@@ -36,7 +36,10 @@ function itemThumb(it, ci, edit) {
   return `<div class="thumb thumb-empty" aria-hidden="true"><span class="thumb-mark">${initials}</span></div>`;
 }
 
-function itemLinks(links) {
+function itemLinks(links, ci, edit) {
+  if (edit) {
+    return `<div class="links ff-links" data-item="${ci}">${editLinksHTML(links, ci)}</div>`;
+  }
   const ls = realLinks(links);
   if (!ls.length) return `<div class="links"><span class="nolink">No public link yet</span></div>`;
   return `<div class="links">${ls
@@ -75,7 +78,7 @@ function itemRow(it, i, ci, edit) {
             <p class="desc"${bindAttr("items." + ci + ".description", edit)}>${esc(it.description)}</p>
             ${detailHTML}
             ${tagsHTML}
-            ${itemLinks(it.links)}
+            ${itemLinks(it.links, ci, edit)}
             ${edit ? "" : rateStripHTML(esc(it.id || "item-" + num))}
           </div>
           ${itemThumb(it, ci, edit)}

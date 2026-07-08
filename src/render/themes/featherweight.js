@@ -1,7 +1,7 @@
 // Featherweight theme: one root value, one hairline, one measure. Perfect-fourth
 // type scale, system fonts, zero external requests, no JS. Ported from the demo
 // so every value is read from `content`.
-import { esc, md, realLinks, bindAttr } from "../util.js";
+import { esc, md, realLinks, bindAttr, editLinksHTML } from "../util.js";
 import { creatorEntryJS } from "../fx/creator-entry.js";
 
 export function render(content, opts = {}) {
@@ -87,16 +87,18 @@ export function render(content, opts = {}) {
         (edit
           ? `<span class="tags"${bindAttr("items." + ci + ".tags", edit, "tags")}>${esc((it.tags || []).join(", "))}</span>`
           : (tags ? `<span class="tags">${tags}</span>` : "")) +
-        (links.length
-          ? `<span class="links">` +
-            links
-              .map(
-                (l) =>
-                  `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`
-              )
-              .join("") +
-            `</span>`
-          : `<span class="nolink">No public link yet</span>`) +
+        (edit
+          ? `<span class="links ff-links" data-item="${ci}">` + editLinksHTML(it.links, ci) + `</span>`
+          : (links.length
+              ? `<span class="links">` +
+                links
+                  .map(
+                    (l) =>
+                      `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`
+                  )
+                  .join("") +
+                `</span>`
+              : `<span class="nolink">No public link yet</span>`)) +
         `</div>`;
 
       return (

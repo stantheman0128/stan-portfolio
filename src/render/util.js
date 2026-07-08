@@ -55,3 +55,21 @@ export function bindAttr(path, edit, kind) {
   if (!edit) return "";
   return ` data-bind="${esc(path)}"` + (kind ? ` data-edit="${esc(kind)}"` : "");
 }
+
+// Edit-mode inner markup for one item's links: each link is an editable label (<a>)
+// plus its href (<code>), a per-link delete button, and a trailing "+ link" button.
+// Themes wrap this in their own links container. Kept here as the single source of
+// the data-bind paths (items.{ci}.links.{li}.{label|href}) and freeform's hook
+// classes (.ff-link-del / .ff-link-add), so both themes and the editor agree.
+export function editLinksHTML(links, ci) {
+  const rows = (links || [])
+    .map(
+      (l, li) =>
+        `<span class="ff-link" data-link="${ci}.${li}">` +
+        `<a${bindAttr("items." + ci + ".links." + li + ".label", true)}>${esc((l && l.label) || "link")}</a>` +
+        ` <code${bindAttr("items." + ci + ".links." + li + ".href", true)}>${esc((l && l.href) || "")}</code>` +
+        ` <button type="button" class="ff-link-del" data-link="${ci}.${li}">×</button></span>`
+    )
+    .join("");
+  return rows + `<button type="button" class="ff-link-add" data-item="${ci}">+ link</button>`;
+}
