@@ -14,7 +14,8 @@ export default defineConfig({
       input: {
         main: "index.html",
         site: "site.html",
-        studio: "studio.html"
+        studio: "studio.html",
+        interactive: "interactive.html"
       }
     }
   },

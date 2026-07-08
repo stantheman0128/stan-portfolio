@@ -145,7 +145,7 @@
       "tags": ["Vanilla JS", "Cloudflare Pages", "KV ratings", "One hedgehog"],
       "image": "",
       "imageMode": "",
-      "links": [{ "label": "Visit the full version", "href": "/site?theme=minimal&v=full" }]
+      "links": [{ "label": "Visit the full version", "href": "/interactive" }]
     }
   ],
   "patent": {
