@@ -53,6 +53,7 @@ export function rateStripHTML(id) {
 export const rateJS = `
 (function () {
   if (!window.QUEST) return;
+  function initRatings() {
   var startTs = Date.now();
   var voter = window.QUEST.get().voter || "anonymous00";
 
@@ -158,5 +159,16 @@ export const rateJS = `
       document.dispatchEvent(new CustomEvent("rate:sent", { detail: { id: id, r: chosen } }));
     });
   });
+  }
+  // The owner doesn't rate their own work: if /api/whoami says creator, drop the strips.
+  // fail-open: any error just shows the normal rating UI.
+  fetch("/api/whoami")
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      if (d && d.creator) {
+        [].slice.call(document.querySelectorAll(".rate")).forEach(function (el) { el.remove(); });
+      } else { initRatings(); }
+    })
+    .catch(initRatings);
 })();
 `;
