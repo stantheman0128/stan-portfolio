@@ -31,6 +31,47 @@ export async function putJsonFile({ token, owner, repo, branch, path, obj, messa
   return await putRes.json();
 }
 
+// Commit multiple files atomically via the Git Data API (blobs -> tree -> commit
+// -> move ref). Each file: { path, content, encoding: "utf-8" | "base64" }.
+export async function commitTree({ token, owner, repo, branch, files, message, fetchImpl }) {
+  const doFetch = fetchImpl || fetch;
+  const base = "https://api.github.com/repos/" + owner + "/" + repo;
+  const headers = {
+    authorization: "Bearer " + token,
+    accept: "application/vnd.github+json",
+    "user-agent": "stan-portfolio-publisher",
+    "content-type": "application/json",
+  };
+  const gh = async (path, method, payload) => {
+    const res = await doFetch(base + path, {
+      method: method || "GET",
+      headers,
+      body: payload ? JSON.stringify(payload) : undefined,
+    });
+    if (res.status < 200 || res.status >= 300) {
+      throw new Error("GitHub " + (method || "GET") + " " + path + " -> " + res.status);
+    }
+    return res.json();
+  };
+
+  const ref = await gh("/git/refs/heads/" + branch);
+  const oldCommitSha = ref.object.sha;
+  const oldCommit = await gh("/git/commits/" + oldCommitSha);
+  const baseTree = oldCommit.tree.sha;
+
+  const tree = [];
+  for (const f of files) {
+    const blob = await gh("/git/blobs", "POST", { content: f.content, encoding: f.encoding });
+    tree.push({ path: f.path, mode: "100644", type: "blob", sha: blob.sha });
+  }
+  const newTree = await gh("/git/trees", "POST", { base_tree: baseTree, tree });
+  const commit = await gh("/git/commits", "POST", {
+    message, tree: newTree.sha, parents: [oldCommitSha],
+  });
+  await gh("/git/refs/heads/" + branch, "PATCH", { sha: commit.sha });
+  return commit.sha;
+}
+
 // base64 of a UTF-8 string. btoa is latin1-only, so encode to bytes first.
 export function b64(str) {
   const bytes = new TextEncoder().encode(str);
