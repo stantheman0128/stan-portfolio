@@ -23,9 +23,15 @@ export function render(content, opts = {}) {
   const year = new Date().getFullYear();
 
   const emailHref = p.email ? `mailto:${esc(p.email)}` : "";
+  // Wrap mailto links so Cloudflare Email Obfuscation leaves them alone and never
+  // injects /cdn-cgi/scripts/.../email-decode.min.js into the zero-JS front door.
+  const emailAnchor = (label) =>
+    p.email
+      ? `<!--email_off--><a href="${emailHref}">${esc(label)}</a><!--/email_off-->`
+      : "";
 
   const metaHTML = [
-    p.email ? `<a href="${emailHref}">${esc(p.email)}</a>` : "",
+    p.email ? emailAnchor(p.email) : "",
     p.githubUrl ? `<a href="${esc(p.githubUrl)}">GitHub</a>` : "",
     p.linkedinUrl ? `<a href="${esc(p.linkedinUrl)}">LinkedIn</a>` : "",
   ]
@@ -231,7 +237,7 @@ export function render(content, opts = {}) {
   const contactLinks = [
     p.githubUrl ? `<a href="${esc(p.githubUrl)}">GitHub</a>` : "",
     p.linkedinUrl ? `<a href="${esc(p.linkedinUrl)}">LinkedIn</a>` : "",
-    p.email ? `<a href="${emailHref}">Email</a>` : "",
+    p.email ? emailAnchor("Email") : "",
   ]
     .filter(Boolean)
     .join('<span class="sep">·</span>');
@@ -239,7 +245,7 @@ export function render(content, opts = {}) {
   const contactHTML =
     `<section id="contact" class="contact"><h2 class="eyebrow">Contact</h2>` +
     `<p class="big">Building something? ` +
-    (p.email ? `<a href="${emailHref}">${esc(p.email)}</a>` : "Let's talk.") +
+    (p.email ? emailAnchor(p.email) : "Let's talk.") +
     `</p>` +
     (contactLinks ? `<p class="links">${contactLinks}</p>` : "") +
     (p.available ? `<span class="avail">${esc(p.available)}</span>` : "") +
