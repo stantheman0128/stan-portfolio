@@ -7,10 +7,13 @@
 // an adapter maps those onto MoanaPuppet actions so the character can be
 // re-skinned again by editing one table.
 // Layer contract: #sprite = position (JS translate) > #puppet-host = the
-// MoanaPuppet element (its own pieces, shadow, and rAF loop).
+// MoanaPuppet element (its own pieces, shadow, rAF loop). The host transform is
+// composed from two CSS vars: --flip (facing) and --hscale (hover/press), so
+// the flip and the hover-scale never fight over the transform property.
 //
-// New this version: scroll-aware section reactions, click-to-cycle easter eggs,
-// and a scripted first-visit tour. Copy avoids em dashes and AI tells.
+// Interactions: hover grows him and he glances at you; a tap gets a random
+// reaction (annoyed, flee, arm wiggle, flip); pestering (3 quick taps) makes him
+// bolt. Speech bubbles anchor at his mouth. Copy avoids em dashes and AI tells.
 
 // Engine mode -> puppet action. Exported so the runtime script and the unit
 // test share one source (interpolated below with JSON.stringify).
@@ -42,22 +45,33 @@ export const SECTION_LINES = {
   contact: "You made it to the bottom. Respectable.",
 };
 
-// Click the puppet to cycle these showcase motions (flips play once).
-export const CLICK_CYCLE = ["frontFlip", "backFlip", "weird", "playful"];
+// The showy flips he cycles through when a tap lands on the "flip" reaction.
+export const CLICK_CYCLE = ["frontFlip", "backFlip"];
 
-// Extra actions the engine triggers directly (onboarding, tour, error states).
-// Listed so the test can guard their spelling against the kit's real catalog.
-export const INTENT_ACTIONS = ["greeting", "bothBigWave", "beckon", "sad", "happy"];
+// Every action the engine triggers directly (onboarding, tour, reactions, error
+// states). Listed so the test can guard their spelling against the kit catalog.
+export const INTENT_ACTIONS = [
+  "greeting", "bothBigWave", "beckon", "sad", "happy",
+  "curious", "shakeHead", "bothWave", "playful", "weird",
+];
 
 export const spriteCSS = `
 #sprite{position:fixed;left:0;top:0;z-index:70;pointer-events:none;will-change:transform;transition:transform 1.15s cubic-bezier(.33,.75,.35,1)}
 #sprite.s-scurrying{transition-duration:.72s;transition-timing-function:cubic-bezier(.45,.05,.55,.95)}
-#puppet-host{--moana-size:112px;pointer-events:auto;cursor:pointer;transition:transform .35s}
-#sprite.s-face-left #puppet-host{transform:scaleX(-1)}
+#puppet-host{--moana-size:112px;--flip:1;--hscale:1;pointer-events:auto;cursor:pointer;transform:scaleX(var(--flip)) scale(var(--hscale));transform-origin:50% 62%;transition:transform .3s cubic-bezier(.22,1,.36,1)}
+#sprite.s-face-left #puppet-host{--flip:-1}
+#puppet-host:hover{--hscale:1.1}
+#puppet-host:active{--hscale:.93}
 #sprite.s-sleep{opacity:.62}
-@media (prefers-reduced-motion:reduce){#sprite{transition:none}}
-#bubble{position:fixed;left:0;top:0;z-index:71;max-width:15.5rem;background:#fffdfa;border:1px solid #d8d0c4;border-radius:11px 11px 11px 3px;padding:.65rem .8rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.55;color:#3a3833;box-shadow:0 8px 28px rgba(41,31,23,.12);display:none}
+@media (prefers-reduced-motion:reduce){#sprite{transition:none}#puppet-host{transition:none}#puppet-host:hover{--hscale:1}#puppet-host:active{--hscale:1}}
+#bubble{position:fixed;left:0;top:0;z-index:71;max-width:15.5rem;background:#fffdfa;border:1px solid #d8d0c4;border-radius:12px;padding:.65rem .8rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.55;color:#3a3833;box-shadow:0 8px 28px rgba(41,31,23,.12);display:none}
 #bubble.on{display:block}
+#bubble::before{content:"";position:absolute;bottom:-9px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:9px solid #d8d0c4}
+#bubble::after{content:"";position:absolute;bottom:-7px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:8px solid #fffdfa}
+#bubble.tail-left::before{left:17px}
+#bubble.tail-left::after{left:18px}
+#bubble.tail-right::before{right:17px}
+#bubble.tail-right::after{right:18px}
 #bubble .b-x{position:absolute;top:4px;right:7px;all:unset;cursor:pointer;color:#b7b2a8;font-size:12px;padding:2px 4px}
 #bubble .b-x:hover{color:#c2522d}
 #bubble .b-chips{margin-top:.5rem;display:flex;gap:6px;flex-wrap:wrap}
@@ -92,7 +106,7 @@ export const spriteJS = `
   var MODE_MAP = ${JSON.stringify(PUPPET_MODE_MAP)};
   var SECTION_MAP = ${JSON.stringify(SECTION_ACTION_MAP)};
   var SECTION_LINES = ${JSON.stringify(SECTION_LINES)};
-  var CLICK_CYCLE = ${JSON.stringify(CLICK_CYCLE)};
+  var FLIPS = ${JSON.stringify(CLICK_CYCLE)};
 
   var q = window.QUEST.get();
   var dismissed = q.spriteDismissed;
@@ -263,13 +277,21 @@ export const spriteJS = `
     }, 6000 + Math.random() * 7000);
   })();
 
+  // Bubbles anchor at his mouth (~42% down the box) with a tail pointing at it.
+  // The tail sits on whichever side leaves room, so the body never overflows.
   function placeBubble() {
     var r = sprite.getBoundingClientRect();
+    var mouthX = r.left + r.width * 0.5;
+    var mouthY = r.top + r.height * 0.42;
     var bw = Math.min(268, vw() - 16);
-    var left = Math.max(8, Math.min(vw() - bw - 8, r.left - bw + 40));
+    var roomRight = mouthX + bw - 20 <= vw() - 8;
+    var left = roomRight ? (mouthX - 20) : (mouthX - bw + 20);
+    left = Math.max(8, Math.min(vw() - bw - 8, left));
     bubble.style.left = left + "px";
     bubble.style.top = "auto";
-    bubble.style.bottom = Math.max(8, vh() - r.top + 8) + "px";
+    bubble.style.bottom = Math.max(8, vh() - mouthY + 4) + "px";
+    bubble.classList.toggle("tail-right", !roomRight);
+    bubble.classList.toggle("tail-left", roomRight);
   }
   function say(text, chips, opts) {
     opts = opts || {};
@@ -302,6 +324,12 @@ export const spriteJS = `
       travel(h.x, h.y, function () { setMode("sleep"); });
     }, 1400);
   });
+
+  function backToIdle(delay) {
+    setTimeout(function () {
+      if (!moving && !touring && mode === "idle") actor.setMode(mode);
+    }, delay);
+  }
 
   var SUGGEST_LINES = [
     "This one's my favorite. Peek inside?",
@@ -340,6 +368,71 @@ export const spriteJS = `
       }, 1000);
     });
   }
+
+  // ---- Direct interaction: hover and tap.
+  // Hover: he grows (CSS) and glances at you (rate-limited so it never spams).
+  var lastHover = 0;
+  host.addEventListener("pointerenter", function () {
+    if (dismissed || !actor.ready) return;
+    var now = Date.now();
+    if (now - lastHover < 1500) return;
+    lastHover = now;
+    if (mode === "idle" && !moving && !touring && !bubble.classList.contains("on")) {
+      actor.act("curious");
+      backToIdle(1400);
+    }
+  }, { passive: true });
+
+  // Tap: a random reaction. Pester him (3 quick taps) and he bolts.
+  var ANNOY_LINES = ["...must you?", "That tickles. Stop. ...okay, again.", "I'm working here.", "Boop received. Rude."];
+  var FLEE_LINES = ["Okay okay, personal space.", "Hey, I'm delicate paper.", "Nope. Catch me first.", "Alright, I'm relocating."];
+  var WIGGLE_LINES = ["Hi. Yes. Hello.", "You rang?", ""];
+  function reactAnnoyed() {
+    actor.act("shakeHead");
+    say(ANNOY_LINES[Math.floor(Math.random() * ANNOY_LINES.length)], null, { force: true, hold: 2400 });
+    backToIdle(1600);
+  }
+  function reactWiggle() {
+    actor.act(Math.random() < 0.5 ? "bothWave" : "playful");
+    var l = WIGGLE_LINES[Math.floor(Math.random() * WIGGLE_LINES.length)];
+    if (l) say(l, null, { force: true, hold: 2000 });
+    backToIdle(1800);
+  }
+  function reactFlee() {
+    if (moving) return;
+    var pts = anchors(), far = pts[0], best = -1;
+    pts.forEach(function (p) {
+      var d = Math.hypot(p.x - x, p.y - y);
+      if (d > best) { best = d; far = p; }
+    });
+    say(FLEE_LINES[Math.floor(Math.random() * FLEE_LINES.length)], null, { force: true, hold: 2400 });
+    travel(far.x, far.y);
+  }
+  var flipIdx = 0;
+  function reactFlip() {
+    var a = FLIPS[flipIdx++ % FLIPS.length];
+    actor.playOnce(a);
+    if (a === "backFlip") say("Show-off, I know.", null, { force: true, hold: 2400 });
+  }
+  function reactWeird() {
+    actor.act("weird");
+    say("...don't tell anyone I can do that.", null, { force: true, hold: 2600 });
+    backToIdle(2400);
+  }
+  var tapTimes = [];
+  host.addEventListener("click", function () {
+    if (dismissed || !actor.ready || touring) return;
+    var now = Date.now();
+    tapTimes.push(now);
+    tapTimes = tapTimes.filter(function (t) { return now - t < 2600; });
+    if (tapTimes.length >= 3) { tapTimes = []; reactFlee(); return; }
+    var r = Math.random();
+    if (r < 0.34) reactAnnoyed();
+    else if (r < 0.60) reactWiggle();
+    else if (r < 0.78) reactFlee();
+    else if (r < 0.95) reactFlip();
+    else reactWeird();
+  });
 
   // Bother-loop: every so often Paper Stan walks over and BOOPS the cursor.
   // If the cursor flees before he arrives, he takes it personally.
@@ -385,24 +478,6 @@ export const spriteJS = `
       botherLoop();
     }, 26000 + Math.random() * 26000);
   })();
-
-  // Click the character to cycle showcase motions. Flips play once and self-return.
-  var clickIdx = 0;
-  host.addEventListener("click", function () {
-    if (dismissed || !actor.ready) return;
-    var a = CLICK_CYCLE[clickIdx++ % CLICK_CYCLE.length];
-    if (a === "frontFlip" || a === "backFlip") {
-      actor.playOnce(a);
-      if (a === "backFlip") say("Show-off, I know.", null, { force: true, hold: 2600 });
-    } else if (a === "weird") {
-      actor.act(a);
-      say("...don't tell anyone I can do that.", null, { force: true, hold: 2600 });
-      setTimeout(function () { if (!moving) actor.setMode(mode); }, 2400);
-    } else {
-      actor.act(a);
-      setTimeout(function () { if (!moving) actor.setMode(mode); }, 2000);
-    }
-  });
 
   // Docent: react to whichever section owns the viewport, in place.
   (function sectionDocent() {
