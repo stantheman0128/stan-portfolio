@@ -38,3 +38,24 @@ describe("minimal edit-mode data-bind", () => {
     expect(plain).toContain("window.QUEST");
   });
 });
+
+describe("featherweight edit-mode data-bind", () => {
+  const edit = renderSite(content, "featherweight", { edit: true });
+  const plain = renderSite(content, "featherweight");
+
+  it("binds representative fields", () => {
+    expect(edit).toContain('data-bind="profile.name"');
+    expect(edit).toContain('data-bind="profile.tagline"');
+    expect(edit).toContain('data-bind="items.0.title"');
+    expect(edit).toContain('data-bind="items.0.detail" data-edit="md"');
+    expect(edit).toContain('data-bind="items.0.tags" data-edit="tags"');
+    expect(edit).toContain('data-bind="patent.title"');
+  });
+  it("uses the true content index (site-minimal is index 9)", () => {
+    expect(edit).toContain('data-bind="items.9.title"');
+    expect(edit).not.toContain('data-bind="items.8');
+  });
+  it("stays clean when not editing", () => {
+    expect(plain).not.toContain("data-bind");
+  });
+});

@@ -1,7 +1,7 @@
 // Featherweight theme: one root value, one hairline, one measure. Perfect-fourth
 // type scale, system fonts, zero external requests, no JS. Ported from the demo
 // so every value is read from `content`.
-import { esc, md, realLinks } from "../util.js";
+import { esc, md, realLinks, bindAttr } from "../util.js";
 
 export function render(content, opts = {}) {
   const edit = !!(opts && opts.edit);
@@ -9,7 +9,9 @@ export function render(content, opts = {}) {
   const about = content.about || {};
   const stats = content.stats || [];
   // Cross-theme entries: each theme hides the item that IS itself.
-  const items = (content.items || []).filter((it) => it.themeExclude !== "featherweight");
+  const items = (content.items || [])
+    .map((it, ci) => ({ it, ci }))
+    .filter((x) => x.it.themeExclude !== "featherweight");
   const patent = content.patent || null;
   const experience = content.experience || [];
   const press = content.press || [];
@@ -53,7 +55,7 @@ export function render(content, opts = {}) {
 
   // WORK ITEMS ------------------------------------------------------------
   const workHTML = items
-    .map((it) => {
+    .map(({ it, ci }) => {
       const status = [it.status, it.year].filter(Boolean).map(esc).join(" · ");
       const tags = (it.tags || []).map(esc).join(" · ");
       const links = realLinks(it.links);
@@ -81,7 +83,9 @@ export function render(content, opts = {}) {
 
       const foot =
         `<div class="foot">` +
-        (tags ? `<span class="tags">${tags}</span>` : "") +
+        (edit
+          ? `<span class="tags"${bindAttr("items." + ci + ".tags", edit, "tags")}>${esc((it.tags || []).join(", "))}</span>`
+          : (tags ? `<span class="tags">${tags}</span>` : "")) +
         (links.length
           ? `<span class="links">` +
             links
@@ -97,11 +101,15 @@ export function render(content, opts = {}) {
       return (
         `<article class="item">` +
         thumb +
-        `<div class="head"><h3>${esc(it.title)}</h3>` +
+        `<div class="head"><h3${bindAttr("items." + ci + ".title", edit)}>${esc(it.title)}</h3>` +
         (status ? `<span class="status">${status}</span>` : "") +
         `</div>` +
-        (it.description ? `<p class="blurb">${esc(it.description)}</p>` : "") +
-        (it.detail ? `<div class="detail">${md(it.detail)}</div>` : "") +
+        (edit
+          ? `<p class="blurb"${bindAttr("items." + ci + ".description", edit)}>${esc(it.description || "")}</p>`
+          : (it.description ? `<p class="blurb">${esc(it.description)}</p>` : "")) +
+        (edit
+          ? `<div class="detail"${bindAttr("items." + ci + ".detail", edit, "md")}>${md(it.detail)}</div>`
+          : (it.detail ? `<div class="detail">${md(it.detail)}</div>` : "")) +
         foot +
         `</article>`
       );
@@ -126,9 +134,9 @@ export function render(content, opts = {}) {
     patentHTML =
       `<section id="patent"><h2 class="eyebrow">Patent</h2>` +
       `<div class="patent">` +
-      `<div class="head"><h3>${esc(patent.title)}</h3></div>` +
+      `<div class="head"><h3${bindAttr("patent.title", edit)}>${esc(patent.title)}</h3></div>` +
       (stamp ? `<p class="ids">${stamp}</p>` : "") +
-      (patent.blurb ? `<p class="blurb">${esc(patent.blurb)}</p>` : "") +
+      (patent.blurb ? `<p class="blurb"${bindAttr("patent.blurb", edit)}>${esc(patent.blurb)}</p>` : "") +
       (highlights ? `<ul>${highlights}</ul>` : "") +
       fig +
       `</div></section>`;
@@ -185,7 +193,7 @@ export function render(content, opts = {}) {
   let aboutHTML = "";
   if ((about.paragraphs && about.paragraphs.length) || (about.principles && about.principles.length)) {
     const paras = (about.paragraphs || [])
-      .map((t) => `<p class="lead">${esc(t)}</p>`)
+      .map((t, idx) => `<p class="lead"${bindAttr("about.paragraphs." + idx, edit)}>${esc(t)}</p>`)
       .join("");
     const principles = (about.principles || [])
       .map((pr) => `<div><dt>${esc(pr.title)}</dt><dd>${esc(pr.body)}</dd></div>`)
@@ -236,7 +244,7 @@ export function render(content, opts = {}) {
 
   // HERO lede: role + tagline woven into the one human sentence.
   const lede = p.tagline
-    ? `<p class="lede">${esc(p.tagline)}</p>`
+    ? `<p class="lede"${bindAttr("profile.tagline", edit)}>${esc(p.tagline)}</p>`
     : "";
   const roleLine = p.role ? `<p class="lede"><b>${esc(p.role)}</b></p>` : "";
 
@@ -396,11 +404,11 @@ img{max-width:100%;height:auto}
 <div class="wrap">
 
   <header class="hero">
-    <h1>${esc(p.name)}</h1>
+    <h1${bindAttr("profile.name", edit)}>${esc(p.name)}</h1>
     ${[p.latinName, p.location].filter(Boolean).length ? `<p class="latin">${[p.latinName, p.location].filter(Boolean).map(esc).join(" · ")}</p>` : ""}
     ${roleLine}
     ${lede}
-    ${p.subtagline ? `<p class="sub">${esc(p.subtagline)}</p>` : ""}
+    ${p.subtagline ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline)}</p>` : ""}
     ${nav ? `<nav class="quicknav" aria-label="Sections">${nav}</nav>` : ""}
     ${metaHTML ? `<p class="meta-row">${metaHTML}</p>` : ""}
   </header>
