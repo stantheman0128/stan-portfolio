@@ -1,14 +1,16 @@
-// The guide sprite v7 — the hand-drawn Moana paper puppet (kit in
-// /moana-puppet-kit) replaces the licensed hedgehog. The behavior/personality
-// engine is unchanged: roam, cursor-boop, quest-guiding, speech bubbles, quips.
-// Only the *actor* swapped. The engine still drives the character through
-// setMode(m) + face(left); an adapter maps those onto MoanaPuppet actions so
-// the character can be re-skinned again later by editing one table.
+// The guide sprite v7: the hand-drawn paper self-portrait ("Paper Stan", kit in
+// /moana-puppet-kit) replaces the licensed hedgehog. The character is the site
+// owner as a palm-sized paper doll who personally walks visitors through his own
+// work, so every line is first person. The behavior/personality engine is
+// unchanged (roam, cursor-boop, quest-guiding, bubbles, quips); only the actor
+// swapped. The engine still drives the character through setMode(m) + face(left);
+// an adapter maps those onto MoanaPuppet actions so the character can be
+// re-skinned again by editing one table.
 // Layer contract: #sprite = position (JS translate) > #puppet-host = the
 // MoanaPuppet element (its own pieces, shadow, and rAF loop).
 //
 // New this version: scroll-aware section reactions, click-to-cycle easter eggs,
-// and a scripted first-visit tour.
+// and a scripted first-visit tour. Copy avoids em dashes and AI tells.
 
 // Engine mode -> puppet action. Exported so the runtime script and the unit
 // test share one source (interpolated below with JSON.stringify).
@@ -26,10 +28,18 @@ export const PUPPET_MODE_MAP = {
 // Which gesture the puppet plays when a page section takes over the viewport.
 export const SECTION_ACTION_MAP = {
   hero: { action: "greeting" },
-  about: { action: "playful" },
+  about: { action: "shy" },
   works: { action: "beckon", orientation: "lookLeft" },
-  patent: { action: "happy" },
+  patent: { action: "happy", orientation: "heroUp" },
   contact: { action: "bothBigWave" },
+};
+
+// Occasional one-liner when a section takes over (rate-limited, low chance).
+export const SECTION_LINES = {
+  about: "That's me. Roughly.",
+  works: "Pick one. They've all got a story.",
+  patent: "Still can't quite believe this one's official.",
+  contact: "You made it to the bottom. Respectable.",
 };
 
 // Click the puppet to cycle these showcase motions (flips play once).
@@ -81,6 +91,7 @@ export const spriteJS = `
 
   var MODE_MAP = ${JSON.stringify(PUPPET_MODE_MAP)};
   var SECTION_MAP = ${JSON.stringify(SECTION_ACTION_MAP)};
+  var SECTION_LINES = ${JSON.stringify(SECTION_LINES)};
   var CLICK_CYCLE = ${JSON.stringify(CLICK_CYCLE)};
 
   var q = window.QUEST.get();
@@ -93,7 +104,7 @@ export const spriteJS = `
     mouse = { x: e.clientX, y: e.clientY, t: Date.now() };
   }, { passive: true });
 
-  // ---- Actor adapter: the only code that knows the character is a puppet.
+  // Actor adapter: the only code that knows the character is a puppet.
   var actor = {
     ready: false,
     puppet: null,
@@ -146,7 +157,7 @@ export const spriteJS = `
       if (qq.pct < 100) {
         lastSpeedQuip = nowS;
         setTimeout(function () {
-          say("Speed-reading, huh. The check marks can tell.", null, { force: true });
+          say("Speed-reading, huh? The check marks can tell.", null, { force: true });
         }, 700);
       }
     }
@@ -229,7 +240,7 @@ export const spriteJS = `
     }, 15000 + Math.random() * 12000);
   })();
 
-  // Idle life: sudden look-at-you, a sniff, an ear-scratch, or a little hop.
+  // Idle life: sudden look-at-you, a curious tilt, a think, or a little hop.
   (function lifeLoop() {
     setTimeout(function () {
       if (!dismissed && !touring && mode === "idle" && !moving && !document.hidden) {
@@ -283,20 +294,21 @@ export const spriteJS = `
   }
   function hide() { bubble.classList.remove("on"); }
   bX.addEventListener("click", function () {
-    dismissed = true;
-    window.QUEST.dismissSprite(true);
-    hide();
-    var h = home();
-    travel(h.x, h.y, function () { setMode("sleep"); });
+    say("Got it, I'll hush. Tap me if you change your mind.", null, { force: true, hold: 3000 });
+    setTimeout(function () {
+      dismissed = true;
+      window.QUEST.dismissSprite(true);
+      var h = home();
+      travel(h.x, h.y, function () { setMode("sleep"); });
+    }, 1400);
   });
 
   var SUGGEST_LINES = [
-    "This one's my favourite. Peek inside?",
-    "Want to look at this one next?",
-    "Psst \\u2014 this one has a good story.",
-    "One more? This one's quick.",
-    "You scrolled right past this one. It noticed.",
-    "I don't make the rules \\u2014 but this one's worth a click."
+    "This one's my favorite. Peek inside?",
+    "Haven't opened this one yet. It's quick, promise.",
+    "You scrolled right past this. It noticed.",
+    "Want the story behind this one?",
+    "One more? Worth the click."
   ];
   function nextTarget() {
     q = window.QUEST.get();
@@ -329,18 +341,18 @@ export const spriteJS = `
     });
   }
 
-  // Bother-loop: every so often the puppet walks over and BOOPS the cursor.
-  // If the cursor flees before it arrives, it takes that personally.
+  // Bother-loop: every so often Paper Stan walks over and BOOPS the cursor.
+  // If the cursor flees before he arrives, he takes it personally.
   var BOTHER_LINES = [
     "Boop.",
     "Whatcha doing up here?",
     "This cursor looked unattended. It's mine now.",
     "Found you.",
-    "Don't mind me. Actually \\u2014 do mind me."
+    "Don't mind me. Actually, do mind me."
   ];
   var MISS_LINES = [
-    "\\u2026it was right here a second ago.",
-    "Rude. I came all this way.",
+    "...it was right here a second ago.",
+    "Rude. I walked all the way over.",
     "Fine. Didn't want that cursor anyway."
   ];
   (function botherLoop() {
@@ -381,9 +393,14 @@ export const spriteJS = `
     var a = CLICK_CYCLE[clickIdx++ % CLICK_CYCLE.length];
     if (a === "frontFlip" || a === "backFlip") {
       actor.playOnce(a);
+      if (a === "backFlip") say("Show-off, I know.", null, { force: true, hold: 2600 });
+    } else if (a === "weird") {
+      actor.act(a);
+      say("...don't tell anyone I can do that.", null, { force: true, hold: 2600 });
+      setTimeout(function () { if (!moving) actor.setMode(mode); }, 2400);
     } else {
       actor.act(a);
-      setTimeout(function () { if (!moving) actor.setMode(mode); }, a === "weird" ? 2400 : 2000);
+      setTimeout(function () { if (!moving) actor.setMode(mode); }, 2000);
     }
   });
 
@@ -420,22 +437,24 @@ export const spriteJS = `
       if (now - lastReact < 4500) return;
       lastReact = now;
       actor.act(cfg.action, cfg.orientation);
+      var line = SECTION_LINES[key];
+      if (line && Math.random() < 0.5) say(line, null, {});
       setTimeout(function () {
         if (!moving && !touring && mode === "idle") actor.setMode("idle");
       }, 3200);
     }
   })();
 
-  // Scripted first-visit tour: lead the visitor past who/what/proudest.
+  // Scripted first-visit tour: lead the visitor past who / what / proudest.
   function runTour() {
     if (dismissed) return;
     var stops = [
       { el: document.getElementById("about"), action: "playful",
-        line: "First \\u2014 who I am. The short version's right here." },
+        line: "Start with the short version of me. I build things end to end: web, mobile, the odd patent." },
       { el: document.getElementById("list"), action: "beckon", orientation: "lookLeft",
-        line: "Then the work itself. Open any that catches your eye." },
-      { el: document.getElementById("patent"), action: "happy",
-        line: "And the one I'm proudest of: a granted patent." }
+        line: "This is the actual work. Open anything that looks interesting, I'll wait." },
+      { el: document.getElementById("patent"), action: "happy", orientation: "heroUp",
+        line: "And this one I'm quietly proud of. A real granted patent, my name on it." }
     ].filter(function (s) { return s.el; });
     if (!stops.length) { suggest(true); return; }
     touring = true;
@@ -443,6 +462,7 @@ export const spriteJS = `
     var i = 0;
     (function step() {
       if (i >= stops.length || dismissed) {
+        if (!dismissed) say("That's the tour. Poke around; I'll chime in if I've got something useful.", null, { force: true });
         touring = false;
         setMode("idle");
         return;
@@ -468,7 +488,7 @@ export const spriteJS = `
     })();
   }
 
-  // Chase commentary: the CTA emits (throttled) when it's being hunted.
+  // Chase commentary: the reward photo emits (throttled) when it's being hunted.
   var CHASE_LINES = [
     "It does that to everyone.",
     "Chasing never works. Exploring does.",
@@ -491,26 +511,26 @@ export const spriteJS = `
   });
   document.addEventListener("quest:complete", function () {
     setMode("yay");
-    say("That's everything \\u2014 the photo up top just stopped running. Go catch it.", null, { force: true, hold: 7000 });
+    say("That's everything. The photo up top just stopped shuffling, so go catch it.", null, { force: true, hold: 7000 });
     setTimeout(function () { setMode("idle"); }, 2600);
   });
   document.addEventListener("cta:opened", function () {
     setMode("yay");
-    say("Caught it! Code word's yours \\u2014 now watch it develop.", null, { force: true, hold: 8000 });
+    say("Caught it. Give it a second to develop.", null, { force: true, hold: 8000 });
     setTimeout(function () { setMode("idle"); }, 2600);
   });
   document.addEventListener("photo:developed", function () {
     setMode("yay");
-    say("There he is. Worth every click, right?", null, { force: true, hold: 7000 });
+    say("There I am, in actual pixels. Thanks for exploring the whole thing.", null, { force: true, hold: 7000 });
     setTimeout(function () { setMode("sleep"); }, 6000);
   });
-  // Rating quips scale with the score — a 2/10 is taken PERSONALLY.
+  // Rating quips: Paper Stan is gracious, and takes a low score with a shrug.
   document.addEventListener("rate:sent", function (e) {
     var r = e.detail.r, line;
-    if (r <= 3) line = "A " + r + "/10?! I LIVE here, you know. \\u2026Logged anyway.";
-    else if (r <= 6) line = r + "/10 \\u2014 noted. Harsh, but noted.";
-    else if (r <= 8) line = "Logged \\u2014 " + r + "/10. Everyone will see that one.";
-    else line = r + "/10 \\u2014 excellent taste. I helped with that one, you know.";
+    if (r <= 3) line = "A " + r + "? I made that one at 3am, so, fair. Logged.";
+    else if (r <= 6) line = r + " out of 10. Noted, I can take it.";
+    else if (r <= 8) line = r + ". I'll take that, thank you.";
+    else line = r + "?! Okay, now I like you. Logged with pride.";
     setMode(r <= 3 ? "look" : "yay");
     say(line, null, { force: true });
     setTimeout(function () { setMode("idle"); }, 2400);
@@ -528,7 +548,7 @@ export const spriteJS = `
   var missFav = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ctext x='16' y='24' font-size='24' text-anchor='middle'%3E%F0%9F%91%80%3C/text%3E%3C/svg%3E";
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) {
-      document.title = "\\uD83D\\uDC40 the works miss you";
+      document.title = "\\uD83D\\uDC40 still here";
       if (fav) fav.setAttribute("href", missFav);
     } else {
       document.title = realTitle;
@@ -539,11 +559,11 @@ export const spriteJS = `
       try { sessionStorage.removeItem("ob"); } catch (err) {}
       if (recent) {
         setMode("yay");
-        say("You went to look at my work! So? So??", null, { force: true });
+        say("You went to look at my stuff. And?", null, { force: true });
         setTimeout(function () { setMode("idle"); }, 2600);
       } else if (!dismissed) {
         setMode("look");
-        say("You're back. I kept your spot warm.");
+        say("You're back. Kept your spot warm.");
         setTimeout(function () { setMode("idle"); }, 2200);
       }
     }
@@ -553,7 +573,7 @@ export const spriteJS = `
     setMode("sleep");
   } else if (q.visits <= 1 && q.pct === 0) {
     setTimeout(function () {
-      say("Oh, hi. Didn't hear you come in. Want the tour, or shall I just hang back?", [
+      say("Hey, I'm Stan. The paper version. Want the tour, or should I get out of your way?", [
         { label: "Show me around", go: function () { runTour(); } },
         { label: "I'll explore", go: function () { suggests = 4; setMode("sleep"); setTimeout(function () { setMode("idle"); }, 8000); } }
       ], { force: true });
