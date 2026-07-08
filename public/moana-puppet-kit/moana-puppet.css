@@ -1,0 +1,221 @@
+:root {
+  --moana-stage-width: 860;
+  --moana-stage-height: 1120;
+}
+
+.moana-puppet,
+moana-puppet {
+  --moana-size: 260px;
+  --moana-paper-shadow: 10px 15px 10px rgba(22, 20, 18, 0.2);
+  --moana-paper-shadow-soft: 0 18px 44px rgba(22, 20, 18, 0.16);
+  --moana-drop-opacity: 1;
+  display: block;
+  position: relative;
+  width: var(--moana-size);
+  max-width: 100%;
+  aspect-ratio: 860 / 1120;
+  contain: layout style;
+}
+
+.moana-puppet.is-fixed,
+moana-puppet[fixed-corner] {
+  position: fixed;
+  right: var(--moana-fixed-right, 24px);
+  bottom: var(--moana-fixed-bottom, 20px);
+  z-index: var(--moana-z-index, 20);
+}
+
+.moana-puppet__viewport {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  perspective: 920px;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.moana-puppet__scene,
+.moana-puppet__global {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 860px;
+  height: 1120px;
+  transform-origin: 0 0;
+  transform-style: preserve-3d;
+}
+
+.moana-puppet__global {
+  transform-origin: 50% 54%;
+}
+
+.moana-puppet__piece,
+.moana-puppet__body-segment,
+.moana-puppet__body-segment img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  user-select: none;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  will-change: transform, opacity, filter;
+  image-rendering: pixelated;
+}
+
+.moana-puppet__piece {
+  height: auto;
+  opacity: var(--moana-drop-opacity);
+  filter: drop-shadow(var(--moana-paper-shadow));
+}
+
+.moana-puppet__head {
+  z-index: 40;
+  width: 619px;
+  height: 611px;
+}
+
+.moana-puppet__body {
+  z-index: 30;
+  width: 425px;
+}
+
+.moana-puppet__left-arm,
+.moana-puppet__right-arm {
+  z-index: 20;
+}
+
+.moana-puppet__left-arm {
+  width: 259px;
+}
+
+.moana-puppet__right-arm {
+  width: 256px;
+}
+
+.moana-puppet__head-art,
+.moana-puppet__face-layer,
+.moana-puppet__feature,
+.moana-puppet__alt-arm {
+  position: absolute;
+  top: 0;
+  left: 0;
+  user-select: none;
+  pointer-events: none;
+  image-rendering: pixelated;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+
+.moana-puppet__head-art,
+.moana-puppet__face-layer {
+  width: 619px;
+  height: 611px;
+}
+
+.moana-puppet__face-layer,
+.moana-puppet__feature,
+.moana-puppet__alt-arm {
+  opacity: 0;
+}
+
+.moana-puppet__face-layer {
+  z-index: 3;
+}
+
+.moana-puppet__feature {
+  z-index: 4;
+  transform-origin: 50% 50%;
+}
+
+.moana-puppet__alt-arm {
+  z-index: 21;
+  filter: drop-shadow(var(--moana-paper-shadow));
+}
+
+.moana-puppet__left-arm-in {
+  width: 259px;
+}
+
+.moana-puppet__right-arm-in {
+  width: 256px;
+}
+
+.moana-puppet__body-segments {
+  position: absolute;
+  inset: 0;
+  z-index: 31;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.moana-puppet__body-segment {
+  width: 425px;
+  overflow: hidden;
+  opacity: 0;
+  filter: drop-shadow(var(--moana-paper-shadow));
+}
+
+.moana-puppet__body-segment img {
+  width: 425px;
+  height: 461px;
+  max-width: none;
+}
+
+.moana-puppet__body-segment[data-segment="top"] {
+  height: 170px;
+  transform-origin: 50% 100%;
+}
+
+.moana-puppet__body-segment[data-segment="middle"] {
+  height: 180px;
+  transform-origin: 50% 50%;
+}
+
+.moana-puppet__body-segment[data-segment="bottom"] {
+  height: 181px;
+  transform-origin: 50% 0%;
+}
+
+.moana-puppet.is-bending .moana-puppet__body {
+  opacity: 0;
+}
+
+.moana-puppet.is-bending .moana-puppet__body-segment {
+  opacity: 1;
+}
+
+.moana-puppet.is-paused .moana-puppet__piece,
+.moana-puppet.is-paused .moana-puppet__body-segment {
+  will-change: auto;
+}
+
+.moana-puppet[data-shadow="none"] {
+  --moana-paper-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  --moana-paper-shadow-soft: 0 0 0 rgba(0, 0, 0, 0);
+}
+
+.moana-puppet[data-shadow="soft"] {
+  --moana-paper-shadow: 5px 8px 8px rgba(22, 20, 18, 0.14);
+}
+
+.moana-puppet::after {
+  content: "";
+  position: absolute;
+  left: 24%;
+  right: 16%;
+  bottom: 3%;
+  height: 9%;
+  border-radius: 50%;
+  background: rgba(20, 18, 15, 0.12);
+  filter: blur(12px);
+  transform: translateZ(-80px);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .moana-puppet__piece,
+  .moana-puppet__body-segment,
+  .moana-puppet__global {
+    transition-duration: 0.001ms !important;
+  }
+}
