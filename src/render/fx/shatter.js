@@ -84,7 +84,10 @@ export function createShatterReveal(canvas, imgSrc, opts = {}) {
   function render() {
     if (!ready) return;
     const d = maskImg.data;
-    for (let p = 0; p < W * H; p++) d[p * 4 + 3] = clarity[cellIndex[p]] * 255;
+    // ease-in: a shard's clarity contributes to the sharp layer's alpha as
+    // clarity^2, so shards read as blurred until they near full unlock and the
+    // photo only resolves close to 100% (not at 20-30%).
+    for (let p = 0; p < W * H; p++) { const c = clarity[cellIndex[p]]; d[p * 4 + 3] = c * c * 255; }
     mctx.putImageData(maskImg, 0, 0);
     tctx.clearRect(0, 0, W, H);
     tctx.globalCompositeOperation = "source-over";
@@ -94,7 +97,7 @@ export function createShatterReveal(canvas, imgSrc, opts = {}) {
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = "#0b0b0d";
     ctx.fillRect(0, 0, W, H);
-    ctx.filter = "blur(11px)";
+    ctx.filter = "blur(18px)";
     ctx.drawImage(img, 0, 0, W, H);
     ctx.filter = "none";
     ctx.drawImage(tmp, 0, 0);
