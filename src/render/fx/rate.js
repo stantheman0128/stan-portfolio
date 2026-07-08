@@ -24,9 +24,6 @@ export const rateCSS = `
 .rate.done .rate-dots,.rate.done .rate-row2,.rate.done .rate-q{display:none}
 .rate .rate-you{color:#426c53;font-weight:600}
 .rate .rate-avg{color:#716a62}
-.rate .rate-edit{all:unset;cursor:pointer;font-size:11.5px;color:#8b877f;border-bottom:1px dashed #b7b2a8}
-.rate .rate-edit:hover,.rate .rate-edit:focus-visible{color:#c2522d;border-color:#c2522d}
-.rate .rate-edit:focus-visible{outline:2px solid #c2522d;outline-offset:2px}
 .rate .rate-wall{margin-top:12px;display:none;flex-direction:column;gap:8px}
 .rate .rate-wall.on{display:flex}
 .rate .rw-head{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#b7b2a8}
@@ -47,7 +44,6 @@ export function rateStripHTML(id) {
     `</div>` +
     `<div class="rate-done">` +
     `<span class="rate-you"></span><span class="rate-avg"></span>` +
-    `<button class="rate-edit" type="button">Change</button>` +
     `</div>` +
     `<div class="rate-wall" aria-label="What visitors said"></div>` +
     `</div>`
@@ -118,7 +114,6 @@ export const rateJS = `
     var go = box.querySelector(".rate-go");
     var youEl = box.querySelector(".rate-you");
     var avgEl = box.querySelector(".rate-avg");
-    var editBtn = box.querySelector(".rate-edit");
     var chosen = 0;
 
     function paintDots(v) {
@@ -135,13 +130,6 @@ export const rateJS = `
         }
       });
     }
-    function openEditor(pre) {
-      box.classList.remove("done");
-      chosen = pre || 0;
-      paintDots(chosen);
-      go.disabled = !chosen;
-    }
-
     var prior = window.QUEST.get().rated[id];
     if (prior) showResult(prior);
 
@@ -151,9 +139,6 @@ export const rateJS = `
         paintDots(chosen);
         go.disabled = false;
       });
-    });
-    editBtn.addEventListener("click", function () {
-      openEditor(window.QUEST.get().rated[id] || 0);
     });
     go.addEventListener("click", function () {
       if (!chosen) return;
