@@ -1,0 +1,12 @@
+# Edge-cache the HTML so Cloudflare serves it from the nearest data center
+# (fast TTFB for every visitor) instead of the Pages origin. s-maxage caches at
+# the edge for a day; browsers revalidate (max-age=0) so a publish shows fresh
+# right away. A new deployment purges the edge cache automatically.
+/
+  Cache-Control: public, max-age=0, s-maxage=86400, must-revalidate
+/interactive
+  Cache-Control: public, max-age=0, s-maxage=86400, must-revalidate
+/fast/
+  Cache-Control: public, max-age=0, s-maxage=86400, must-revalidate
+/editor.js
+  Cache-Control: public, max-age=300
