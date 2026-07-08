@@ -2,6 +2,7 @@
 // type scale, system fonts, zero external requests, no JS. Ported from the demo
 // so every value is read from `content`.
 import { esc, md, realLinks, bindAttr } from "../util.js";
+import { creatorEntryJS } from "../fx/creator-entry.js";
 
 export function render(content, opts = {}) {
   const edit = !!(opts && opts.edit);
@@ -474,6 +475,7 @@ img{max-width:100%;height:auto}
   else addEventListener("load", done);
 })();
 </script>
+${edit ? "" : `<script>${creatorEntryJS}</script>`}
 </body>
 </html>`;
 }
