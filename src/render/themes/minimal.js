@@ -1,7 +1,7 @@
 // Minimal / kafagoz theme — warm paper, serif display with a terracotta italic accent,
 // a numbered index of work with click-to-expand panels and a floating desktop hover preview.
 // Extended beyond the demo with About, Patent, Experience, Press, Education, Skills, and stats.
-import { esc, md, realLinks } from "../util.js";
+import { esc, md, realLinks, bindAttr } from "../util.js";
 import { questCSS, questBadgeHTML, questJS } from "../fx/quest.js";
 import { ctaCSS, ctaTopHTML, ctaLabHTML, ctaJS } from "../fx/cta.js";
 import { shatterJS } from "../fx/shatter.js";
@@ -17,11 +17,11 @@ function accentTagline(t) {
   return `${esc(m[1].trim())} <em>${esc(m[3].trim())}</em>`;
 }
 
-function itemThumb(it) {
+function itemThumb(it, ci, edit) {
   const mode = it.imageMode || "";
   if (it.image) {
     const cls = mode === "contain" ? "thumb thumb-contain" : mode === "icon" ? "thumb thumb-icon" : "thumb";
-    return `<div class="${cls}"><img src="${esc(it.image)}" alt="${esc(it.title)} preview" loading="lazy"></div>`;
+    return `<div class="${cls}"><img src="${esc(it.image)}" alt="${esc(it.title)} preview" loading="lazy"${bindAttr("items." + ci + ".image", edit, "image")}></div>`;
   }
   // No image: a typographic card built from the initials, never a broken <img>.
   const initials = esc(
@@ -43,32 +43,41 @@ function itemLinks(links) {
     .join("")}</div>`;
 }
 
-function itemRow(it, i) {
+function itemRow(it, i, ci, edit) {
   const num = String(i + 1).padStart(2, "0");
   const metaBits = [it.status, it.year].filter(Boolean).map(esc).join(" · ");
+  const meta = edit
+    ? `<span${bindAttr("items." + ci + ".status", edit)}>${esc(it.status || "")}</span> · <span${bindAttr("items." + ci + ".year", edit)}>${esc(it.year || "")}</span>`
+    : metaBits;
   const tags = (it.tags || [])
     .map((t) => `<span class="tag">${esc(t)}</span>`)
     .join("");
+  const tagsHTML = edit
+    ? `<div class="tags"${bindAttr("items." + ci + ".tags", edit, "tags")}>${esc((it.tags || []).join(", "))}</div>`
+    : (tags ? `<div class="tags">${tags}</div>` : "");
   const detail = md(it.detail);
-  return `<section class="item" data-img="${esc(it.image || "")}" data-quest="${esc(it.id || "item-" + num)}">
+  const detailHTML = edit
+    ? `<div class="detail"${bindAttr("items." + ci + ".detail", edit, "md")}>${detail}</div>`
+    : (detail ? `<div class="detail">${detail}</div>` : "");
+  return `<section class="item${edit ? " open" : ""}" data-img="${esc(it.image || "")}" data-quest="${esc(it.id || "item-" + num)}">
     <h3 class="row-h">
-      <button class="row" type="button" aria-expanded="false">
+      <button class="row" type="button" aria-expanded="${edit ? "true" : "false"}">
         <span class="num">${num}</span>
-        <span class="title">${esc(it.title)}</span>
-        <span class="meta">${metaBits}</span>
+        <span class="title"${bindAttr("items." + ci + ".title", edit)}>${esc(it.title)}</span>
+        <span class="meta">${meta}</span>
       </button>
     </h3>
     <div class="panel">
       <div class="panel-inner">
         <div class="panel-grid">
           <div class="body">
-            <p class="desc">${esc(it.description)}</p>
-            ${detail ? `<div class="detail">${detail}</div>` : ""}
-            ${tags ? `<div class="tags">${tags}</div>` : ""}
+            <p class="desc"${bindAttr("items." + ci + ".description", edit)}>${esc(it.description)}</p>
+            ${detailHTML}
+            ${tagsHTML}
             ${itemLinks(it.links)}
-            ${rateStripHTML(esc(it.id || "item-" + num))}
+            ${edit ? "" : rateStripHTML(esc(it.id || "item-" + num))}
           </div>
-          ${itemThumb(it)}
+          ${itemThumb(it, ci, edit)}
         </div>
       </div>
     </div>
@@ -91,9 +100,9 @@ function statsRow(stats) {
   </section>`;
 }
 
-function aboutBlock(about) {
+function aboutBlock(about, edit) {
   if (!about || !(about.paragraphs || []).length) return "";
-  const paras = about.paragraphs.map((p) => `<p>${esc(p)}</p>`).join("");
+  const paras = about.paragraphs.map((p, idx) => `<p${bindAttr("about.paragraphs." + idx, edit)}>${esc(p)}</p>`).join("");
   const principles = (about.principles || [])
     .map(
       (pr) => `<div class="principle">
@@ -111,7 +120,7 @@ function aboutBlock(about) {
   </section>`;
 }
 
-function patentBlock(pt) {
+function patentBlock(pt, edit) {
   if (!pt || !pt.title) return "";
   const ids = (pt.ids || []).map((x) => `<span class="pt-id">${esc(x)}</span>`).join("");
   const meta = [pt.role, pt.year].filter(Boolean).map(esc).join(" · ");
@@ -129,10 +138,10 @@ function patentBlock(pt) {
     <div class="block-eyebrow">Patent</div>
     <div class="patent${fig ? " has-fig" : ""}">
       <div class="pt-body">
-        <h3 class="patent-title">${esc(pt.title)}</h3>
+        <h3 class="patent-title"${bindAttr("patent.title", edit)}>${esc(pt.title)}</h3>
         ${meta ? `<div class="patent-meta">${meta}</div>` : ""}
         ${ids ? `<div class="pt-ids">${ids}</div>` : ""}
-        ${pt.blurb ? `<p class="patent-blurb">${esc(pt.blurb)}</p>` : ""}
+        ${pt.blurb ? `<p class="patent-blurb"${bindAttr("patent.blurb", edit)}>${esc(pt.blurb)}</p>` : ""}
         ${hi ? `<ul class="patent-hi">${hi}</ul>` : ""}
       </div>
       ${fig}
@@ -213,8 +222,10 @@ export function render(content, opts = {}) {
   const edit = !!(opts && opts.edit);
   const p = c.profile || {};
   // Cross-theme entries: each theme hides the item that IS itself.
-  const items = (c.items || []).filter((it) => it.themeExclude !== "minimal");
-  const years = items.map((it) => it.year).filter(Boolean);
+  const items = (c.items || [])
+    .map((it, ci) => ({ it, ci }))
+    .filter((x) => x.it.themeExclude !== "minimal");
+  const years = items.map((x) => x.it.year).filter(Boolean);
   const yearSpan = years.length ? `${Math.min(...years.map(Number))} — ${Math.max(...years.map(Number))}` : "";
 
   const contacts = [
@@ -439,13 +450,13 @@ ${rateCSS}
 <body>
 <div class="wrap">
   <header class="eyebrow">
-    <span>${esc(p.name || "Portfolio")} — Selected Work</span>
+    <span><span${bindAttr("profile.name", edit)}>${esc(p.name || "Portfolio")}</span> — Selected Work</span>
     ${p.location ? `<span class="badge">${esc(p.location)}</span>` : ""}
   </header>
 
   <section class="hero">
-    <h1>${accentTagline(p.tagline)}</h1>
-    ${p.subtagline ? `<p class="sub">${esc(p.subtagline)}</p>` : ""}
+    <h1${bindAttr("profile.tagline", edit)}>${accentTagline(p.tagline)}</h1>
+    ${p.subtagline ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline)}</p>` : ""}
     ${contacts ? `<nav class="contacts" aria-label="Contact">${contacts}</nav>` : ""}
     ${p.available ? `<p class="avail">${esc(p.available)}</p>` : ""}
   </section>
@@ -453,7 +464,7 @@ ${rateCSS}
   ${ctaTopHTML}
 
   ${statsRow(c.stats)}
-  ${aboutBlock(c.about)}
+  ${aboutBlock(c.about, edit)}
 
   <main>
     <div class="index-head">
@@ -461,11 +472,11 @@ ${rateCSS}
       <span><button class="count-btn" type="button" data-n="${items.length}" title="Click to re-count">${items.length} works</button>${yearSpan ? ` · ${esc(yearSpan)}` : ""}</span>
     </div>
     <div id="list">
-      ${items.map(itemRow).join("")}
+      ${items.map(({ it, ci }, i) => itemRow(it, i, ci, edit)).join("")}
     </div>
   </main>
 
-  ${patentBlock(c.patent)}
+  ${patentBlock(c.patent, edit)}
   ${experienceBlock(c.experience)}
   ${pressBlock(c.press)}
   ${educationBlock(c.education)}
@@ -483,7 +494,7 @@ ${rateCSS}
 ${questBadgeHTML}
 ${spriteHTML}
 
-<script>
+${edit ? "" : `<script>
 (function(){
   var list = document.getElementById("list");
   var float = document.getElementById("float");
@@ -541,7 +552,7 @@ ${spriteHTML}
 <script>${shatterJS}</script>
 <script>${ctaJS}</script>
 <script>${rateJS}</script>
-<script>${spriteJS}</script>
+<script>${spriteJS}</script>`}
 </body>
 </html>`;
 }
