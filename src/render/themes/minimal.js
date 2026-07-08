@@ -241,7 +241,7 @@ export function render(content, opts = {}) {
   const metaDesc = esc(p.subtagline || p.tagline || "");
 
   return `<!doctype html>
-<html lang="en">
+<html lang="en" data-theme="minimal">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

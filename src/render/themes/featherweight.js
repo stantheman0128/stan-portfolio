@@ -252,7 +252,7 @@ export function render(content, opts = {}) {
   const desc = esc(p.subtagline || about.short || "");
 
   return `<!doctype html>
-<html lang="en">
+<html lang="en" data-theme="featherweight">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -452,7 +452,7 @@ img{max-width:100%;height:auto}
     <span>© ${year} ${esc(p.name)}${p.latinName ? " · " + esc(p.latinName) : ""}</span>
     <span class="grow"></span>
     <span>Featherweight · system fonts · nothing blocks first paint</span>
-    <a href="/site?theme=minimal&amp;v=full">Full interactive version &rarr;</a>
+    <a href="/interactive">Full interactive version &rarr;</a>
   </footer>
 
 </div>
