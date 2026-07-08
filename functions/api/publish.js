@@ -28,7 +28,10 @@ export async function onRequestPost({ request, env }) {
       token: env.GITHUB_TOKEN,
       owner: env.PUBLISH_OWNER || "stantheman0128",
       repo: env.PUBLISH_REPO || "stan-portfolio",
-      branch: env.PUBLISH_BRANCH || "main",
+      // Publish to the branch THIS deployment was built from (CF_PAGES_BRANCH),
+      // so editing on the preview updates the preview and never touches production
+      // by accident. PUBLISH_BRANCH overrides if ever needed.
+      branch: env.PUBLISH_BRANCH || env.CF_PAGES_BRANCH || "main",
       path: "data/content.json",
       obj: body.content,
       message: "content: update from editor",
