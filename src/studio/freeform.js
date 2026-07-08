@@ -245,8 +245,26 @@ function buildToolbar(initialStatus) {
     render("Reset to published");
   });
 
-  mkBtn("Publish", "One-click publish (coming in M5)", () => {
-    alert("Publish to GitHub is coming next (M5): it will commit content.json (and any replaced images) via your OAuth worker and auto-deploy — no manual export needed. For now, Export.");
+  mkBtn("Publish", "Publish live (commits content.json from your IP)", async () => {
+    setStatus("Publishing…");
+    try {
+      const r = await fetch("/api/publish", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ content: state.content }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok && d.ok) {
+        setStatus("Published ✓");
+        alert("Published. Cloudflare rebuilds and deploys in about a minute.\nCommit " + String(d.commit || "").slice(0, 7));
+      } else {
+        setStatus("Publish failed");
+        alert("Publish failed: " + (d.error || ("HTTP " + r.status)) + "\n\n(Publish only works on the deployed site, from your creator IP.)");
+      }
+    } catch (e) {
+      setStatus("Publish failed");
+      alert("Publish failed: " + e.message + "\n\n(Publish only works on the deployed site.)");
+    }
   }, "primary");
 
   statusEl = document.createElement("span");
