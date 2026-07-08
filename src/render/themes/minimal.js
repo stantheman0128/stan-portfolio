@@ -251,6 +251,7 @@ export function render(content, opts = {}) {
 <title>${title}</title>
 <meta name="description" content="${metaDesc}">
 <meta name="build" content="${esc(String(c._build || "dev"))}">
+<link rel="stylesheet" href="/moana-puppet-kit/moana-puppet.css">
 <script>
 // Connection-aware routing: on slow/lite environments, hand off to the
 // zero-JS twin at /fast/. ?v=full|fast is a sticky manual override.
@@ -556,6 +557,7 @@ ${edit ? "" : `<script>
 <script>${shatterJS}</script>
 <script>${ctaJS}</script>
 <script>${rateJS}</script>
+<script src="/moana-puppet-kit/moana-puppet.js"></script>
 <script>${spriteJS}</script>
 <script>${creatorEntryJS}</script>`}
 </body>
