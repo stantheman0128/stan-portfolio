@@ -26,3 +26,32 @@ export function formatSpeed(ms) {
   const n = Number.isFinite(ms) && ms > 0 ? Math.round(ms) : 0;
   return "~" + n + " ms";
 }
+
+// Read a value by a dot path like "items.3.title"; missing branch -> undefined.
+export function getPath(obj, path) {
+  return String(path).split(".").reduce((o, k) => (o == null ? undefined : o[k]), obj);
+}
+
+// Write `val` into `obj` at a dot path, in place. Missing steps are created:
+// an array when the next key is numeric, an object otherwise. Returns obj.
+export function setPath(obj, path, val) {
+  const keys = String(path).split(".");
+  let o = obj;
+  for (let i = 0; i < keys.length - 1; i++) {
+    const k = keys[i];
+    if (o[k] == null || typeof o[k] !== "object") {
+      o[k] = /^\d+$/.test(keys[i + 1]) ? [] : {};
+    }
+    o = o[k];
+  }
+  o[keys[keys.length - 1]] = val;
+  return obj;
+}
+
+// Edit-mode only: emit a data-bind (and optional data-edit "kind") attribute for a
+// content path. Leading space lets it drop straight into a tag. One source of truth
+// so every theme annotates fields identically.
+export function bindAttr(path, edit, kind) {
+  if (!edit) return "";
+  return ` data-bind="${esc(path)}"` + (kind ? ` data-edit="${esc(kind)}"` : "");
+}
