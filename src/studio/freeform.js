@@ -1,36 +1,43 @@
 // Freeform on-page editor. The rendered site IS the editor: click text to type,
-// hover any element to delete/duplicate it, double-click images to replace them.
-// A theme is a starting template; the artifact is a full static HTML page,
-// autosaved to localStorage and exportable as a self-contained file.
+// hover an item to delete/duplicate it, double-click images to replace them.
+// Edits write back into the content OBJECT (content.json), so both themes stay in
+// sync. Autosaved to localStorage; Export downloads content.json and Publish (M5)
+// will commit it for one-click deploy — no manual export needed.
 import { renderSite, THEMES_META } from "../render/renderSite.js";
+import { getPath, setPath, md } from "../render/util.js";
 
-const DRAFT_KEY = "freeform-draft-v1";
+const CONTENT_KEY = "freeform-content-v1";
+const state = { content: null, theme: "featherweight" };
 let editing = true;
-const undoStack = []; // structural ops only; text undo stays native (Ctrl+Z)
+const undoStack = []; // structural ops (add/delete item); text undo stays native (Ctrl+Z)
 
 // ---------- boot ----------
 async function boot() {
-  const draft = localStorage.getItem(DRAFT_KEY);
+  const draft = localStorage.getItem(CONTENT_KEY);
   if (draft) {
-    swapDocument(draft);
-    mountChrome("Restored your draft");
-  } else {
-    await freshFromTheme("featherweight", "Started from Featherweight");
+    try { state.content = JSON.parse(draft); } catch { state.content = null; }
   }
+  if (!state.content) {
+    state.content = await (await fetch("/data/content.json")).json();
+  }
+  render("Editing " + state.theme);
 }
 
-async function freshFromTheme(theme, msg) {
-  const content = await (await fetch("/data/content.json")).json();
-  swapDocument(renderSite(content, theme));
-  mountChrome(msg || "Started from " + theme);
+// Re-render the whole page from the in-memory content in edit mode, remount the
+// editor chrome, and rebind editable fields. Called on boot, theme switch, and
+// every structural (add/delete) op.
+function render(msg) {
+  swapDocument(renderSite(state.content, state.theme, { edit: true }));
+  mountChrome(msg || "Editing");
+  bindEditable();
   scheduleSave();
 }
 
 function swapDocument(html) {
   const doc = new DOMParser().parseFromString(html, "text/html");
   document.replaceChild(document.importNode(doc.documentElement, true), document.documentElement);
-  // DOMParser+importNode keeps <script> non-executable; recreate them so theme
-  // behavior (expanders, companion, parade) also works inside the editor.
+  // DOMParser marks <script> inert; recreate them. In edit mode themes ship no fx,
+  // but featherweight's tiny speed timer is harmless.
   document.querySelectorAll("script").forEach((old) => {
     const s = document.createElement("script");
     for (const a of old.attributes) s.setAttribute(a.name, a.value);
@@ -39,46 +46,108 @@ function swapDocument(html) {
   });
 }
 
-// ---------- serialization (what gets saved/exported: the page, never the chrome) ----------
-function serialize() {
-  const clone = document.documentElement.cloneNode(true);
-  clone.querySelectorAll("[data-ff-chrome]").forEach((n) => n.remove());
-  clone.querySelectorAll("[contenteditable]").forEach((n) => n.removeAttribute("contenteditable"));
-  clone.querySelectorAll("[spellcheck]").forEach((n) => n.removeAttribute("spellcheck"));
-  return "<!doctype html>\n" + clone.outerHTML;
-}
-
 let saveTimer = null;
-let observer = null;
 function scheduleSave() {
   clearTimeout(saveTimer);
   setStatus("Editing…");
   saveTimer = setTimeout(() => {
-    localStorage.setItem(DRAFT_KEY, serialize());
+    localStorage.setItem(CONTENT_KEY, JSON.stringify(state.content));
     setStatus("Saved ✓");
-  }, 800);
+  }, 600);
 }
-function watchMutations() {
-  if (observer) observer.disconnect();
-  observer = new MutationObserver((muts) => {
-    if (muts.some((m) => {
-      const t = m.target;
-      return !(t.closest && t.closest("[data-ff-chrome]"));
-    })) scheduleSave();
+
+// ---------- field binding: the rendered [data-bind] nodes write back to content ----------
+function bindEditable() {
+  document.querySelectorAll("[data-bind]").forEach((el) => {
+    const path = el.getAttribute("data-bind");
+    const kind = el.getAttribute("data-edit");
+    if (kind === "md") return bindMd(el, path);
+    if (kind === "tags") return bindTags(el, path);
+    if (kind === "image") return bindImage(el, path);
+    el.setAttribute("contenteditable", "true");
+    el.addEventListener("input", () => {
+      setPath(state.content, path, el.textContent);
+      scheduleSave();
+    });
   });
-  observer.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true });
 }
 
-// ---------- chrome (toolbar + hover controls), all data-ff-chrome ----------
-let statusEl, hoverBox, hoverBtns, hoverTarget = null;
+// Tags edit as one comma-separated string; split back into an array on input.
+function bindTags(el, path) {
+  el.setAttribute("contenteditable", "true");
+  el.addEventListener("input", () => {
+    const arr = el.textContent.split(",").map((s) => s.trim()).filter(Boolean);
+    setPath(state.content, path, arr);
+    scheduleSave();
+  });
+}
 
+// Markdown detail: click opens a floating textarea over the element to edit the RAW
+// markdown (read from state.content, not the rendered HTML); live re-renders via md().
+function bindMd(el, path) {
+  el.style.cursor = "text";
+  el.title = "Click to edit (markdown)";
+  el.addEventListener("click", (e) => {
+    if (!editing) return;
+    e.preventDefault();
+    if (document.querySelector("[data-ff-md]")) return; // one overlay at a time
+    const r = el.getBoundingClientRect();
+    const ta = document.createElement("textarea");
+    ta.setAttribute("data-ff-md", "");
+    ta.setAttribute("data-ff-chrome", "");
+    ta.value = getPath(state.content, path) || "";
+    ta.style.cssText =
+      "position:absolute;z-index:99996;left:" + (r.left + scrollX) + "px;top:" + (r.top + scrollY) +
+      "px;width:" + Math.max(280, r.width) + "px;height:" + Math.max(120, r.height + 40) +
+      "px;font:13px/1.5 ui-monospace,Consolas,monospace;padding:8px;border:1.5px solid #7c3aed;" +
+      "border-radius:8px;background:#fff;color:#1b1b1f;box-shadow:0 8px 28px rgba(20,20,30,.18)";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.addEventListener("input", () => {
+      setPath(state.content, path, ta.value);
+      el.innerHTML = md(ta.value);
+      scheduleSave();
+    });
+    ta.addEventListener("blur", () => ta.remove());
+  });
+}
+
+// Double-click an image to replace it: store a data URL for preview and keep the
+// File on the item for the real upload at publish time (M5).
+function bindImage(el, path) {
+  el.style.cursor = "pointer";
+  el.title = "Double-click to replace image";
+  el.addEventListener("dblclick", (e) => {
+    if (!editing) return;
+    e.preventDefault();
+    const pick = document.createElement("input");
+    pick.type = "file"; pick.accept = "image/*";
+    pick.addEventListener("change", () => {
+      const f = pick.files && pick.files[0];
+      if (!f) return;
+      const rd = new FileReader();
+      rd.onload = () => {
+        el.src = rd.result;
+        setPath(state.content, path, rd.result);
+        const m = /^items\.(\d+)\.image$/.exec(path);
+        if (m) state.content.items[+m[1]]._imageFile = f; // consumed by M5 upload
+        scheduleSave();
+      };
+      rd.readAsDataURL(f);
+    });
+    pick.click();
+  });
+}
+
+// ---------- chrome (toolbar + hover controls), all tagged data-ff-chrome ----------
+let statusEl, hoverBox, hoverBtns, hoverTarget = null;
 let eventsWired = false;
+
 function mountChrome(initialStatus) {
   injectStyle();
   buildToolbar(initialStatus);
   buildHoverControls();
   setEditing(true);
-  watchMutations();
   if (!eventsWired) { wireEvents(); eventsWired = true; }
 }
 
@@ -108,6 +177,7 @@ function injectStyle() {
     #ffbtns button:hover { background: #f4f4f6; }
     #ffbtns .del:hover { color: #dc2626; border-color: #dc2626; }
     body.ff-editing { caret-color: #7c3aed; }
+    body.ff-editing [data-bind] { outline: 1px dotted rgba(124,58,237,.35); outline-offset: 2px; }
     body.ff-editing :is(a) { cursor: text; }
   `;
   document.head.appendChild(s);
@@ -124,26 +194,15 @@ function buildToolbar(initialStatus) {
   ttl.textContent = "✏️ Edit";
   bar.appendChild(ttl);
 
-  // template picker — restart from a theme
+  // Theme switch — same content, other skin. This IS the two-versions-in-sync proof.
   const sel = document.createElement("select");
-  const ph = document.createElement("option");
-  ph.textContent = "New from template…";
-  ph.value = "";
-  sel.appendChild(ph);
   THEMES_META.forEach((t) => {
     const o = document.createElement("option");
     o.value = t.key; o.textContent = t.label;
+    if (t.key === state.theme) o.selected = true;
     sel.appendChild(o);
   });
-  sel.addEventListener("change", async () => {
-    const key = sel.value;
-    sel.value = "";
-    if (!key) return;
-    if (!confirm("Start over from the \"" + key + "\" template?\nThis DISCARDS all your current edits.")) return;
-    localStorage.removeItem(DRAFT_KEY);
-    undoStack.length = 0;
-    await freshFromTheme(key, "Started from " + key);
-  });
+  sel.addEventListener("change", () => { state.theme = sel.value; render("Editing " + sel.value); });
   bar.appendChild(sel);
 
   const mkBtn = (label, title, on, cls) => {
@@ -158,34 +217,37 @@ function buildToolbar(initialStatus) {
   const undoBtn = mkBtn("↩ Undo", "Undo last delete/duplicate (text undo: Ctrl+Z)", () => {
     const op = undoStack.pop();
     if (!op) return;
-    if (op.type === "delete") op.parent.insertBefore(op.node, op.next);
-    else if (op.type === "duplicate") op.node.remove();
-    undoBtn.disabled = !undoStack.length;
-    scheduleSave();
+    if (op.type === "delete") state.content.items.splice(op.idx, 0, op.item);
+    else if (op.type === "duplicate") state.content.items.splice(op.idx, 1);
+    render("Undo");
   });
-  undoBtn.disabled = true;
-  bar._undoBtn = undoBtn;
+  undoBtn.disabled = !undoStack.length;
 
-  const toggle = mkBtn("👁 Preview", "Toggle editing off to click links and see it as a visitor", () => {
+  const toggle = mkBtn("👁 Preview", "Toggle editing off to click around as a visitor", () => {
     setEditing(!editing);
     toggle.textContent = editing ? "👁 Preview" : "✏️ Edit";
   });
 
-  mkBtn("Export", "Download the finished page as a single HTML file", () => {
-    const blob = new Blob([serialize()], { type: "text/html" });
+  mkBtn("Export", "Download content.json (offline backup / manual publish)", () => {
+    const blob = new Blob([JSON.stringify(state.content, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "stan-site.html";
+    a.download = "content.json";
     document.body.appendChild(a); a.click(); a.remove();
-    setStatus("Exported ✓");
-  }, "primary");
-
-  mkBtn("Reset", "Discard draft and start clean", async () => {
-    if (!confirm("Discard ALL edits and start clean from Featherweight?")) return;
-    localStorage.removeItem(DRAFT_KEY);
-    undoStack.length = 0;
-    await freshFromTheme("featherweight", "Reset — clean start");
+    setStatus("Exported content.json ✓");
   });
+
+  mkBtn("Reset", "Discard local edits, reload the published content", async () => {
+    if (!confirm("Discard ALL local edits and reload the published content.json?")) return;
+    localStorage.removeItem(CONTENT_KEY);
+    undoStack.length = 0;
+    state.content = await (await fetch("/data/content.json")).json();
+    render("Reset to published");
+  });
+
+  mkBtn("Publish", "One-click publish (coming in M5)", () => {
+    alert("Publish to GitHub is coming next (M5): it will commit content.json (and any replaced images) via your OAuth worker and auto-deploy — no manual export needed. For now, Export.");
+  }, "primary");
 
   statusEl = document.createElement("span");
   statusEl.className = "st";
@@ -205,47 +267,57 @@ function buildHoverControls() {
   hoverBtns.setAttribute("contenteditable", "false");
 
   const del = document.createElement("button");
-  del.className = "del"; del.textContent = "✕"; del.title = "Delete this element";
+  del.className = "del"; del.textContent = "✕"; del.title = "Delete this item";
   del.addEventListener("mousedown", (e) => {
     e.preventDefault(); e.stopPropagation();
-    if (!hoverTarget) return;
-    undoStack.push({ type: "delete", node: hoverTarget, parent: hoverTarget.parentNode, next: hoverTarget.nextSibling });
-    hoverTarget.remove();
+    const idx = itemIndexOf(hoverTarget);
+    if (idx < 0) { hideHover(); return; } // only items are structurally editable
+    const removed = state.content.items[idx];
+    state.content.items.splice(idx, 1);
+    undoStack.push({ type: "delete", idx, item: removed });
     hideHover();
-    toolbarUndoRefresh();
-    scheduleSave();
+    render("Deleted item");
   });
 
   const dup = document.createElement("button");
-  dup.textContent = "⧉"; dup.title = "Duplicate this element (duplicate a card, then edit it — that's how you add)";
+  dup.textContent = "⧉"; dup.title = "Duplicate this item (then edit the copy — that's how you add)";
   dup.addEventListener("mousedown", (e) => {
     e.preventDefault(); e.stopPropagation();
-    if (!hoverTarget) return;
-    const clone = hoverTarget.cloneNode(true);
-    hoverTarget.after(clone);
-    undoStack.push({ type: "duplicate", node: clone });
-    toolbarUndoRefresh();
-    scheduleSave();
+    const idx = itemIndexOf(hoverTarget);
+    if (idx < 0) return;
+    const copy = JSON.parse(JSON.stringify(state.content.items[idx]));
+    state.content.items.splice(idx + 1, 0, copy);
+    undoStack.push({ type: "duplicate", idx: idx + 1 });
+    render("Duplicated item");
   });
 
   hoverBtns.append(del, dup);
   document.body.append(hoverBox, hoverBtns);
 }
 
-function toolbarUndoRefresh() {
-  const bar = document.getElementById("ffbar");
-  if (bar && bar._undoBtn) bar._undoBtn.disabled = !undoStack.length;
+// The content.items index owning a node = the numeric prefix of the nearest
+// items.N.* data-bind, searched on self/ancestors first, then descendants (so
+// hovering the whole card also resolves the item).
+function itemIndexOf(node) {
+  if (!node) return -1;
+  let bound = node.closest && node.closest('[data-bind^="items."]');
+  if (!bound && node.querySelector) bound = node.querySelector('[data-bind^="items."]');
+  if (!bound) return -1;
+  const m = /^items\.(\d+)\./.exec(bound.getAttribute("data-bind"));
+  return m ? +m[1] : -1;
 }
 
 function setStatus(t) { if (statusEl) statusEl.textContent = t; }
 
+// Editing on/off toggles contentEditable on the text fields (md/image use their own
+// click/dblclick) and whether hover controls appear.
 function setEditing(on) {
   editing = on;
-  document.body.contentEditable = on ? "true" : "false";
-  document.body.spellcheck = false;
   document.body.classList.toggle("ff-editing", on);
-  document.querySelectorAll("[data-ff-chrome]").forEach((n) => {
-    if (n.id === "ffbar") n.setAttribute("contenteditable", "false");
+  document.querySelectorAll("[data-bind]").forEach((el) => {
+    const kind = el.getAttribute("data-edit");
+    if (kind === "md" || kind === "image") return;
+    el.setAttribute("contenteditable", on ? "true" : "false");
   });
   if (!on) hideHover();
 }
@@ -253,55 +325,45 @@ function setEditing(on) {
 // ---------- hover targeting ----------
 function hideHover() {
   hoverTarget = null;
-  hoverBox.style.display = "none";
-  hoverBtns.style.display = "none";
+  if (hoverBox) hoverBox.style.display = "none";
+  if (hoverBtns) hoverBtns.style.display = "none";
 }
 
 function onMove(e) {
   if (!editing) return;
-  const t = e.target;
-  if (!t || t.closest("[data-ff-chrome]")) return; // keep controls visible while on them
+  let t = e.target;
+  if (!t || (t.closest && t.closest("[data-ff-chrome]"))) return; // keep controls usable
   if (t === document.body || t === document.documentElement) { hideHover(); return; }
+  // Prefer the whole item card so ✕/⧉ act on the item, not just the hovered field.
+  const item = t.closest && t.closest(".item");
+  if (item) t = item;
   hoverTarget = t;
   const r = t.getBoundingClientRect();
   const x = r.left + scrollX, y = r.top + scrollY;
   hoverBox.style.cssText += `;display:block;left:${x - 3}px;top:${y - 3}px;width:${r.width + 6}px;height:${r.height + 6}px`;
-  hoverBtns.style.cssText += `;display:flex;left:${Math.max(4, x + r.width - 56)}px;top:${Math.max(4, y - 26)}px`;
+  // Only items get delete/duplicate controls.
+  if (itemIndexOf(t) >= 0) {
+    hoverBtns.style.cssText += `;display:flex;left:${Math.max(4, x + r.width - 56)}px;top:${Math.max(4, y - 26)}px`;
+  } else {
+    hoverBtns.style.display = "none";
+  }
 }
 
 function wireEvents() {
   document.addEventListener("mousemove", onMove, true);
   document.addEventListener("scroll", hideHover, true);
 
-  // dblclick an image → replace it (embedded as data URL so it survives save/export)
-  document.addEventListener("dblclick", (e) => {
-    if (!editing) return;
-    const img = e.target.closest && e.target.closest("img");
-    if (!img || img.closest("[data-ff-chrome]")) return;
-    e.preventDefault();
-    const pick = document.createElement("input");
-    pick.type = "file"; pick.accept = "image/*";
-    pick.addEventListener("change", () => {
-      const f = pick.files && pick.files[0];
-      if (!f) return;
-      const rd = new FileReader();
-      rd.onload = () => { img.src = rd.result; scheduleSave(); };
-      rd.readAsDataURL(f);
-    });
-    pick.click();
-  }, true);
-
-  // Ctrl+S → force save
+  // Ctrl+S → force save the content JSON now.
   document.addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
       e.preventDefault();
       clearTimeout(saveTimer);
-      localStorage.setItem(DRAFT_KEY, serialize());
+      localStorage.setItem(CONTENT_KEY, JSON.stringify(state.content));
       setStatus("Saved ✓");
     }
   });
 
-  // in edit mode, plain click on links must not navigate away
+  // In edit mode, plain clicks on links must not navigate away.
   document.addEventListener("click", (e) => {
     if (!editing) return;
     const a = e.target.closest && e.target.closest("a");
