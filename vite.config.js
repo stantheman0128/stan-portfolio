@@ -14,8 +14,7 @@ export default defineConfig({
       input: {
         main: "index.html",
         site: "site.html",
-        studio: "studio.html",
-        edit: "edit.html"
+        studio: "studio.html"
       }
     }
   },

@@ -7,12 +7,12 @@ import { renderSite, THEMES_META } from "../render/renderSite.js";
 import { getPath, setPath, md } from "../render/util.js";
 
 const CONTENT_KEY = "freeform-content-v1";
-const state = { content: null, theme: "featherweight" };
+const state = { content: null, theme: (document.documentElement.getAttribute("data-theme") || "featherweight") };
 let editing = true;
 const undoStack = []; // structural ops (add/delete item); text undo stays native (Ctrl+Z)
 
 // ---------- boot ----------
-async function boot() {
+async function mountEditor() {
   const draft = localStorage.getItem(CONTENT_KEY);
   if (draft) {
     try { state.content = JSON.parse(draft); } catch { state.content = null; }
@@ -156,14 +156,14 @@ function injectStyle() {
   s.setAttribute("data-ff-chrome", "");
   s.textContent = `
     #ffbar { position: fixed; top: 12px; right: 12px; z-index: 99999; display: flex; gap: 6px;
-      align-items: center; flex-wrap: wrap; justify-content: flex-end; max-width: min(92vw, 640px);
+      flex-direction: column; align-items: stretch; width: 190px; max-height: calc(100vh - 24px); overflow: auto;
       background: #ffffff; color: #1b1b1f; border: 1px solid #dcdce0; border-radius: 12px;
-      padding: 8px 10px; box-shadow: 0 8px 28px rgba(20,20,30,.14);
+      padding: 10px; box-shadow: 0 8px 28px rgba(20,20,30,.14);
       font: 13px/1.4 ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
     #ffbar .ttl { font-weight: 700; font-size: 12.5px; letter-spacing: .02em; margin-right: 2px; }
     #ffbar .st { color: #71717a; font-size: 12px; min-width: 74px; text-align: right; }
     #ffbar button, #ffbar select { background: #f4f4f6; color: #1b1b1f; border: 1px solid #dcdce0;
-      border-radius: 8px; padding: 5px 10px; font: inherit; font-size: 12.5px; cursor: pointer; }
+      border-radius: 8px; padding: 6px 10px; font: inherit; font-size: 12.5px; cursor: pointer; width: 100%; box-sizing: border-box; }
     #ffbar button:hover, #ffbar select:hover { border-color: #b9b9c2; background: #ececf0; }
     #ffbar button.primary { background: #1b1b1f; border-color: #1b1b1f; color: #fff; }
     #ffbar button.primary:hover { background: #333338; }
@@ -266,6 +266,10 @@ function buildToolbar(initialStatus) {
       alert("Publish failed: " + e.message + "\n\n(Publish only works on the deployed site.)");
     }
   }, "primary");
+
+  mkBtn("Exit", "Leave editing (reload as a visitor)", function () {
+    location.reload();
+  });
 
   statusEl = document.createElement("span");
   statusEl.className = "st";
@@ -389,4 +393,4 @@ function wireEvents() {
   }, true);
 }
 
-boot();
+mountEditor();

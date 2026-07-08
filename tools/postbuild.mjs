@@ -27,4 +27,15 @@ writeFileSync(join(dist, "index.html"), fw);
 mkdirSync(join(dist, "fast"), { recursive: true });
 writeFileSync(join(dist, "fast", "index.html"), fw);
 
-console.log("postbuild: dist/data/content.json + dist/index.html + dist/fast/index.html written");
+// Bundle the on-page editor to a stable, unhashed URL so the Edit button can inject
+// it on demand from any live page (esbuild ships with vite).
+const { build: esbuild } = await import("esbuild");
+await esbuild({
+  entryPoints: [join(root, "src", "studio", "freeform.js")],
+  bundle: true,
+  minify: true,
+  format: "iife",
+  outfile: join(dist, "editor.js"),
+});
+
+console.log("postbuild: content.json + index.html + fast/ + editor.js written");
