@@ -397,6 +397,10 @@ footer .grow{flex:1}
 .entry .top{flex-direction:column;gap:.1rem}
 }
 img{max-width:100%;height:auto}
+.fw-speed{display:none}
+.fw-speed.on{display:inline-flex;align-items:center;gap:.55rem;margin-top:calc(var(--space)*.55);font-size:var(--s-1);color:var(--ink-2);border:var(--rule) solid var(--line-2);border-radius:999px;padding:.34rem .8rem .34rem .7rem;font-feature-settings:"tnum" 1;letter-spacing:.01em}
+.fw-speed::before{content:"";width:.5rem;height:.5rem;border-radius:50%;background:var(--live);flex:0 0 auto;box-shadow:0 0 0 3px color-mix(in srgb,var(--live) 16%,transparent)}
+.fw-speed .n{font-weight:700;color:var(--ink);font-size:var(--s0);letter-spacing:-.01em}
 </style>
 </head>
 <body>
@@ -411,6 +415,7 @@ img{max-width:100%;height:auto}
     ${p.subtagline ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline)}</p>` : ""}
     ${nav ? `<nav class="quicknav" aria-label="Sections">${nav}</nav>` : ""}
     ${metaHTML ? `<p class="meta-row">${metaHTML}</p>` : ""}
+    <p class="fw-speed" id="fw-speed" role="status" aria-live="polite"></p>
   </header>
 
   <main>
@@ -446,7 +451,7 @@ img{max-width:100%;height:auto}
   <footer>
     <span>© ${year} ${esc(p.name)}${p.latinName ? " · " + esc(p.latinName) : ""}</span>
     <span class="grow"></span>
-    <span>Featherweight · system fonts · <span id="fw-speed">nothing blocks first paint</span></span>
+    <span>Featherweight · system fonts · nothing blocks first paint</span>
     <a href="/site?theme=minimal&amp;v=full">Full interactive version &rarr;</a>
   </footer>
 
@@ -458,7 +463,12 @@ img{max-width:100%;height:auto}
     var ms = nav && nav.domContentLoadedEventEnd ? nav.domContentLoadedEventEnd : performance.now();
     var n = isFinite(ms) && ms > 0 ? Math.round(ms) : 0;
     var el = document.getElementById("fw-speed");
-    if (el) el.textContent = "became usable in ~" + n + " ms · one tiny timer";
+    if (!el) return;
+    el.textContent = "this page loaded in ";
+    var b = document.createElement("span");
+    b.className = "n"; b.textContent = "~" + n + " ms";
+    el.appendChild(b);
+    el.classList.add("on");
   }
   if (document.readyState === "complete") done();
   else addEventListener("load", done);
