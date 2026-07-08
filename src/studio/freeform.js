@@ -5,11 +5,13 @@
 // will commit it for one-click deploy — no manual export needed.
 import { renderSite, THEMES_META } from "../render/renderSite.js";
 import { getPath, setPath, md } from "../render/util.js";
+import { makeHistory } from "./history.js";
 
 const CONTENT_KEY = "freeform-content-v1";
 const state = { content: null, theme: (document.documentElement.getAttribute("data-theme") || "featherweight") };
 let editing = true;
-const undoStack = []; // structural ops (add/delete item); text undo stays native (Ctrl+Z)
+let history = null;      // makeHistory, initialised on boot
+let commitTimer = null;
 
 // ---------- boot ----------
 async function mountEditor() {
@@ -20,6 +22,7 @@ async function mountEditor() {
   if (!state.content) {
     state.content = await (await fetch("/data/content.json")).json();
   }
+  history = makeHistory(snapshot());
   render("Editing " + state.theme);
 }
 
@@ -56,6 +59,15 @@ function scheduleSave() {
   }, 600);
 }
 
+function snapshot() { return JSON.stringify(state.content); }
+function commitNow() { clearTimeout(commitTimer); if (history) history.commit(snapshot()); refreshUndoRedo(); }
+function scheduleCommit() { clearTimeout(commitTimer); commitTimer = setTimeout(commitNow, 500); }
+function refreshUndoRedo() {
+  const bar = document.getElementById("ffbar");
+  if (bar && bar._undoBtn) bar._undoBtn.disabled = !(history && history.canUndo());
+  if (bar && bar._redoBtn) bar._redoBtn.disabled = !(history && history.canRedo());
+}
+
 // ---------- field binding: the rendered [data-bind] nodes write back to content ----------
 function bindEditable() {
   document.querySelectorAll("[data-bind]").forEach((el) => {
@@ -68,6 +80,7 @@ function bindEditable() {
     el.addEventListener("input", () => {
       setPath(state.content, path, el.textContent);
       scheduleSave();
+      scheduleCommit();
     });
   });
 }
@@ -79,6 +92,7 @@ function bindTags(el, path) {
     const arr = el.textContent.split(",").map((s) => s.trim()).filter(Boolean);
     setPath(state.content, path, arr);
     scheduleSave();
+    scheduleCommit();
   });
 }
 
@@ -107,6 +121,7 @@ function bindMd(el, path) {
       setPath(state.content, path, ta.value);
       el.innerHTML = md(ta.value);
       scheduleSave();
+      scheduleCommit();
     });
     ta.addEventListener("blur", () => ta.remove());
   });
@@ -130,8 +145,9 @@ function bindImage(el, path) {
         el.src = rd.result;
         setPath(state.content, path, rd.result);
         const m = /^items\.(\d+)\.image$/.exec(path);
-        if (m) state.content.items[+m[1]]._imageFile = f; // consumed by M5 upload
+        if (m) state.content.items[+m[1]]._imageFile = f; // consumed by publish upload
         scheduleSave();
+        commitNow();
       };
       rd.readAsDataURL(f);
     });
@@ -214,14 +230,21 @@ function buildToolbar(initialStatus) {
     return b;
   };
 
-  const undoBtn = mkBtn("↩ Undo", "Undo last delete/duplicate (text undo: Ctrl+Z)", () => {
-    const op = undoStack.pop();
-    if (!op) return;
-    if (op.type === "delete") state.content.items.splice(op.idx, 0, op.item);
-    else if (op.type === "duplicate") state.content.items.splice(op.idx, 1);
-    render("Undo");
+  const undoBtn = mkBtn("↩ Undo", "Undo (Ctrl+Z)", () => {
+    commitNow();
+    const s = history && history.undo();
+    if (s != null) { state.content = JSON.parse(s); render("Undo"); }
+    refreshUndoRedo();
   });
-  undoBtn.disabled = !undoStack.length;
+  bar._undoBtn = undoBtn;
+  const redoBtn = mkBtn("↪ Redo", "Redo (Ctrl+Shift+Z)", () => {
+    const s = history && history.redo();
+    if (s != null) { state.content = JSON.parse(s); render("Redo"); }
+    refreshUndoRedo();
+  });
+  bar._redoBtn = redoBtn;
+  undoBtn.disabled = !(history && history.canUndo());
+  redoBtn.disabled = !(history && history.canRedo());
 
   const toggle = mkBtn("👁 Preview", "Toggle editing off to click around as a visitor", () => {
     setEditing(!editing);
@@ -240,8 +263,8 @@ function buildToolbar(initialStatus) {
   mkBtn("Reset", "Discard local edits, reload the published content", async () => {
     if (!confirm("Discard ALL local edits and reload the published content.json?")) return;
     localStorage.removeItem(CONTENT_KEY);
-    undoStack.length = 0;
     state.content = await (await fetch("/data/content.json")).json();
+    history = makeHistory(snapshot());
     render("Reset to published");
   });
 
@@ -294,9 +317,8 @@ function buildHoverControls() {
     e.preventDefault(); e.stopPropagation();
     const idx = itemIndexOf(hoverTarget);
     if (idx < 0) { hideHover(); return; } // only items are structurally editable
-    const removed = state.content.items[idx];
     state.content.items.splice(idx, 1);
-    undoStack.push({ type: "delete", idx, item: removed });
+    commitNow();
     hideHover();
     render("Deleted item");
   });
@@ -309,7 +331,7 @@ function buildHoverControls() {
     if (idx < 0) return;
     const copy = JSON.parse(JSON.stringify(state.content.items[idx]));
     state.content.items.splice(idx + 1, 0, copy);
-    undoStack.push({ type: "duplicate", idx: idx + 1 });
+    commitNow();
     render("Duplicated item");
   });
 
@@ -383,6 +405,16 @@ function wireEvents() {
       localStorage.setItem(CONTENT_KEY, JSON.stringify(state.content));
       setStatus("Saved ✓");
     }
+  });
+
+  // Ctrl+Z undo / Ctrl+Shift+Z redo (content-level, unified for text + structural).
+  document.addEventListener("keydown", (e) => {
+    const z = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z";
+    if (!z) return;
+    e.preventDefault();
+    commitNow();
+    const s = e.shiftKey ? (history && history.redo()) : (history && history.undo());
+    if (s != null) { state.content = JSON.parse(s); render(e.shiftKey ? "Redo" : "Undo"); }
   });
 
   // In edit mode, plain clicks on links must not navigate away.
