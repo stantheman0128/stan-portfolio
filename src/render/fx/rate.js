@@ -160,15 +160,12 @@ export const rateJS = `
     });
   });
   }
-  // The owner doesn't rate their own work: if /api/whoami says creator, drop the strips.
-  // fail-open: any error just shows the normal rating UI.
-  fetch("/api/whoami")
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      if (d && d.creator) {
-        [].slice.call(document.querySelectorAll(".rate")).forEach(function (el) { el.remove(); });
-      } else { initRatings(); }
-    })
-    .catch(initRatings);
+  // The owner doesn't rate their own work: unlocked devices drop the strips.
+  // No server call — reads the same can-edit flag the editor uses.
+  try {
+    if (localStorage.getItem("can-edit") === "1") {
+      [].slice.call(document.querySelectorAll(".rate")).forEach(function (el) { el.remove(); });
+    } else { initRatings(); }
+  } catch (e) { initRatings(); }
 })();
 `;
