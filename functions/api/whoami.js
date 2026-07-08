@@ -6,7 +6,8 @@ import { isCreatorIp } from "../_lib/creator.js";
 export async function onRequestGet({ request, env }) {
   const ip = request.headers.get("cf-connecting-ip") || "";
   const creator = isCreatorIp(ip, env.CREATOR_IP || "");
-  return new Response(JSON.stringify({ creator }), {
+  // ip is echoed back so the owner can read their own IP for the CREATOR_IP secret.
+  return new Response(JSON.stringify({ creator, ip }), {
     headers: { "content-type": "application/json", "cache-control": "no-store" },
   });
 }
