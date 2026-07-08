@@ -195,6 +195,13 @@ function injectStyle() {
     body.ff-editing { caret-color: #7c3aed; }
     body.ff-editing [data-bind] { outline: 1px dotted rgba(124,58,237,.35); outline-offset: 2px; }
     body.ff-editing :is(a) { cursor: text; }
+    .ff-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .ff-links .ff-link { display: inline-flex; align-items: center; gap: 6px;
+      border: 1px dashed #d8d0c4; border-radius: 8px; padding: 2px 6px; }
+    .ff-links a::after { content: none !important; }
+    .ff-links code { font-size: 11px; color: #8b877f; }
+    .ff-links .ff-link-del, .ff-links .ff-link-add { all: unset; cursor: pointer;
+      color: #c2522d; font-size: 12px; padding: 0 4px; }
   `;
   document.head.appendChild(s);
 }
@@ -433,6 +440,34 @@ function wireEvents() {
     const s = e.shiftKey ? (history && history.redo()) : (history && history.undo());
     if (s != null) { state.content = JSON.parse(s); render(e.shiftKey ? "Redo" : "Undo"); }
   });
+
+  // Link add/delete, delegated on document so it survives every re-render.
+  document.addEventListener("click", (e) => {
+    if (!editing) return;
+    const add = e.target.closest && e.target.closest(".ff-link-add");
+    if (add) {
+      e.preventDefault();
+      const ci = +add.getAttribute("data-item");
+      const it = state.content.items[ci];
+      if (!it) return;
+      it.links = it.links || [];
+      it.links.push({ label: "New link", href: "https://" });
+      commitNow();
+      render("Added link");
+      return;
+    }
+    const del = e.target.closest && e.target.closest(".ff-link-del");
+    if (del) {
+      e.preventDefault();
+      const parts = del.getAttribute("data-link").split(".");
+      const ci = +parts[0], li = +parts[1];
+      const it = state.content.items[ci];
+      if (!it || !it.links) return;
+      it.links.splice(li, 1);
+      commitNow();
+      render("Removed link");
+    }
+  }, true);
 
   // In edit mode, plain clicks on links must not navigate away.
   document.addEventListener("click", (e) => {
