@@ -271,10 +271,27 @@ function buildToolbar(initialStatus) {
   mkBtn("Publish", "Publish live (commits content.json from your IP)", async () => {
     setStatus("Publishing…");
     try {
+      // Any image swapped in as a data: URL becomes a real file under public/assets/.
+      // Rewrite the path on a clone so the committed content.json points at the clean
+      // URL; ship the raw base64 alongside for the endpoint to commit atomically.
+      const images = [];
+      const c = JSON.parse(JSON.stringify(state.content));
+      (c.items || []).forEach((it, i) => {
+        delete it._imageFile; // editor-only scratch state, never publish it
+        if (it.image && String(it.image).startsWith("data:")) {
+          const m = /^data:(image\/([a-z0-9.+-]+));base64,(.*)$/i.exec(it.image);
+          if (m) {
+            const ext = m[2] === "jpeg" ? "jpg" : m[2];
+            const name = "upload-" + (it.id || ("item-" + i)) + "-" + m[3].length + "." + ext;
+            images.push({ path: "public/assets/" + name, base64: m[3] });
+            it.image = "/assets/" + name;
+          }
+        }
+      });
       const r = await fetch("/api/publish", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ content: state.content }),
+        body: JSON.stringify({ content: c, images }),
       });
       const d = await r.json().catch(() => ({}));
       if (r.ok && d.ok) {

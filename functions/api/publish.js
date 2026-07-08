@@ -4,7 +4,7 @@
 // The IP is the real cf-connecting-ip seen at Cloudflare's edge, so only requests
 // actually originating from the creator's network get through.
 import { isCreatorIp } from "../_lib/creator.js";
-import { putJsonFile } from "../_lib/github.js";
+import { commitTree } from "../_lib/github.js";
 
 export async function onRequestPost({ request, env }) {
   const ip = request.headers.get("cf-connecting-ip") || "";
@@ -23,8 +23,19 @@ export async function onRequestPost({ request, env }) {
   if (!body || typeof body.content !== "object" || Array.isArray(body.content)) {
     return json({ ok: false, error: "missing content object" }, 400);
   }
+  // content.json (utf-8) plus any swapped-in images (base64) go in one atomic commit.
+  const files = [{
+    path: "data/content.json",
+    content: JSON.stringify(body.content, null, 2) + "\n",
+    encoding: "utf-8",
+  }];
+  for (const img of (body.images || [])) {
+    if (img && typeof img.path === "string" && typeof img.base64 === "string") {
+      files.push({ path: img.path, content: img.base64, encoding: "base64" });
+    }
+  }
   try {
-    const res = await putJsonFile({
+    const sha = await commitTree({
       token: env.GITHUB_TOKEN,
       owner: env.PUBLISH_OWNER || "stantheman0128",
       repo: env.PUBLISH_REPO || "stan-portfolio",
@@ -32,11 +43,10 @@ export async function onRequestPost({ request, env }) {
       // so editing on the preview updates the preview and never touches production
       // by accident. PUBLISH_BRANCH overrides if ever needed.
       branch: env.PUBLISH_BRANCH || env.CF_PAGES_BRANCH || "main",
-      path: "data/content.json",
-      obj: body.content,
+      files,
       message: "content: update from editor",
     });
-    return json({ ok: true, commit: (res.commit && res.commit.sha) || null });
+    return json({ ok: true, commit: sha });
   } catch (e) {
     return json({ ok: false, error: String((e && e.message) || e) }, 502);
   }
