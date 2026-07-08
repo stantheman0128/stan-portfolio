@@ -3,7 +3,8 @@
 // so every value is read from `content`.
 import { esc, md, realLinks } from "../util.js";
 
-export function render(content) {
+export function render(content, opts = {}) {
+  const edit = !!(opts && opts.edit);
   const p = content.profile || {};
   const about = content.about || {};
   const stats = content.stats || [];

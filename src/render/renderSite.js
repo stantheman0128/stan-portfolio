@@ -10,10 +10,10 @@ export const THEMES_META = [
   { key: "minimal", label: "Minimal" },
 ];
 
-export function renderSite(content, theme = "featherweight") {
+export function renderSite(content, theme = "featherweight", opts = {}) {
   const fn = THEMES[theme] || featherweight;
   try {
-    return fn(content);
+    return fn(content, opts);
   } catch (err) {
     return `<!doctype html><meta charset="utf-8"><body style="font:14px system-ui;padding:24px;color:#b00">Render error in theme "${theme}":<pre>${String(err && err.stack || err)}</pre></body>`;
   }

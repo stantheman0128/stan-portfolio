@@ -208,8 +208,9 @@ function skillsBlock(skills) {
   </section>`;
 }
 
-export function render(content) {
+export function render(content, opts = {}) {
   const c = content || {};
+  const edit = !!(opts && opts.edit);
   const p = c.profile || {};
   // Cross-theme entries: each theme hides the item that IS itself.
   const items = (c.items || []).filter((it) => it.themeExclude !== "minimal");
