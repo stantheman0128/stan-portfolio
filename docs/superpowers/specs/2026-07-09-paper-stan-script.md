@@ -75,7 +75,7 @@ motion allowed). He walks to the cursor, then:
   - "Fine. Didn't want that cursor anyway."
 
 ## H. Direct interaction
-- **Hover** (idle, 1.5s cooldown): grows ~10% (CSS) and glances at you (action curious). Pressing shrinks him slightly.
+- **Hover** (idle, 1.5s cooldown): grows ~10% (CSS) and reacts to being noticed, drawn from a pool that never repeats twice in a row: looks at you (curious toward the cursor), a curious head tilt, a quick wave hello, a pleased bounce (happy), or a nod. Pressing shrinks him slightly.
 - **Tap / click** (not while dragging): one reaction drawn at random from a wide
   weighted pool, so taps rarely repeat:
   - annoyed (shakeHead): "...must you?" / "That tickles. Stop. ...okay, again." / "I'm working here." / "Boop received. Rude."

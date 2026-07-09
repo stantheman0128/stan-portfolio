@@ -418,15 +418,27 @@ export const spriteJS = `
   }
 
   // ---- Direct interaction: hover, tap, drag, wheel-zoom.
-  // Hover: he grows (CSS) and glances at you (rate-limited so it never spams).
-  var lastHover = 0;
+  // Hover: he grows (CSS) and reacts to being noticed. The reaction is drawn
+  // from a small "noticed you" pool and never repeats twice in a row, so hover
+  // does not always look like the same head turn.
+  var HOVER = [
+    function () { gesture("curious", (mouse && mouse.x < x) ? "lookLeft" : "lookRight", 1400); }, // looks at you
+    function () { gesture("idle", Math.random() < 0.5 ? "tiltLeft" : "tiltRight", 1400); },       // curious head tilt
+    function () { gesture(x > vw() / 2 ? "waveLeft" : "waveRight", null, 1500); },                 // quick wave hello
+    function () { gesture("happy", null, 1300); },                                                 // pleased little bounce
+    function () { gesture("nod", null, 1200); }                                                    // acknowledges you
+  ];
+  var lastHover = 0, lastHoverIdx = -1;
   host.addEventListener("pointerenter", function () {
     if (dismissed || !actor.ready || dragging) return;
     var now = Date.now();
     if (now - lastHover < 1500) return;
     lastHover = now;
     if (mode === "idle" && !moving && !touring && !bubble.classList.contains("on")) {
-      gesture("curious", null, 1400);
+      var i;
+      do { i = Math.floor(Math.random() * HOVER.length); } while (i === lastHoverIdx);
+      lastHoverIdx = i;
+      HOVER[i]();
     }
   }, { passive: true });
 
