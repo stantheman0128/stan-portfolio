@@ -66,9 +66,11 @@ motion allowed). He walks to the cursor, then:
   line; he becomes a little miffed.
 
 ## H. Direct interaction
-- **Hover** (idle, 1.5s cooldown): grows ~10% (CSS), moves to cheerful, and
-  picks a non-repeating look, tilt, wave, bounce, or nod. Pressing shrinks him
-  slightly.
+- **Hover** (idle, 280ms dwell, 4.8s cooldown): grows ~10% (CSS), moves to
+  cheerful, and then picks one non-repeating look, tilt, wave, bounce, or nod.
+  Passing over him and leaving before the dwell delay does not start an action.
+  Once a hover acknowledgement starts, leaving does not cut it short. Pressing
+  shrinks him slightly.
 - **Tap / click** (not while dragging): the common outcome is the 2-3 beat
   `PERFORMANCES["tap.<mood>"]` scene plus a non-repeating `LINES.tap[mood]`
   line. Waves, beckons, wiggles, flips, nose pulses, the strange pose, explode,
@@ -110,6 +112,10 @@ When the reward photo is being chased (40s cooldown, ~60% chance) -> action look
 - **Performances**: `perform([{ action, orientation, expression, ms }, ...])`
   owns the puppet until its last beat. Click, drag, or travel cancels it, then
   the normal idle state resumes.
+- **Purpose priority**: gaze is the smallest response, then ambient idle,
+  intentional hover acknowledgement, section docent, direct interaction, and
+  travel. A lower-purpose action cannot cut through a higher-purpose one. Each
+  short gesture has a token, so an old timeout cannot release a newer gesture.
 - **Data and copy**: `src/render/fx/sprite-data.js` is the source for `MOODS`,
   `PERFORMANCES`, `LINES`, and expressions. Every baked line is English,
   first-person Paper Stan voice, with no em/en dash or emoji. Selection avoids

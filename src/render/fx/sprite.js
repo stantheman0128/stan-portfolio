@@ -1,6 +1,6 @@
-import { EXPRESSIONS, LINES, MOODS, PERFORMANCES } from "./sprite-data.js";
+import { EXPRESSIONS, INTERACTION_POLICY, LINES, MOODS, PERFORMANCES } from "./sprite-data.js";
 
-export { EXPRESSIONS, LINES, MOODS, PERFORMANCES } from "./sprite-data.js";
+export { EXPRESSIONS, INTERACTION_POLICY, LINES, MOODS, PERFORMANCES } from "./sprite-data.js";
 
 // The guide sprite v7: the hand-drawn paper self-portrait ("Paper Stan", kit in
 // /moana-puppet-kit) replaces the licensed hedgehog. The character is the site
@@ -133,6 +133,7 @@ export const spriteJS = `
   var LINES = ${JSON.stringify(LINES)};
   var PERFORMANCES = ${JSON.stringify(PERFORMANCES)};
   var EXPRESSIONS = ${JSON.stringify(EXPRESSIONS)};
+  var INTERACTION_POLICY = ${JSON.stringify(INTERACTION_POLICY)};
 
   var q = window.QUEST.get();
   var dismissed = q.spriteDismissed;
@@ -312,19 +313,34 @@ export const spriteJS = `
     return line;
   }
   var performanceTimer = 0, performanceToken = 0, performing = false;
+  var gestureTimer = 0, gestureToken = 0, activePurpose = "idle";
+  var PURPOSE_PRIORITY = { gaze: 0, ambient: 1, hover: 2, section: 3, interaction: 4, event: 4, travel: 5 };
+  function purposePriority(purpose) { return PURPOSE_PRIORITY[purpose] || PURPOSE_PRIORITY.event; }
+  function cancelGesture() {
+    gestureToken++;
+    clearTimeout(gestureTimer);
+    gestureTimer = 0;
+    activePurpose = "idle";
+    if (mode === "busy" && !moving && !dragging && !touring) setMode("idle");
+  }
   function cancelPerformance() {
     performanceToken++;
     clearTimeout(performanceTimer);
     if (!performing) return;
     performing = false;
+    activePurpose = "idle";
     if (!moving && !dragging && !touring) setMode("idle");
   }
-  function perform(beats) {
+  function perform(beats, purpose) {
     if (!actor.ready || dismissed || !Array.isArray(beats) || !beats.length) return;
+    purpose = purpose || "interaction";
+    if (performing && purposePriority(purpose) <= purposePriority(activePurpose)) return;
+    cancelGesture();
     cancelPerformance();
     var token = ++performanceToken;
     var index = 0;
     performing = true;
+    activePurpose = purpose;
     mode = "performing";
     sprite.className = faceLeft ? "s-face-left" : "";
     (function nextBeat() {
@@ -332,6 +348,7 @@ export const spriteJS = `
       var beat = beats[index++];
       if (!beat) {
         performing = false;
+        activePurpose = "idle";
         if (!moving && !dragging && !touring) setMode("idle");
         return;
       }
@@ -373,19 +390,31 @@ export const spriteJS = `
       actor.act("idle", target.orientation);
     }, Math.max(0, delay));
   }
-  // Play an arbitrary kit action/orientation as a transient flourish. "busy"
-  // parks the autonomous loops (they only run when mode is idle) and the timer
-  // returns to idle unless something else claimed the character meanwhile.
-  function gesture(action, orientation, dur) {
-    if (!actor.ready || dismissed) return;
-    cancelPerformance();
+  // A short gesture owns the puppet until its token expires. This keeps an old
+  // timer from releasing a newer action and prevents low-purpose motion from
+  // cutting through a visitor-facing response.
+  function gesture(action, orientation, dur, purpose) {
+    if (!actor.ready || dismissed) return false;
+    purpose = purpose || "event";
+    if (performing) {
+      if (purposePriority(purpose) <= purposePriority(activePurpose)) return false;
+      cancelPerformance();
+    }
+    if (mode === "busy" && purposePriority(purpose) <= purposePriority(activePurpose)) return false;
+    cancelGesture();
+    var token = ++gestureToken;
+    activePurpose = purpose;
     mode = "busy";
     sprite.className = faceLeft ? "s-face-left" : "";
     setExpression(MOODS[currentMood()].expression);
     actor.act(action, orientation || "front");
-    setTimeout(function () {
+    gestureTimer = setTimeout(function () {
+      if (gestureToken !== token) return;
+      gestureTimer = 0;
+      activePurpose = "idle";
       if (mode === "busy" && !moving && !dragging) setMode("idle");
     }, dur || 1500);
+    return true;
   }
   function towardPage() { return x > vw() / 2 ? "lookLeft" : "lookRight"; }
   function place(nx, ny, instant) {
@@ -401,7 +430,9 @@ export const spriteJS = `
   // Short trips: scurry. Long trips: paper can't ball-roll, so it stays playful.
   function travel(nx, ny, then) {
     cancelPerformance();
-    if (reduce) { place(nx, ny); if (then) then(); return; }
+    cancelGesture();
+    activePurpose = "travel";
+    if (reduce) { place(nx, ny); activePurpose = "idle"; if (then) then(); return; }
     var dist = Math.hypot(nx - x, ny - y);
     moving = true;
     var scurry = dist < 230;
@@ -410,6 +441,7 @@ export const spriteJS = `
     place(nx, ny);
     setTimeout(function () {
       moving = false;
+      activePurpose = "idle";
       addFlag("s-scurrying", false);
       setMode("idle");
       if (bubble.classList.contains("on")) placeBubble();
@@ -458,14 +490,14 @@ export const spriteJS = `
         var r = Math.random();
         if (reduce) {
           var gentle = chooseWeighted(cfg.idlePool);
-          gesture(gentle.action, gentle.orientation, Math.min(gentle.ms, 1700));
+          gesture(gentle.action, gentle.orientation, Math.min(gentle.ms, 1700), "ambient");
         } else if (currentMood() === "calm" && r < 0.04) {
           explode();
         } else if (r < 0.18) {
-          gesture("curious", towardPage(), 1600);
+          gesture("curious", towardPage(), 1600, "ambient");
         } else {
           var beat = chooseWeighted(cfg.idlePool);
-          gesture(beat.action, beat.orientation, beat.ms);
+          gesture(beat.action, beat.orientation, beat.ms, "ambient");
         }
       }
       lifeLoop();
@@ -571,26 +603,38 @@ export const spriteJS = `
   // from a small "noticed you" pool and never repeats twice in a row, so hover
   // does not always look like the same head turn.
   var HOVER = [
-    function () { gesture("curious", (mouse && mouse.x < x) ? "lookLeft" : "lookRight", 1400); }, // looks at you
-    function () { gesture("idle", Math.random() < 0.5 ? "tiltLeft" : "tiltRight", 1400); },       // curious head tilt
-    function () { gesture(x > vw() / 2 ? "waveLeft" : "waveRight", null, 1500); },                 // quick wave hello
-    function () { gesture("happy", null, 1300); },                                                 // pleased little bounce
-    function () { gesture("nod", null, 1200); }                                                    // acknowledges you
+    function () { return gesture("curious", (mouse && mouse.x < x) ? "lookLeft" : "lookRight", 1400, "hover"); }, // looks at you
+    function () { return gesture("idle", Math.random() < 0.5 ? "tiltLeft" : "tiltRight", 1400, "hover"); },       // curious head tilt
+    function () { return gesture(x > vw() / 2 ? "waveLeft" : "waveRight", null, 1500, "hover"); },                 // quick wave hello
+    function () { return gesture("happy", null, 1300, "hover"); },                                                 // pleased little bounce
+    function () { return gesture("nod", null, 1200, "hover"); }                                                    // acknowledges you
   ];
-  var lastHover = 0, lastHoverIdx = -1;
+  var lastHover = 0, lastHoverIdx = -1, hoverTimer = 0, hoverInside = false;
+  function runHoverReaction() {
+    hoverTimer = 0;
+    if (!hoverInside || dismissed || !actor.ready || dragging) return;
+    var now = Date.now();
+    if (now - lastHover < INTERACTION_POLICY.hoverCooldownMs) return;
+    if (mode !== "idle" || moving || touring || performing || bubble.classList.contains("on")) return;
+    noteVisitorActivity(now);
+    setMood("cheerful", 0.55, 24000);
+    var i;
+    do { i = Math.floor(Math.random() * HOVER.length); } while (i === lastHoverIdx);
+    if (HOVER[i]()) {
+      lastHoverIdx = i;
+      lastHover = now;
+    }
+  }
   host.addEventListener("pointerenter", function () {
     if (dismissed || !actor.ready || dragging) return;
-    var now = Date.now();
-    if (now - lastHover < 1500) return;
-    lastHover = now;
-    if (mode === "idle" && !moving && !touring && !bubble.classList.contains("on")) {
-      noteVisitorActivity(now);
-      setMood("cheerful", 0.55, 24000);
-      var i;
-      do { i = Math.floor(Math.random() * HOVER.length); } while (i === lastHoverIdx);
-      lastHoverIdx = i;
-      HOVER[i]();
-    }
+    hoverInside = true;
+    clearTimeout(hoverTimer);
+    hoverTimer = setTimeout(runHoverReaction, INTERACTION_POLICY.hoverDwellMs);
+  }, { passive: true });
+  host.addEventListener("pointerleave", function () {
+    hoverInside = false;
+    clearTimeout(hoverTimer);
+    hoverTimer = 0;
   }, { passive: true });
 
   // Tap: most taps play a mood-consistent mini-scene. The rarer legacy tricks
@@ -711,6 +755,7 @@ export const spriteJS = `
   host.addEventListener("click", function () {
     if (dismissed || !actor.ready || justDragged) return;
     cancelPerformance();
+    cancelGesture();
     if (touring) return;
     var now = Date.now();
     noteVisitorActivity(now);
@@ -727,6 +772,7 @@ export const spriteJS = `
   host.addEventListener("pointerdown", function (e) {
     if (dismissed || !actor.ready) return;
     cancelPerformance();
+    cancelGesture();
     noteVisitorActivity(Date.now());
     down = true;
     downX = e.clientX; downY = e.clientY;
@@ -849,7 +895,7 @@ export const spriteJS = `
       perform(sequence || [
         { action: cfg.action, orientation: cfg.orientation || "front", expression: MOODS[currentMood()].expression, ms: 1500 },
         { action: "idle", orientation: "front", expression: MOODS[currentMood()].expression, ms: 700 },
-      ]);
+      ], "section");
       if (Math.random() < 0.5) say(pickLine("section"), null, {});
     }
   })();

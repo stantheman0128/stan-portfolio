@@ -3,6 +3,11 @@
 
 export const EXPRESSIONS = ["smile", "frown"];
 
+export const INTERACTION_POLICY = {
+  hoverDwellMs: 280,
+  hoverCooldownMs: 4800,
+};
+
 export const MOODS = {
   cheerful: {
     enter: ["gentle-hover", "opened-project", "high-rating"],

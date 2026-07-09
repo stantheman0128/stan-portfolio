@@ -15,6 +15,7 @@ import {
 } from "../src/render/fx/sprite.js";
 import {
   EXPRESSIONS,
+  INTERACTION_POLICY,
   LINES,
   MOODS,
   PERFORMANCES,
@@ -182,5 +183,13 @@ describe("Paper Stan alive data contract", () => {
     }
     expect(spriteJS).toContain("puppet.applyHeadEffects = function");
     expect(spriteJS).not.toContain("prototype.applyHeadEffects");
+  });
+
+  it("debounces transient hover and lets a gesture own its full duration", () => {
+    expect(INTERACTION_POLICY.hoverDwellMs).toBeGreaterThanOrEqual(200);
+    expect(INTERACTION_POLICY.hoverCooldownMs).toBeGreaterThan(INTERACTION_POLICY.hoverDwellMs);
+    for (const token of ["hoverTimer", "pointerleave", "gestureToken", "activePurpose", "gestureToken !== token"]) {
+      expect(spriteJS).toContain(token);
+    }
   });
 });
