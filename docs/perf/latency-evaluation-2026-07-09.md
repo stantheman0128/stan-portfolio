@@ -87,6 +87,22 @@ curl（HTTP/1.1）對照僅供分解：正式站冷連線 TTFB ~205ms = TCP + TL
    - 位置：`Caching` → `Configuration` → `Purge Everything`（或只 purge 首頁 URL）
    - 何時：把這個分支合進 `main`、Pages 重新部署完成之後。
 
+## RUM（真實使用者延遲監控）
+
+要知道真實訪客到底多快、哪裡慢，靠外部探測不夠，得收集真實訪客的數字。做法：
+- **inline beacon**（零外部 JS，`load` 後 `navigator.sendBeacon`）把每次訪問的
+  `ttfb/fcp/dcl/load + 連線類型` 送到 `/api/rum`。
+- `functions/api/rum.js` 伺服器端從 `request.cf` 蓋上 `colo + country`（訪客無法偽造、
+  beacon 保持極小），寫一筆 Cloudflare **Analytics Engine** 資料點（dataset `rum_events`，
+  免費層 10 萬寫入/天，目前甚至不收費）。
+- 查詢：`node tools/rum-query.mjs`（要一組 `Account Analytics: Read` 的 API token），
+  用 `_sample_interval` 加權算 p50/p95，依國家/節點分組。
+
+**必要手動步驟（只有 Stan 能做）**：Cloudflare 要求先在後台**啟用 Analytics Engine**
+（`dash → Workers → Analytics Engine → Enable`），否則帶 AE binding 的 Function 會**部署失敗**
+（實測踩過：`Failed to publish your Function: You need to enable Analytics Engine`）。啟用後才能部署。
+每次 `/api/rum` 計入 Functions 10 萬/天額度（作品集流量遠不到；真的爆量再加 client 抽樣）。
+
 ## Function 部署雷點（實際踩過，已修）
 
 1. **`compatibility_date` 必須設。** `/` Function 在 Git 部署一開始回 404，而 direct
