@@ -16,7 +16,8 @@
 - 溝通繁體中文,程式識別碼/檔名/API/UI 文案英文。
 - edit 旗標**預設關**:`renderSite(content, theme)` 與 `renderSite(content, theme, {})` 行為與現在完全一致(不得出現任何 `data-bind`)。正式站(`site.js`、postbuild)不傳 edit,零影響。
 - **安全紅線**:編輯只改瀏覽器記憶體 + localStorage 草稿,不觸網。真正的發佈邊界是 M5 的 GitHub OAuth。本計畫不引入任何密鑰、不打任何外部 API(除 M3 既有的 `/api/whoami`,只讀布林)。
-- **架構決策(Stan 2026-07-08 拍板)**:評估「接資料庫即時生效」vs「維持靜態 + 一鍵發佈」後,**選維持靜態**——理由是 featherweight 的超快靜態是核心賣點,個人作品集很少改,為省偶爾 1 分鐘部署去拖慢每個訪客不划算。**含意**:M5 的一鍵發佈(commit content.json → 自動部署)是**主要儲存路徑**,Task 4.9 的 Export 降級成離線 fallback;Creator IP 在正式站要**自動取得編輯入口**(Task 4.10 從「一個連結」升級成「你的 IP 一來就能進編輯」,確切 UX=顯眼常駐 Edit 鈕 vs 自動進編輯,實作 4.10 時跟 Stan 敲定)。
+- **架構決策(Stan 2026-07-08 拍板)**:評估「接資料庫即時生效」vs「維持靜態 + 一鍵發佈」後,**選維持靜態**——理由是 featherweight 的超快靜態是核心賣點,個人作品集很少改,為省偶爾 1 分鐘部署去拖慢每個訪客不划算。**含意**:M5 的一鍵發佈(commit content.json → 自動部署)是**主要儲存路徑**,Task 4.9 的 Export 降級成離線 fallback;Creator IP 在正式站要**自動取得編輯入口**(Task 4.10 從「一個連結」升級成「你的 IP 一來就能進編輯」)。
+- **發佈授權(Stan 2026-07-08 定):IP-only,不走 OAuth。** worker 存一把 fine-grained、只給本 repo 寫的 GitHub token(Cloudflare secret),發佈端點比對 `cf-connecting-ip === CREATOR_IP`(重用 `isCreatorIp`)才 commit content.json。安全性理由:cf-connecting-ip 是邊緣讀到的真實 IP、難假冒,且 repo 公開無密鑰、改動可還原。**取捨=只能從家用網路發佈**(手機/換網路 IP 每次不同、不適用);之後要手機編輯再另加「裝置解鎖」(localStorage 一次性密語,跟 IP 無關),兩套並存。**Stan 手動設定簡化**:一把 GitHub PAT(單 repo 寫)+ `CREATOR_IP` secret,免註冊 OAuth App、免登入流程。原 spec 的 OAuth/cms-auth 路線作廢。
 - DRY:`bindAttr` 只寫一次,兩個 theme 都呼叫它,不各自手拼 `data-bind` 字串。編輯層能重用 `studio.js`/舊 `freeform.js` 的既有邏輯就重用(tags split、image FileReader、hover 控制),本計畫會指出確切來源行。
 - **保留索引(執行時發現的修正,已套用於 4.3/4.4)**:兩個 theme 都會 `filter` 掉自己那張 `themeExclude` 卡,所以 render 迴圈索引 ≠ `content.items` 真索引(featherweight 濾掉第 8 張,site-minimal 真索引 9 會落在過濾後第 8 位)。data-bind 路徑一律用 `.map((it, ci) => ({ it, ci }))` 保留的真索引 `ci`,不可用過濾後位置。另外 edit 模式把項目面板預設展開(`.item.open`)、關掉展開/hover 與 fx 腳本,否則欄位在收合面板裡點不到。
 
