@@ -467,8 +467,10 @@ img{max-width:100%;height:auto}
 </div>
 <script>
 (function(){
-  function done(){
-    var nav = performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
+  function navEntry(){
+    return performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
+  }
+  function readout(nav){
     var ms = nav && nav.domContentLoadedEventEnd ? nav.domContentLoadedEventEnd : performance.now();
     var n = isFinite(ms) && ms > 0 ? Math.round(ms) : 0;
     var el = document.getElementById("fw-speed");
@@ -479,8 +481,33 @@ img{max-width:100%;height:auto}
     el.appendChild(b);
     el.classList.add("on");
   }
-  if (document.readyState === "complete") done();
-  else addEventListener("load", done);
+  // Anonymous RUM: report this visit's real timings so latency can be measured from
+  // actual traffic. colo + country are stamped server-side from request.cf.
+  function beacon(nav){
+    try {
+      if (!nav || !navigator.sendBeacon) return;
+      var paint = performance.getEntriesByType("paint").filter(function(p){
+        return p.name === "first-contentful-paint";
+      })[0];
+      var c = navigator.connection || {};
+      navigator.sendBeacon("/api/rum", JSON.stringify({
+        path: location.pathname,
+        ttfb: nav.responseStart,
+        fcp: paint ? paint.startTime : 0,
+        dcl: nav.domContentLoadedEventEnd,
+        load: nav.loadEventEnd || nav.duration,
+        rtt: c.rtt || 0,
+        conn: c.effectiveType || ""
+      }));
+    } catch (e) {}
+  }
+  function go(){
+    readout(navEntry());
+    // loadEventEnd is 0 until load fully fires; read one tick later.
+    setTimeout(function(){ beacon(navEntry()); }, 0);
+  }
+  if (document.readyState === "complete") go();
+  else addEventListener("load", go);
 })();
 </script>
 ${edit ? "" : `<script>${creatorEntryJS}</script>`}

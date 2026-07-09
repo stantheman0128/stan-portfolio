@@ -18,8 +18,17 @@ compatibility_date = "2024-11-01"
 binding = "RATINGS"
 id = "6ac0b3e4dc6d4b89a010abb0b5dbfe65"
 
+# RUM: front-door beacon (/api/rum) writes one data point per visit.
+[[analytics_engine_datasets]]
+binding = "RUM"
+dataset = "rum_events"
+
 # Preview environments (all non-production branch deploys: demo, sprite, ...).
 [env.preview]
 [[env.preview.kv_namespaces]]
 binding = "RATINGS"
 id = "0f18e001510f41faa6c476809cbab224"
+
+[[env.preview.analytics_engine_datasets]]
+binding = "RUM"
+dataset = "rum_events"
