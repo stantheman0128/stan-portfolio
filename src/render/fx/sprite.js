@@ -1,3 +1,7 @@
+import { EXPRESSIONS, LINES, MOODS, PERFORMANCES } from "./sprite-data.js";
+
+export { EXPRESSIONS, LINES, MOODS, PERFORMANCES } from "./sprite-data.js";
+
 // The guide sprite v7: the hand-drawn paper self-portrait ("Paper Stan", kit in
 // /moana-puppet-kit) replaces the licensed hedgehog. The character is the site
 // owner as a palm-sized paper doll who personally walks visitors through his own
@@ -125,21 +129,30 @@ export const spriteJS = `
   var FLIPS = ${JSON.stringify(CLICK_CYCLE)};
   var AMBIENT = ${JSON.stringify(AMBIENT_ACTIONS)};
   var AMBIENT_O = ${JSON.stringify(AMBIENT_ORIENTATIONS)};
+  var MOODS = ${JSON.stringify(MOODS)};
+  var LINES = ${JSON.stringify(LINES)};
+  var PERFORMANCES = ${JSON.stringify(PERFORMANCES)};
+  var EXPRESSIONS = ${JSON.stringify(EXPRESSIONS)};
 
   var q = window.QUEST.get();
   var dismissed = q.spriteDismissed;
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var lastBubble = 0, suggests = 0, lastScroll = 0, bubbleTimer = 0;
   var mode = "idle", moving = false, touring = false, dragging = false, x = 0, y = 0, faceLeft = false;
+  var expression = "smile", mood = "calm", moodIntensity = 0, moodInitialIntensity = 0, moodSetAt = Date.now(), moodDuration = 1;
+  var lastVisitorActivity = Date.now();
   var mouse = null;
   addEventListener("pointermove", function (e) {
     mouse = { x: e.clientX, y: e.clientY, t: Date.now() };
+    noteVisitorActivity(mouse.t);
+    queueGaze(e);
   }, { passive: true });
 
   // Actor adapter: the only code that knows the character is a puppet.
   var actor = {
     ready: false,
     puppet: null,
+    expression: "smile",
     setMode: function (m) {
       if (!this.ready) return;
       var c = MODE_MAP[m] || MODE_MAP.idle;
@@ -151,6 +164,12 @@ export const spriteJS = `
       this.puppet.setAction(action);
       this.puppet.setOrientation(orientation || "front");
     },
+    setExpression: function (next) {
+      this.expression = EXPRESSIONS.indexOf(next) === -1 ? "smile" : next;
+      if (this.ready && this.puppet && this.puppet.applyHeadEffects) {
+        this.puppet.applyHeadEffects(performance.now() / 1000, 1);
+      }
+    },
     playOnce: function (action) {
       if (!this.ready) return;
       this.puppet.playOnce(action);
@@ -159,6 +178,14 @@ export const spriteJS = `
       if (this.ready && this.puppet.setLayout) this.puppet.setLayout(l);
     }
   };
+  function shadowHeadEffects(puppet) {
+    var kitHeadEffects = puppet.applyHeadEffects;
+    puppet.applyHeadEffects = function (elapsed, motionScale) {
+      kitHeadEffects.call(this, elapsed, motionScale);
+      var frown = this.headEffects && this.headEffects.frown;
+      if (frown) frown.style.opacity = (actor.expression === "frown" || this.action === "sad") ? "1" : "0";
+    };
+  }
   function mountPuppet() {
     if (actor.ready) return true;
     if (!window.MoanaPuppet) return false;
@@ -166,7 +193,9 @@ export const spriteJS = `
       assetBase: "/moana-puppet-kit/assets/",
       size: W, action: "idle", orientation: "front", shadow: "soft"
     });
+    shadowHeadEffects(actor.puppet);
     actor.ready = true;
+    actor.setExpression(expression);
     actor.setMode(mode);
     sprite.classList.toggle("s-face-left", faceLeft);
     return true;
@@ -185,6 +214,7 @@ export const spriteJS = `
   addEventListener("scroll", function () {
     var nowS = Date.now();
     lastScroll = nowS;
+    noteVisitorActivity(nowS);
     fastWin.push({ t: nowS, y: scrollY });
     while (fastWin.length && nowS - fastWin[0].t > 800) fastWin.shift();
     if (Math.abs(scrollY - fastWin[0].y) > 2800 && nowS - lastSpeedQuip > 45000 && !dismissed) {
@@ -211,6 +241,7 @@ export const spriteJS = `
   function setMode(m) {
     mode = m;
     sprite.className = (faceLeft ? "s-face-left " : "") + (m === "sleep" ? "s-sleep" : "");
+    if (m === "idle") setExpression(MOODS[currentMood()].expression);
     actor.setMode(m);
   }
   function addFlag(cls, on) { sprite.classList.toggle(cls, on); }
@@ -218,13 +249,139 @@ export const spriteJS = `
     faceLeft = left;
     sprite.classList.toggle("s-face-left", left);
   }
+  function setExpression(next) {
+    expression = EXPRESSIONS.indexOf(next) === -1 ? "smile" : next;
+    actor.setExpression(expression);
+  }
+  function isLateNight() {
+    var hour = new Date().getHours();
+    return hour >= 23 || hour < 6;
+  }
+  function setMood(next, intensity, duration) {
+    if (!MOODS[next]) return;
+    mood = next;
+    moodInitialIntensity = typeof intensity === "number" ? intensity : 0.6;
+    moodIntensity = moodInitialIntensity;
+    moodSetAt = Date.now();
+    moodDuration = duration || (next === "miffed" ? 45000 : next === "sleepy" ? 55000 : 24000);
+    sprite.setAttribute("data-paper-mood", mood);
+    if (mode === "idle" && !performing) setExpression(MOODS[mood].expression);
+  }
+  function currentMood() {
+    var now = Date.now();
+    if (mood !== "calm") {
+      moodIntensity = Math.max(0, moodInitialIntensity * (1 - (now - moodSetAt) / moodDuration));
+      if (moodIntensity <= 0.05) {
+        mood = "calm";
+        moodIntensity = 0;
+        sprite.setAttribute("data-paper-mood", mood);
+      }
+    }
+    if (mood === "calm" && (isLateNight() || now - lastVisitorActivity > 90000)) {
+      mood = "sleepy";
+      moodInitialIntensity = 0.6;
+      moodIntensity = moodInitialIntensity;
+      moodSetAt = now;
+      moodDuration = 55000;
+      sprite.setAttribute("data-paper-mood", mood);
+    }
+    return mood;
+  }
+  function noteVisitorActivity(now) {
+    lastVisitorActivity = now || Date.now();
+    if (mood === "sleepy" && !isLateNight()) setMood("calm", 0.35, 14000);
+  }
+  function chooseWeighted(pool) {
+    var total = pool.reduce(function (sum, item) { return sum + (item.weight || 1); }, 0);
+    var target = Math.random() * total;
+    for (var i = 0; i < pool.length; i++) {
+      target -= pool[i].weight || 1;
+      if (target <= 0) return pool[i];
+    }
+    return pool[pool.length - 1];
+  }
+  var lastLineBySituation = {};
+  function pickLine(situation) {
+    var pool = LINES[situation] || LINES.tap;
+    var moodKey = MOODS[currentMood()].linePool || currentMood();
+    var lines = pool[moodKey] || pool.calm;
+    var previous = lastLineBySituation[situation];
+    var choices = lines.length > 1 ? lines.filter(function (line) { return line !== previous; }) : lines;
+    var line = choices[Math.floor(Math.random() * choices.length)];
+    lastLineBySituation[situation] = line;
+    return line;
+  }
+  var performanceTimer = 0, performanceToken = 0, performing = false;
+  function cancelPerformance() {
+    performanceToken++;
+    clearTimeout(performanceTimer);
+    if (!performing) return;
+    performing = false;
+    if (!moving && !dragging && !touring) setMode("idle");
+  }
+  function perform(beats) {
+    if (!actor.ready || dismissed || !Array.isArray(beats) || !beats.length) return;
+    cancelPerformance();
+    var token = ++performanceToken;
+    var index = 0;
+    performing = true;
+    mode = "performing";
+    sprite.className = faceLeft ? "s-face-left" : "";
+    (function nextBeat() {
+      if (token !== performanceToken || dismissed) return;
+      var beat = beats[index++];
+      if (!beat) {
+        performing = false;
+        if (!moving && !dragging && !touring) setMode("idle");
+        return;
+      }
+      setExpression(beat.expression || MOODS[currentMood()].expression);
+      actor.act(beat.action, beat.orientation || "front");
+      performanceTimer = setTimeout(nextBeat, beat.ms || 700);
+    })();
+  }
+  var GAZE_GRID = [
+    ["paperLeft", "heroUp", "paperRight"],
+    ["lookLeft", "front", "lookRight"],
+    ["tiltLeft", "shyDown", "tiltRight"]
+  ];
+  var gazeZone = "", pendingGaze = "", lastGaze = 0, gazeTimer = 0;
+  function gazeTarget(clientX, clientY) {
+    var rect = sprite.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+    var col = clientX < rect.left + rect.width / 3 ? 0 : clientX > rect.right - rect.width / 3 ? 2 : 1;
+    var row = clientY < rect.top + rect.height / 3 ? 0 : clientY > rect.bottom - rect.height / 3 ? 2 : 1;
+    if (currentMood() === "miffed") col = 2 - col;
+    return { key: row + ":" + col, orientation: GAZE_GRID[row][col] };
+  }
+  function queueGaze(e) {
+    if (!actor.ready || mode !== "idle" || moving || dragging || touring || performing) return;
+    if (e.pointerType === "touch") return;
+    var target = gazeTarget(e.clientX, e.clientY);
+    if (!target || target.key === gazeZone || target.key === pendingGaze) return;
+    pendingGaze = target.key;
+    var cfg = MOODS[currentMood()];
+    var delay = Math.max(400, 400 / cfg.gazeEagerness) - Math.max(0, Date.now() - lastGaze);
+    if (currentMood() === "sleepy") delay += 260;
+    clearTimeout(gazeTimer);
+    gazeTimer = setTimeout(function () {
+      if (pendingGaze !== target.key || mode !== "idle" || moving || dragging || touring || performing) return;
+      gazeZone = target.key;
+      pendingGaze = "";
+      lastGaze = Date.now();
+      setExpression(MOODS[currentMood()].expression);
+      actor.act("idle", target.orientation);
+    }, Math.max(0, delay));
+  }
   // Play an arbitrary kit action/orientation as a transient flourish. "busy"
   // parks the autonomous loops (they only run when mode is idle) and the timer
   // returns to idle unless something else claimed the character meanwhile.
   function gesture(action, orientation, dur) {
     if (!actor.ready || dismissed) return;
+    cancelPerformance();
     mode = "busy";
     sprite.className = faceLeft ? "s-face-left" : "";
+    setExpression(MOODS[currentMood()].expression);
     actor.act(action, orientation || "front");
     setTimeout(function () {
       if (mode === "busy" && !moving && !dragging) setMode("idle");
@@ -243,6 +400,7 @@ export const spriteJS = `
   }
   // Short trips: scurry. Long trips: paper can't ball-roll, so it stays playful.
   function travel(nx, ny, then) {
+    cancelPerformance();
     if (reduce) { place(nx, ny); if (then) then(); return; }
     var dist = Math.hypot(nx - x, ny - y);
     moving = true;
@@ -289,31 +447,29 @@ export const spriteJS = `
     }, 15000 + Math.random() * 12000);
   })();
 
-  // Idle life: a wide, varied pool. Sometimes a plain action, sometimes a head
-  // tilt or paper turn (idle action + an orientation), sometimes a glance toward
-  // the page, and once in a while the whole paper doll shakes apart and back.
-  var CALM = ["curious", "nod", "thinking"];
-  var CALM_O = ["tiltLeft", "tiltRight", "shyDown"];
+  // Idle life is weighted by the current mood, so cheerful Paper Stan reads
+  // differently from calm, sleepy, or mildly miffed Paper Stan.
   (function lifeLoop() {
+    var cfg = MOODS[currentMood()];
     setTimeout(function () {
       if (!dismissed && !touring && !dragging && mode === "idle" && !moving &&
           !document.hidden && !bubble.classList.contains("on")) {
+        cfg = MOODS[currentMood()];
         var r = Math.random();
         if (reduce) {
-          if (r < 0.5) gesture(CALM[Math.floor(Math.random() * CALM.length)], null, 1500);
-          else gesture("idle", CALM_O[Math.floor(Math.random() * CALM_O.length)], 1800);
-        } else if (r < 0.04) {
+          var gentle = chooseWeighted(cfg.idlePool);
+          gesture(gentle.action, gentle.orientation, Math.min(gentle.ms, 1700));
+        } else if (currentMood() === "calm" && r < 0.04) {
           explode();
-        } else if (r < 0.24) {
+        } else if (r < 0.18) {
           gesture("curious", towardPage(), 1600);
-        } else if (r < 0.6) {
-          gesture(AMBIENT[Math.floor(Math.random() * AMBIENT.length)], null, 1300 + Math.random() * 900);
         } else {
-          gesture("idle", AMBIENT_O[Math.floor(Math.random() * AMBIENT_O.length)], 1600 + Math.random() * 900);
+          var beat = chooseWeighted(cfg.idlePool);
+          gesture(beat.action, beat.orientation, beat.ms);
         }
       }
       lifeLoop();
-    }, 5200 + Math.random() * 6000);
+    }, (5200 + Math.random() * 6000) * cfg.pacing);
   })();
 
   // Bubbles sit beside his mouth (~42% down the box), vertically centered on it,
@@ -379,13 +535,6 @@ export const spriteJS = `
     }, 1400);
   });
 
-  var SUGGEST_LINES = [
-    "This one's my favorite. Peek inside?",
-    "Haven't opened this one yet. It's quick, promise.",
-    "You scrolled right past this. It noticed.",
-    "Want the story behind this one?",
-    "One more? Worth the click."
-  ];
   function nextTarget() {
     q = window.QUEST.get();
     var rows = [].slice.call(document.querySelectorAll("[data-quest]"));
@@ -412,7 +561,7 @@ export const spriteJS = `
       window.QUEST.pulse(t);
       setTimeout(function () {
         setMode("idle");
-        say(SUGGEST_LINES[suggests % SUGGEST_LINES.length] + " (" + name + ")", null, { force: !!force });
+        say(pickLine("suggest") + " (" + name + ")", null, { force: !!force });
       }, 1000);
     });
   }
@@ -435,6 +584,8 @@ export const spriteJS = `
     if (now - lastHover < 1500) return;
     lastHover = now;
     if (mode === "idle" && !moving && !touring && !bubble.classList.contains("on")) {
+      noteVisitorActivity(now);
+      setMood("cheerful", 0.55, 24000);
       var i;
       do { i = Math.floor(Math.random() * HOVER.length); } while (i === lastHoverIdx);
       lastHoverIdx = i;
@@ -442,31 +593,67 @@ export const spriteJS = `
     }
   }, { passive: true });
 
-  // Tap: one of a wide pool of reactions. Pester him (3 quick taps) and he bolts.
-  var ANNOY_LINES = ["...must you?", "That tickles. Stop. ...okay, again.", "I'm working here.", "Boop received. Rude."];
-  var FLEE_LINES = ["Okay okay, personal space.", "Hey, I'm delicate paper.", "Nope. Catch me first.", "Alright, I'm relocating."];
-  var WAVE_LINES = ["Hi. Yes. Hello.", "You rang?", "Over here."];
-  var BECKON_LINES = ["Come closer, I'll show you.", "Psst. Over here.", "Lean in."];
+  // Tap: most taps play a mood-consistent mini-scene. The rarer legacy tricks
+  // remain in the weighted pool so the existing interaction vocabulary stays.
+  function reactionBeat(action, orientation, ms) {
+    return { action: action, orientation: orientation || "front", expression: MOODS[currentMood()].expression, ms: ms };
+  }
+  function reactMoodScene() {
+    perform(PERFORMANCES["tap." + currentMood()]);
+    say(pickLine("tap"), null, { force: true, hold: 2400 });
+  }
   function reactAnnoyed() {
-    gesture("shakeHead", null, 1700);
-    say(ANNOY_LINES[Math.floor(Math.random() * ANNOY_LINES.length)], null, { force: true, hold: 2400 });
+    setMood("miffed", 1, 45000);
+    reactMoodScene();
   }
   function reactWave() {
-    gesture(x > vw() / 2 ? "waveLeft" : "waveRight", null, 1800);
-    if (Math.random() < 0.6) say(WAVE_LINES[Math.floor(Math.random() * WAVE_LINES.length)], null, { force: true, hold: 2000 });
+    setMood("cheerful", 0.75, 26000);
+    perform([
+      reactionBeat(x > vw() / 2 ? "waveLeft" : "waveRight", "front", 900),
+      reactionBeat("happy", "heroUp", 760),
+    ]);
+    say(pickLine("tap"), null, { force: true, hold: 2200 });
   }
   function reactBeckon() {
-    gesture(Math.random() < 0.5 ? "beckonBoth" : "beckonLeft", null, 1700);
-    say(BECKON_LINES[Math.floor(Math.random() * BECKON_LINES.length)], null, { force: true, hold: 2200 });
+    perform([
+      reactionBeat(Math.random() < 0.5 ? "beckonBoth" : "beckonLeft", towardPage(), 850),
+      reactionBeat("curious", "front", 760),
+    ]);
+    say(pickLine("tap"), null, { force: true, hold: 2200 });
   }
-  function reactWiggle() { gesture(Math.random() < 0.5 ? "bothWave" : "playful", null, 1700); }
-  function reactNod() { gesture("nod", null, 1400); if (Math.random() < 0.5) say("Mm-hm?", null, { force: true, hold: 1800 }); }
-  function reactStartled() { gesture("leanBack", null, 1500); say("Whoa. Hi.", null, { force: true, hold: 2000 }); }
-  function reactSpin() { gesture(Math.random() < 0.5 ? "headRoll" : "twist", null, 1700); }
-  function reactNose() { gesture("nosePulse", null, 1500); if (Math.random() < 0.5) say("That's my nose. Yes.", null, { force: true, hold: 2000 }); }
+  function reactWiggle() {
+    setMood("cheerful", 0.65, 22000);
+    perform([
+      reactionBeat(Math.random() < 0.5 ? "bothWave" : "playful", "front", 820),
+      reactionBeat("happy", "tiltLeft", 740),
+    ]);
+  }
+  function reactNod() { perform(PERFORMANCES["tap.calm"]); }
+  function reactStartled() {
+    perform([
+      reactionBeat("leanBack", "heroUp", 720),
+      reactionBeat("curious", "front", 800),
+    ]);
+    say(pickLine("tap"), null, { force: true, hold: 2000 });
+  }
+  function reactSpin() {
+    perform([
+      reactionBeat("headRoll", "front", 820),
+      reactionBeat("twist", "paperLeft", 860),
+    ]);
+  }
+  function reactNose() {
+    perform([
+      reactionBeat("nosePulse", "front", 850),
+      reactionBeat("nod", "front", 700),
+    ]);
+  }
   function reactWeird() {
-    gesture("weird", null, 2400);
-    say("...don't tell anyone I can do that.", null, { force: true, hold: 2600 });
+    perform([
+      reactionBeat("weird", "front", 1300),
+      reactionBeat("playful", "tiltRight", 850),
+    ]);
+    say(pickLine("tap"), null, { force: true, hold: 2600 });
   }
   function reactFlee() {
     if (moving) return;
@@ -475,7 +662,8 @@ export const spriteJS = `
       var d = Math.hypot(p.x - x, p.y - y);
       if (d > best) { best = d; far = p; }
     });
-    say(FLEE_LINES[Math.floor(Math.random() * FLEE_LINES.length)], null, { force: true, hold: 2400 });
+    setMood("miffed", 1, 45000);
+    say(pickLine("tap"), null, { force: true, hold: 2400 });
     travel(far.x, far.y);
   }
   var flipIdx = 0;
@@ -505,7 +693,8 @@ export const spriteJS = `
   }
   // Weighted so the common, gentle reactions show up more than the big ones.
   var TAP = [
-    reactAnnoyed, reactAnnoyed,
+    reactMoodScene, reactMoodScene, reactMoodScene, reactMoodScene,
+    reactAnnoyed,
     reactWave, reactWave,
     reactWiggle, reactWiggle,
     reactBeckon,
@@ -520,19 +709,25 @@ export const spriteJS = `
   ];
   var tapTimes = [];
   host.addEventListener("click", function () {
-    if (dismissed || !actor.ready || touring || justDragged) return;
+    if (dismissed || !actor.ready || justDragged) return;
+    cancelPerformance();
+    if (touring) return;
     var now = Date.now();
+    noteVisitorActivity(now);
     tapTimes.push(now);
     tapTimes = tapTimes.filter(function (t) { return now - t < 2600; });
+    if (tapTimes.length >= 2) setMood("miffed", 1, 45000);
     if (tapTimes.length >= 3) { tapTimes = []; reactFlee(); return; }
     TAP[Math.floor(Math.random() * TAP.length)]();
   });
 
   // Drag: pointer down + move past a small threshold picks him up; the click
   // that follows a real drag is suppressed so it does not also fire a reaction.
-  var justDragged = false, grabDX = 0, grabDY = 0, downX = 0, downY = 0, down = false;
+  var justDragged = false, grabDX = 0, grabDY = 0, downX = 0, downY = 0, down = false, dragTimes = [];
   host.addEventListener("pointerdown", function (e) {
     if (dismissed || !actor.ready) return;
+    cancelPerformance();
+    noteVisitorActivity(Date.now());
     down = true;
     downX = e.clientX; downY = e.clientY;
     grabDX = e.clientX - x; grabDY = e.clientY - y;
@@ -556,6 +751,10 @@ export const spriteJS = `
     host.classList.remove("dragging");
     try { host.releasePointerCapture(e.pointerId); } catch (err) {}
     if (was) {
+      var now = Date.now();
+      dragTimes.push(now);
+      dragTimes = dragTimes.filter(function (t) { return now - t < 45000; });
+      if (dragTimes.length >= 3) setMood("miffed", 1, 45000);
       justDragged = true;
       setTimeout(function () { justDragged = false; }, 80);
       requestAnimationFrame(function () { sprite.style.transition = ""; });
@@ -576,17 +775,10 @@ export const spriteJS = `
 
   // Bother-loop: every so often Paper Stan walks over and BOOPS the cursor.
   // If the cursor flees before he arrives, he takes it personally.
-  var BOTHER_LINES = [
-    "Boop.",
-    "Whatcha doing up here?",
-    "This cursor looked unattended. It's mine now.",
-    "Found you.",
-    "Don't mind me. Actually, do mind me."
-  ];
   var MISS_LINES = [
-    "...it was right here a second ago.",
-    "Rude. I walked all the way over.",
-    "Fine. Didn't want that cursor anyway."
+    "I lost that cursor a second ago.",
+    "I walked all the way over and it moved.",
+    "I suppose I will let that cursor go."
   ];
   (function botherLoop() {
     setTimeout(function () {
@@ -598,13 +790,15 @@ export const spriteJS = `
         travel(Math.max(6, target.x - 100), Math.max(6, target.y - 34), function () {
           var fled = mouse && Math.hypot(mouse.x - target.x, mouse.y - target.y) > 180;
           if (fled) {
+            setMood("miffed", 0.55, 45000);
             setMode("look");
             say(MISS_LINES[Math.floor(Math.random() * MISS_LINES.length)], null, { force: true });
             setTimeout(function () { if (mode === "look") setMode("idle"); }, 1800);
           } else {
+            setMood("cheerful", 0.5, 22000);
             face(false);
             setMode("poke");
-            say(BOTHER_LINES[Math.floor(Math.random() * BOTHER_LINES.length)], null, { force: true });
+            say(pickLine("bother"), null, { force: true });
             setTimeout(function () { if (mode === "poke") setMode("idle"); }, 1200);
           }
           setTimeout(function () {
@@ -651,9 +845,12 @@ export const spriteJS = `
       var now = Date.now();
       if (now - lastReact < 4500) return;
       lastReact = now;
-      gesture(cfg.action, cfg.orientation, 3200);
-      var line = SECTION_LINES[key];
-      if (line && Math.random() < 0.5) say(line, null, {});
+      var sequence = PERFORMANCES["section." + key + "." + currentMood()];
+      perform(sequence || [
+        { action: cfg.action, orientation: cfg.orientation || "front", expression: MOODS[currentMood()].expression, ms: 1500 },
+        { action: "idle", orientation: "front", expression: MOODS[currentMood()].expression, ms: 700 },
+      ]);
+      if (Math.random() < 0.5) say(pickLine("section"), null, {});
     }
   })();
 
@@ -717,11 +914,13 @@ export const spriteJS = `
   });
 
   document.addEventListener("quest:item-watched", function (e) {
+    setMood("cheerful", 0.75, 30000);
     if (Math.random() < 0.5) { gesture("nod", null, 1600); } else { setMode("yay"); setTimeout(function () { setMode("idle"); }, 1800); }
     say("Nice. That's " + e.detail.n + " of " + e.detail.total + ".", null, { force: true });
     setTimeout(function () { suggest(); }, 2200);
   });
   document.addEventListener("quest:complete", function () {
+    setMood("cheerful", 1, 32000);
     setMode("yay");
     say("That's everything. The photo up top just stopped shuffling, so go catch it.", null, { force: true, hold: 7000 });
     setTimeout(function () { setMode("idle"); }, 2600);
@@ -739,10 +938,10 @@ export const spriteJS = `
   // Rating quips: Paper Stan is gracious, and takes a low score with a shrug.
   document.addEventListener("rate:sent", function (e) {
     var r = e.detail.r, line;
-    if (r <= 3) { line = "A " + r + "? I made that one at 3am, so, fair. Logged."; gesture("sad", "shyDown", 2400); }
-    else if (r <= 6) { line = r + " out of 10. Noted, I can take it."; gesture("nod", null, 2200); }
-    else if (r <= 8) { line = r + ". I'll take that, thank you."; gesture("nod", null, 2200); }
-    else { line = r + "?! Okay, now I like you. Logged with pride."; setMode("yay"); setTimeout(function () { setMode("idle"); }, 2400); }
+    if (r <= 3) { setMood("miffed", 1, 45000); line = "A " + r + "? I made that one at 3am, so, fair. Logged."; gesture("sad", "shyDown", 2400); }
+    else if (r <= 6) { setMood("calm", 0.5, 18000); line = r + " out of 10. Noted, I can take it."; gesture("nod", null, 2200); }
+    else if (r <= 8) { setMood("cheerful", 0.65, 26000); line = r + ". I'll take that, thank you."; gesture("nod", null, 2200); }
+    else { setMood("cheerful", 1, 32000); line = r + "?! Okay, now I like you. Logged with pride."; setMode("yay"); setTimeout(function () { setMode("idle"); }, 2400); }
     say(line, null, { force: true });
   });
 

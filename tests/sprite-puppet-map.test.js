@@ -13,6 +13,12 @@ import {
   spriteHTML,
   spriteJS,
 } from "../src/render/fx/sprite.js";
+import {
+  EXPRESSIONS,
+  LINES,
+  MOODS,
+  PERFORMANCES,
+} from "../src/render/fx/sprite-data.js";
 
 // The kit's motions.json is the authority on which actions actually exist.
 const motions = JSON.parse(
@@ -97,5 +103,84 @@ describe("the hedgehog actor is fully replaced", () => {
   it("interpolates the maps into the runtime script (single source of truth)", () => {
     expect(spriteJS).toContain("MODE_MAP");
     expect(spriteJS).toContain("MoanaPuppet");
+  });
+});
+
+function visitMotionReferences(value, path = "root") {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => visitMotionReferences(item, `${path}[${index}]`));
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+
+  if (value.action) {
+    expect(VALID_ACTIONS.has(value.action), `${path}.action -> ${value.action}`).toBe(true);
+  }
+  if (value.orientation) {
+    expect(VALID_ORIENTATIONS.has(value.orientation), `${path}.orientation -> ${value.orientation}`).toBe(true);
+  }
+  Object.entries(value).forEach(([key, child]) => visitMotionReferences(child, `${path}.${key}`));
+}
+
+describe("Paper Stan alive data contract", () => {
+  it("exports the two independent facial expressions", () => {
+    expect(EXPRESSIONS).toEqual(["smile", "frown"]);
+  });
+
+  it("keeps every mood and performance motion inside the shipped kit vocabulary", () => {
+    visitMotionReferences(MOODS, "MOODS");
+    visitMotionReferences(PERFORMANCES, "PERFORMANCES");
+  });
+
+  it("gives each mood a real idle pool and pacing policy", () => {
+    expect(Object.keys(MOODS).sort()).toEqual(["calm", "cheerful", "miffed", "sleepy"]);
+    for (const [mood, config] of Object.entries(MOODS)) {
+      expect(config.idlePool, `${mood} needs an idle pool`).toBeInstanceOf(Array);
+      expect(config.idlePool.length).toBeGreaterThan(0);
+      expect(config.pacing).toBeGreaterThan(0);
+      expect(config.gazeEagerness).toBeGreaterThan(0);
+      expect(EXPRESSIONS, `${mood} needs an expression bias`).toContain(config.expression);
+      expect(Object.keys(MOODS), `${mood} needs a line-pool key`).toContain(config.linePool);
+    }
+  });
+
+  it("defines cancellable multi-step performances", () => {
+    for (const [name, performance] of Object.entries(PERFORMANCES)) {
+      const sequences = Array.isArray(performance) ? [performance] : Object.values(performance);
+      for (const sequence of sequences) {
+        expect(sequence, `${name} must be a sequence`).toBeInstanceOf(Array);
+        expect(sequence.length, `${name} needs more than one beat`).toBeGreaterThanOrEqual(2);
+        for (const beat of sequence) {
+          expect(beat.ms, `${name} beat needs a duration`).toBeGreaterThan(0);
+          expect(EXPRESSIONS).toContain(beat.expression);
+        }
+      }
+    }
+  });
+
+  it("keeps baked lines varied, first-person, and free of dashes or emoji", () => {
+    const firstPerson = /\b(?:I|I'm|I've|I'll|me|my|mine)\b/i;
+    const emoji = /\p{Extended_Pictographic}/u;
+
+    for (const [situation, moods] of Object.entries(LINES)) {
+      expect(Object.keys(moods).sort(), `${situation} needs every mood`).toEqual(Object.keys(MOODS).sort());
+      for (const [mood, lines] of Object.entries(moods)) {
+        expect(lines.length, `${situation}.${mood} needs variety`).toBeGreaterThanOrEqual(6);
+        expect(lines.length, `${situation}.${mood} should stay reviewable`).toBeLessThanOrEqual(12);
+        for (const line of lines) {
+          expect(line, `${situation}.${mood} must be first person`).toMatch(firstPerson);
+          expect(line, `${situation}.${mood} contains a dash`).not.toMatch(/[\u2013\u2014]/u);
+          expect(line, `${situation}.${mood} contains emoji`).not.toMatch(emoji);
+        }
+      }
+    }
+  });
+
+  it("inlines the alive data and shadows head effects on the mounted instance", () => {
+    for (const token of ["MOODS", "LINES", "PERFORMANCES", "applyHeadEffects", "function perform("]) {
+      expect(spriteJS).toContain(token);
+    }
+    expect(spriteJS).toContain("puppet.applyHeadEffects = function");
+    expect(spriteJS).not.toContain("prototype.applyHeadEffects");
   });
 });
