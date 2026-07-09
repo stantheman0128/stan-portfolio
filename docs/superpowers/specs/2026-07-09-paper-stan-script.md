@@ -27,25 +27,22 @@ travels next to it (~0.5s + glide), plays an action, and speaks (line held
 
 ## C. Section reactions (docent, ambient)
 When a section takes over the viewport (idle only, 4.5s cooldown between
-reactions). He always plays the action; ~50% of the time he also says the line.
+reactions). He runs the matching two-step mood performance from
+`PERFORMANCES["section.<section>.<mood>"]`; ~50% of the time he also selects a
+non-repeating line from `LINES.section[mood]`.
 
-- hero -> action greeting (no line)
-- about -> action shy -> "That's me. Roughly."
-- works -> action beckon (faces list) -> "Pick one. They've all got a story."
-- patent -> action happy (head up) -> "Still can't quite believe this one's official."
-- contact / footer -> action bothBigWave -> "You made it to the bottom. Respectable."
+- hero -> greeting and a small acknowledgement
+- about -> shy or reflective self-introduction
+- works -> beckon toward the list, then look closer
+- patent -> proud upward reaction, then a quieter beat
+- contact / footer -> big wave or calmer goodbye, depending on mood
 
 ## D. Project nudges (guide to unopened work)
 Points at the next unopened project. Fires 12s in for returning visitors, and
 again after each project opened. Max 4 per session. He travels to the item,
 pokes and pulses it, then (1s later) speaks. Lines rotate; "(name)" is the
-project title:
-
-- "This one's my favorite. Peek inside? (name)"
-- "Haven't opened this one yet. It's quick, promise. (name)"
-- "You scrolled right past this. It noticed. (name)"
-- "Want the story behind this one? (name)"
-- "One more? Worth the click. (name)"
+project title. The line comes from `LINES.suggest[mood]` and never repeats the
+previous project nudge for that session.
 
 ## E. Quest milestones
 - Opened a project (dwelled ~1.5s) -> action happy -> "Nice. That's {n} of {total}." then a nudge 2.2s later
@@ -63,35 +60,22 @@ project title:
 Every 26-52s, 50% chance, when idle and the mouse is present (fine pointer,
 motion allowed). He walks to the cursor, then:
 
-- Cursor stayed -> action beckon -> one of:
-  - "Boop."
-  - "Whatcha doing up here?"
-  - "This cursor looked unattended. It's mine now."
-  - "Found you."
-  - "Don't mind me. Actually, do mind me."
-- Cursor fled before he arrived -> action look -> one of:
-  - "...it was right here a second ago."
-  - "Rude. I walked all the way over."
-  - "Fine. Didn't want that cursor anyway."
+- Cursor stayed -> action beckon -> a non-repeating line from
+  `LINES.bother[mood]`; he becomes a little more cheerful.
+- Cursor fled before he arrived -> action look -> a first-person missed-cursor
+  line; he becomes a little miffed.
 
 ## H. Direct interaction
-- **Hover** (idle, 1.5s cooldown): grows ~10% (CSS) and reacts to being noticed, drawn from a pool that never repeats twice in a row: looks at you (curious toward the cursor), a curious head tilt, a quick wave hello, a pleased bounce (happy), or a nod. Pressing shrinks him slightly.
-- **Tap / click** (not while dragging): one reaction drawn at random from a wide
-  weighted pool, so taps rarely repeat:
-  - annoyed (shakeHead): "...must you?" / "That tickles. Stop. ...okay, again." / "I'm working here." / "Boop received. Rude."
-  - wave at you (waveRight/waveLeft toward your side), sometimes: "Hi. Yes. Hello." / "You rang?" / "Over here."
-  - beckon (beckonBoth/beckonLeft): "Come closer, I'll show you." / "Psst. Over here." / "Lean in."
-  - wiggle (bothWave / playful), silent
-  - nod, sometimes: "Mm-hm?"
-  - startle (leanBack): "Whoa. Hi."
-  - spin (headRoll / twist), silent
-  - nose (nosePulse), sometimes: "That's my nose. Yes."
-  - flip (frontFlip / backFlip); backFlip: "Show-off, I know."
-  - weird: "...don't tell anyone I can do that."
-  - explode: the paper doll shakes apart and reassembles: "...whoops. Hold on."
-  - flee (bolts to the farthest corner): "Okay okay, personal space." / "Hey, I'm delicate paper." / "Nope. Catch me first." / "Alright, I'm relocating."
-  - **3 quick taps** in a row -> he always flees.
-- **Drag**: pick him up and move him anywhere. No line.
+- **Hover** (idle, 1.5s cooldown): grows ~10% (CSS), moves to cheerful, and
+  picks a non-repeating look, tilt, wave, bounce, or nod. Pressing shrinks him
+  slightly.
+- **Tap / click** (not while dragging): the common outcome is the 2-3 beat
+  `PERFORMANCES["tap.<mood>"]` scene plus a non-repeating `LINES.tap[mood]`
+  line. Waves, beckons, wiggles, flips, nose pulses, the strange pose, explode,
+  and flee remain in the weighted pool as rarer special reactions.
+- **3 quick taps** in a row -> he turns miffed and flees.
+- **Drag**: pick him up and move him anywhere. Three drags within 45 seconds
+  move him into miffed mood. Dragging also cancels a running performance.
 - **Wheel over him**: resize him between 0.62x and 2x. No line. (Persists for the session.)
 
 ## I. Speed-reader
@@ -110,14 +94,35 @@ When the reward photo is being chased (40s cooldown, ~60% chance) -> action look
 ## L. Dismiss (the x on the bubble)
 - "Got it, I'll hush. Tap me if you change your mind." Then he walks home and sleeps, and stays quiet for the rest of the session (remembered).
 
+## M. Alive behavior layer
+- **Expression axis**: `smile` and `frown` are independent of the puppet action.
+  The mounted puppet instance shadows `applyHeadEffects`, so `sad` still shows a
+  frown while a miffed sequence may also hold one without changing the artwork.
+- **Moods**: `calm` is the default. Gentle hover, opening work, and high ratings
+  make him cheerful. Ninety seconds without visitor activity or late local time
+  makes him sleepy. Repeated taps, three recent drags, and low ratings make him
+  miffed. Mood is in-memory only, carries a decaying intensity, and miffed
+  settles back to calm after about 45 seconds.
+- **Gaze**: desktop cursor position maps to a 3 by 3 orientation grid. It only
+  changes while he is idle, after a zone change and at least 400ms. Miffed Paper
+  Stan turns away from the cursor, and sleepy Paper Stan reacts later. Reduced
+  motion retains this subtle gaze but disables roaming.
+- **Performances**: `perform([{ action, orientation, expression, ms }, ...])`
+  owns the puppet until its last beat. Click, drag, or travel cancels it, then
+  the normal idle state resumes.
+- **Data and copy**: `src/render/fx/sprite-data.js` is the source for `MOODS`,
+  `PERFORMANCES`, `LINES`, and expressions. Every baked line is English,
+  first-person Paper Stan voice, with no em/en dash or emoji. Selection avoids
+  repeating the last line for the same situation.
+
 ## Notes
-- Idle motion (silent): between the scripted moments he draws from a wide pose
-  pool so a resting Paper Stan keeps changing: head tilts, paper turns, head
-  rolls, torso twist, hands-in, nods, a nose pulse, glances toward the page, and
-  once in a while the full explode-and-reassemble. Nearly the whole kit is used.
+- Idle motion (silent): between scripted moments he draws from the weighted pool
+  for his current mood. Cheerful is lively, calm is reflective, sleepy is slow,
+  and miffed is terser. Calm still occasionally uses the full explode and
+  reassemble trick.
 - Bubbles rate-limit themselves (20s minimum between non-forced lines; they also
   wait out active scrolling), so he never chatters.
 - `prefers-reduced-motion`: no roaming, boops, or flips-as-loop; gentle in-place
   gestures only. Mobile: smaller, calmer, no cursor games.
-- All copy lives in the arrays at the top of each section in `sprite.js`; edit
-  there to change wording.
+- New variable copy lives in `LINES` inside `sprite-data.js`; edit it there to
+  change wording. The older scripted tour and quest lines remain in `sprite.js`.
