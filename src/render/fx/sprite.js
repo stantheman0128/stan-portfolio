@@ -11,9 +11,10 @@
 // composed from two CSS vars: --flip (facing) and --hscale (hover/press), so
 // the flip and the hover-scale never fight over the transform property.
 //
-// Interactions: hover grows him and he glances at you; a tap gets a random
-// reaction (annoyed, flee, arm wiggle, flip); pestering (3 quick taps) makes him
-// bolt. Speech bubbles anchor at his mouth. Copy avoids em dashes and AI tells.
+// Direct interaction: hover grows him and he glances at you; a tap gets a random
+// reaction; drag him anywhere; wheel over him to resize. Speech bubbles sit
+// beside his mouth (on the roomy side) and follow him frame by frame. Copy
+// avoids em dashes and AI tells.
 
 // Engine mode -> puppet action. Exported so the runtime script and the unit
 // test share one source (interpolated below with JSON.stringify).
@@ -58,20 +59,20 @@ export const INTENT_ACTIONS = [
 export const spriteCSS = `
 #sprite{position:fixed;left:0;top:0;z-index:70;pointer-events:none;will-change:transform;transition:transform 1.15s cubic-bezier(.33,.75,.35,1)}
 #sprite.s-scurrying{transition-duration:.72s;transition-timing-function:cubic-bezier(.45,.05,.55,.95)}
-#puppet-host{--moana-size:112px;--flip:1;--hscale:1;pointer-events:auto;cursor:pointer;transform:scaleX(var(--flip)) scale(var(--hscale));transform-origin:50% 62%;transition:transform .3s cubic-bezier(.22,1,.36,1)}
+#puppet-host{--moana-size:112px;--flip:1;--hscale:1;pointer-events:auto;cursor:grab;touch-action:none;transform:scaleX(var(--flip)) scale(var(--hscale));transform-origin:50% 62%;transition:transform .3s cubic-bezier(.22,1,.36,1)}
+#puppet-host.dragging{cursor:grabbing}
 #sprite.s-face-left #puppet-host{--flip:-1}
 #puppet-host:hover{--hscale:1.1}
-#puppet-host:active{--hscale:.93}
+#puppet-host:active{--hscale:.96}
 #sprite.s-sleep{opacity:.62}
 @media (prefers-reduced-motion:reduce){#sprite{transition:none}#puppet-host{transition:none}#puppet-host:hover{--hscale:1}#puppet-host:active{--hscale:1}}
 #bubble{position:fixed;left:0;top:0;z-index:71;max-width:15.5rem;background:#fffdfa;border:1px solid #d8d0c4;border-radius:12px;padding:.65rem .8rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.55;color:#3a3833;box-shadow:0 8px 28px rgba(41,31,23,.12);display:none}
 #bubble.on{display:block}
-#bubble::before{content:"";position:absolute;bottom:-9px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:9px solid #d8d0c4}
-#bubble::after{content:"";position:absolute;bottom:-7px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:8px solid #fffdfa}
-#bubble.tail-left::before{left:17px}
-#bubble.tail-left::after{left:18px}
-#bubble.tail-right::before{right:17px}
-#bubble.tail-right::after{right:18px}
+#bubble::before,#bubble::after{content:"";position:absolute;width:0;height:0}
+#bubble.point-left::before{left:-9px;top:calc(50% - 9px);border-top:9px solid transparent;border-bottom:9px solid transparent;border-right:9px solid #d8d0c4}
+#bubble.point-left::after{left:-7px;top:calc(50% - 7px);border-top:7px solid transparent;border-bottom:7px solid transparent;border-right:8px solid #fffdfa}
+#bubble.point-right::before{right:-9px;top:calc(50% - 9px);border-top:9px solid transparent;border-bottom:9px solid transparent;border-left:9px solid #d8d0c4}
+#bubble.point-right::after{right:-7px;top:calc(50% - 7px);border-top:7px solid transparent;border-bottom:7px solid transparent;border-left:8px solid #fffdfa}
 #bubble .b-x{position:absolute;top:4px;right:7px;all:unset;cursor:pointer;color:#b7b2a8;font-size:12px;padding:2px 4px}
 #bubble .b-x:hover{color:#c2522d}
 #bubble .b-chips{margin-top:.5rem;display:flex;gap:6px;flex-wrap:wrap}
@@ -112,7 +113,7 @@ export const spriteJS = `
   var dismissed = q.spriteDismissed;
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var lastBubble = 0, suggests = 0, lastScroll = 0, bubbleTimer = 0;
-  var mode = "idle", moving = false, touring = false, x = 0, y = 0, faceLeft = false;
+  var mode = "idle", moving = false, touring = false, dragging = false, x = 0, y = 0, faceLeft = false;
   var mouse = null;
   addEventListener("pointermove", function (e) {
     mouse = { x: e.clientX, y: e.clientY, t: Date.now() };
@@ -178,9 +179,10 @@ export const spriteJS = `
   }, { passive: true });
 
   // Size drives both the puppet and the placement math. Puppet stage is 860x1120.
-  var W = 112, H = 146;
-  function puppetSize() { return matchMedia("(max-width: 640px)").matches ? 84 : 112; }
-  function measure() { W = puppetSize(); H = Math.round(W * 1120 / 860); }
+  // userScale is the wheel-zoom multiplier on top of the responsive base size.
+  var userScale = 1, W = 112, H = 146;
+  function baseSize() { return matchMedia("(max-width: 640px)").matches ? 84 : 112; }
+  function measure() { W = Math.round(baseSize() * userScale); H = Math.round(W * 1120 / 860); }
   measure();
   function vw() { return document.documentElement.clientWidth; }
   function vh() { return document.documentElement.clientHeight; }
@@ -203,7 +205,7 @@ export const spriteJS = `
     x = nx; y = ny;
     if (instant || reduce) sprite.style.transition = "none";
     sprite.style.transform = "translate(" + x + "px," + y + "px)";
-    if (instant || reduce) requestAnimationFrame(function () { sprite.style.transition = ""; });
+    if (instant || reduce) requestAnimationFrame(function () { if (!dragging) sprite.style.transition = ""; });
     if (bubble.classList.contains("on")) placeBubble();
   }
   // Short trips: scurry. Long trips: paper can't ball-roll, so it stays playful.
@@ -228,7 +230,7 @@ export const spriteJS = `
   addEventListener("resize", function () {
     measure();
     if (actor.ready) actor.puppet.setSize(W);
-    if (!moving) { var h = home(); place(h.x, h.y, true); }
+    if (!moving && !dragging) { var h = home(); place(h.x, h.y, true); }
   });
 
   function anchors() {
@@ -244,7 +246,7 @@ export const spriteJS = `
   }
   (function roamLoop() {
     setTimeout(function () {
-      if (!dismissed && !touring && mode === "idle" && !moving && !document.hidden &&
+      if (!dismissed && !touring && !dragging && mode === "idle" && !moving && !document.hidden &&
           !bubble.classList.contains("on") && !reduce &&
           Date.now() - lastScroll > 3000) {
         var a = anchors()[Math.floor(Math.random() * 6)];
@@ -257,7 +259,7 @@ export const spriteJS = `
   // Idle life: sudden look-at-you, a curious tilt, a think, or a little hop.
   (function lifeLoop() {
     setTimeout(function () {
-      if (!dismissed && !touring && mode === "idle" && !moving && !document.hidden) {
+      if (!dismissed && !touring && !dragging && mode === "idle" && !moving && !document.hidden) {
         var roll = Math.random();
         if (roll < 0.4) {
           setMode("look");
@@ -277,21 +279,35 @@ export const spriteJS = `
     }, 6000 + Math.random() * 7000);
   })();
 
-  // Bubbles anchor at his mouth (~42% down the box) with a tail pointing at it.
-  // The tail sits on whichever side leaves room, so the body never overflows.
+  // Bubbles sit beside his mouth (~42% down the box), vertically centered on it,
+  // on whichever side has room: character on the left half -> bubble to the
+  // right, and vice versa. A side tail points back at the mouth. While a bubble
+  // is up, a rAF loop keeps it glued as he glides, gets dragged, or resizes.
+  var followRAF = 0;
   function placeBubble() {
     var r = sprite.getBoundingClientRect();
     var mouthX = r.left + r.width * 0.5;
     var mouthY = r.top + r.height * 0.42;
     var bw = Math.min(268, vw() - 16);
-    var roomRight = mouthX + bw - 20 <= vw() - 8;
-    var left = roomRight ? (mouthX - 20) : (mouthX - bw + 20);
+    var bh = bubble.offsetHeight || 44;
+    var onRight = mouthX < vw() * 0.5;
+    var gap = r.width * 0.30 + 8;
+    var left = onRight ? (mouthX + gap) : (mouthX - gap - bw);
     left = Math.max(8, Math.min(vw() - bw - 8, left));
+    var top = Math.max(8, Math.min(vh() - bh - 8, mouthY - bh / 2));
     bubble.style.left = left + "px";
-    bubble.style.top = "auto";
-    bubble.style.bottom = Math.max(8, vh() - mouthY + 4) + "px";
-    bubble.classList.toggle("tail-right", !roomRight);
-    bubble.classList.toggle("tail-left", roomRight);
+    bubble.style.top = top + "px";
+    bubble.style.bottom = "auto";
+    bubble.classList.toggle("point-left", onRight);
+    bubble.classList.toggle("point-right", !onRight);
+  }
+  function startFollow() {
+    if (followRAF) return;
+    (function loop() {
+      if (!bubble.classList.contains("on")) { followRAF = 0; return; }
+      placeBubble();
+      followRAF = requestAnimationFrame(loop);
+    })();
   }
   function say(text, chips, opts) {
     opts = opts || {};
@@ -309,8 +325,9 @@ export const spriteJS = `
       b.addEventListener("click", function () { hide(); c.go(); });
       bChips.appendChild(b);
     });
-    placeBubble();
     bubble.classList.add("on");
+    placeBubble();
+    startFollow();
     clearTimeout(bubbleTimer);
     if (!chips || !chips.length) bubbleTimer = setTimeout(hide, opts.hold || 5200);
   }
@@ -327,7 +344,7 @@ export const spriteJS = `
 
   function backToIdle(delay) {
     setTimeout(function () {
-      if (!moving && !touring && mode === "idle") actor.setMode(mode);
+      if (!moving && !touring && !dragging && mode === "idle") actor.setMode(mode);
     }, delay);
   }
 
@@ -369,11 +386,11 @@ export const spriteJS = `
     });
   }
 
-  // ---- Direct interaction: hover and tap.
+  // ---- Direct interaction: hover, tap, drag, wheel-zoom.
   // Hover: he grows (CSS) and glances at you (rate-limited so it never spams).
   var lastHover = 0;
   host.addEventListener("pointerenter", function () {
-    if (dismissed || !actor.ready) return;
+    if (dismissed || !actor.ready || dragging) return;
     var now = Date.now();
     if (now - lastHover < 1500) return;
     lastHover = now;
@@ -421,7 +438,7 @@ export const spriteJS = `
   }
   var tapTimes = [];
   host.addEventListener("click", function () {
-    if (dismissed || !actor.ready || touring) return;
+    if (dismissed || !actor.ready || touring || justDragged) return;
     var now = Date.now();
     tapTimes.push(now);
     tapTimes = tapTimes.filter(function (t) { return now - t < 2600; });
@@ -433,6 +450,52 @@ export const spriteJS = `
     else if (r < 0.95) reactFlip();
     else reactWeird();
   });
+
+  // Drag: pointer down + move past a small threshold picks him up; the click
+  // that follows a real drag is suppressed so it does not also fire a reaction.
+  var justDragged = false, grabDX = 0, grabDY = 0, downX = 0, downY = 0, down = false;
+  host.addEventListener("pointerdown", function (e) {
+    if (dismissed || !actor.ready) return;
+    down = true;
+    downX = e.clientX; downY = e.clientY;
+    grabDX = e.clientX - x; grabDY = e.clientY - y;
+    try { host.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  host.addEventListener("pointermove", function (e) {
+    if (!down) return;
+    if (!dragging && Math.hypot(e.clientX - downX, e.clientY - downY) > 5) {
+      dragging = true;
+      host.classList.add("dragging");
+      sprite.style.transition = "none";
+      setMode("idle");
+    }
+    if (dragging) place(e.clientX - grabDX, e.clientY - grabDY, true);
+  });
+  function endDrag(e) {
+    if (!down) return;
+    down = false;
+    var was = dragging;
+    dragging = false;
+    host.classList.remove("dragging");
+    try { host.releasePointerCapture(e.pointerId); } catch (err) {}
+    if (was) {
+      justDragged = true;
+      setTimeout(function () { justDragged = false; }, 80);
+      requestAnimationFrame(function () { sprite.style.transition = ""; });
+    }
+  }
+  host.addEventListener("pointerup", endDrag);
+  host.addEventListener("pointercancel", endDrag);
+
+  // Wheel over him zooms his actual size (persists for the session).
+  host.addEventListener("wheel", function (e) {
+    if (dismissed || !actor.ready) return;
+    e.preventDefault();
+    userScale = Math.max(0.62, Math.min(2, userScale + (e.deltaY < 0 ? 0.12 : -0.12)));
+    measure();
+    if (actor.ready) actor.puppet.setSize(W);
+    place(x, y, true);
+  }, { passive: false });
 
   // Bother-loop: every so often Paper Stan walks over and BOOPS the cursor.
   // If the cursor flees before he arrives, he takes it personally.
@@ -450,7 +513,7 @@ export const spriteJS = `
   ];
   (function botherLoop() {
     setTimeout(function () {
-      if (!dismissed && !touring && mode === "idle" && !moving && !document.hidden &&
+      if (!dismissed && !touring && !dragging && mode === "idle" && !moving && !document.hidden &&
           !bubble.classList.contains("on") && !reduce && mouse &&
           matchMedia("(hover: hover) and (pointer: fine)").matches &&
           Math.random() < 0.5) {
@@ -506,7 +569,7 @@ export const spriteJS = `
 
     function react(key) {
       var cfg = SECTION_MAP[key];
-      if (!cfg || dismissed || touring || moving || mode !== "idle") return;
+      if (!cfg || dismissed || touring || dragging || moving || mode !== "idle") return;
       if (bubble.classList.contains("on")) return;
       var now = Date.now();
       if (now - lastReact < 4500) return;
@@ -515,7 +578,7 @@ export const spriteJS = `
       var line = SECTION_LINES[key];
       if (line && Math.random() < 0.5) say(line, null, {});
       setTimeout(function () {
-        if (!moving && !touring && mode === "idle") actor.setMode("idle");
+        if (!moving && !touring && !dragging && mode === "idle") actor.setMode("idle");
       }, 3200);
     }
   })();
