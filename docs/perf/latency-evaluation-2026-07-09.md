@@ -14,7 +14,8 @@
 低流量冷節點的「第一個訪客」cache MISS 吃 300–470ms（自癒，下一位就 ~15ms）。免費方案
 沒有任何旋鈕能消除它（Tiered Cache 免費部分 Pages 已自動套用、能真正縮短的區域上層是
 Enterprise、Cache Reserve 要付費）。**採用的鐵板解：把 `/` 改由 Pages Function 送**——
-程式常駐每個節點、回傳內嵌的烤好 HTML，永不 MISS，全球每個首訪都 ~10–40ms。
+程式常駐每個節點、回傳內嵌的烤好 HTML，永不 MISS。實測 preview 全球 10 城首訪 TTFB
+20–59ms（avg 37ms）、無任何冷 MISS；回訪 fromCache 0ms。
 
 ## 一手實測（同機、同網、真實瀏覽器走 h3）
 
@@ -85,6 +86,18 @@ curl（HTTP/1.1）對照僅供分解：正式站冷連線 TTFB ~205ms = TCP + TL
 5. **部署後清 cache**（讓新 headers 立即生效）
    - 位置：`Caching` → `Configuration` → `Purge Everything`（或只 purge 首頁 URL）
    - 何時：把這個分支合進 `main`、Pages 重新部署完成之後。
+
+## Function 部署雷點（實際踩過，已修）
+
+1. **`compatibility_date` 必須設。** `/` Function 在 Git 部署一開始回 404，而 direct
+   `wrangler pages deploy` 和本地 `wrangler pages dev` 都正常。根因：Git build 用 Pages
+   專案的舊 compat date 編譯 function，較新的 runtime 行為缺失。已在 `wrangler.toml` 釘
+   `compatibility_date = "2024-11-01"`。（`functions/api/*` 不受影響是因為它們沒用到。）
+2. **不要自己設 `Content-Encoding: br`。** 一開始 function 內嵌 brotli 並手設 br，結果
+   `brotli_content_encoding` runtime flag 開著時 edge 會再壓一次 → `brotli(brotli(html))`
+   但 header 只寫一層，瀏覽器解一層得到亂碼、頁面全壞。改成回傳 raw HTML、讓 edge 壓一次
+   （wire ~7.6KB，單層 br，實測真實瀏覽器 0 console error）。
+3. **`functions/_front-door.js` 要進版控**（別 gitignore）；baked HTML 無 per-build 戳記故穩定。
 
 ## 部署方式
 
