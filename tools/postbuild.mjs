@@ -27,6 +27,12 @@ writeFileSync(join(dist, "index.html"), fw);
 mkdirSync(join(dist, "fast"), { recursive: true });
 writeFileSync(join(dist, "fast", "index.html"), fw);
 
+// Embed the same baked HTML into the "/" Pages Function so every POP serves it from
+// resident code (no origin fetch, no cold-POP cache MISS). Single source of truth:
+// the Function's payload is generated here from the very fw string written above.
+const { frontDoorModuleSource } = await import(new URL("./front-door-bake.mjs", import.meta.url));
+writeFileSync(join(root, "functions", "_front-door.js"), frontDoorModuleSource(fw));
+
 // Bundle the on-page editor to a stable, unhashed URL so the Edit button can inject
 // it on demand from any live page (esbuild ships with vite).
 const { build: esbuild } = await import("esbuild");
@@ -38,4 +44,4 @@ await esbuild({
   outfile: join(dist, "editor.js"),
 });
 
-console.log("postbuild: content.json + index.html + fast/ + editor.js written");
+console.log("postbuild: content.json + index.html + fast/ + editor.js + functions/_front-door.js written");
