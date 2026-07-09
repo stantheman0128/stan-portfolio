@@ -17,7 +17,6 @@ describe("minimal edit-mode data-bind", () => {
     expect(edit).toContain('data-bind="items.0.title"');
     expect(edit).toContain('data-bind="items.0.description"');
     expect(edit).toContain('data-bind="items.0.detail" data-edit="md"');
-    expect(edit).toContain('data-bind="items.0.tags" data-edit="tags"');
     expect(edit).toContain('data-bind="items.0.image" data-edit="image"');
   });
   it("uses the true content index, not the filtered index", () => {
@@ -48,7 +47,6 @@ describe("featherweight edit-mode data-bind", () => {
     expect(edit).toContain('data-bind="profile.tagline"');
     expect(edit).toContain('data-bind="items.0.title"');
     expect(edit).toContain('data-bind="items.0.detail" data-edit="md"');
-    expect(edit).toContain('data-bind="items.0.tags" data-edit="tags"');
     expect(edit).toContain('data-bind="patent.title"');
   });
   it("uses the true content index (site-minimal is index 9)", () => {

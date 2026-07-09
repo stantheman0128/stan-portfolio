@@ -64,7 +64,6 @@ export function render(content, opts = {}) {
   const workHTML = items
     .map(({ it, ci }) => {
       const status = [it.status, it.year].filter(Boolean).map(esc).join(" · ");
-      const tags = (it.tags || []).map(esc).join(" · ");
       const links = realLinks(it.links);
 
       // Thumb: real image respecting imageMode, or a typographic card when null.
@@ -90,9 +89,6 @@ export function render(content, opts = {}) {
 
       const foot =
         `<div class="foot">` +
-        (edit
-          ? `<span class="tags"${bindAttr("items." + ci + ".tags", edit, "tags")}>${esc((it.tags || []).join(", "))}</span>`
-          : (tags ? `<span class="tags">${tags}</span>` : "")) +
         (edit
           ? `<span class="links ff-links" data-item="${ci}">` + editLinksHTML(it.links, ci) + `</span>`
           : (links.length
@@ -238,6 +234,9 @@ export function render(content, opts = {}) {
     p.githubUrl ? `<a href="${esc(p.githubUrl)}">GitHub</a>` : "",
     p.linkedinUrl ? `<a href="${esc(p.linkedinUrl)}">LinkedIn</a>` : "",
     p.email ? emailAnchor("Email") : "",
+    p.instagramUrl ? `<a href="${esc(p.instagramUrl)}" target="_blank" rel="noopener">Instagram</a>` : "",
+    p.dcardUrl ? `<a href="${esc(p.dcardUrl)}" target="_blank" rel="noopener">Dcard</a>` : "",
+    p.threadsUrl ? `<a href="${esc(p.threadsUrl)}" target="_blank" rel="noopener">Threads</a>` : "",
   ]
     .filter(Boolean)
     .join('<span class="sep">·</span>');
@@ -331,7 +330,6 @@ section{margin-top:calc(var(--space)*2.1)}
 .item .detail p + p{margin-top:.4rem}
 .item .detail a{color:var(--ink-2);border-bottom-color:var(--line-2)}
 .item .foot{margin-top:.55rem;font-size:var(--s-1);color:var(--ink-3);display:flex;flex-wrap:wrap;align-items:baseline;gap:.4rem .9rem}
-.item .tags{color:var(--ink-3);letter-spacing:.01em}
 .item .links{display:flex;flex-wrap:wrap;gap:.9rem}
 .item .links a{border-bottom-color:var(--line-2);font-weight:500;color:var(--ink)}
 .item .nolink{color:var(--ink-3);font-style:italic}
@@ -407,9 +405,12 @@ footer .grow{flex:1}
 }
 img{max-width:100%;height:auto}
 .fw-speed{display:none}
-.fw-speed.on{display:inline-flex;align-items:center;gap:.55rem;margin-top:calc(var(--space)*.55);font-size:var(--s-1);color:var(--ink-2);border:var(--rule) solid var(--line-2);border-radius:999px;padding:.34rem .8rem .34rem .7rem;font-feature-settings:"tnum" 1;letter-spacing:.01em}
-.fw-speed::before{content:"";width:.5rem;height:.5rem;border-radius:50%;background:var(--live);flex:0 0 auto;box-shadow:0 0 0 3px color-mix(in srgb,var(--live) 16%,transparent)}
-.fw-speed .n{font-weight:700;color:var(--ink);font-size:var(--s0);letter-spacing:-.01em}
+.fw-speed.on{display:inline-flex;align-items:baseline;gap:.5rem;margin-top:calc(var(--space)*.8);font-size:var(--s-1);color:var(--ink-3);letter-spacing:.01em}
+.fw-speed .dot{align-self:center;width:.42rem;height:.42rem;border-radius:50%;background:var(--live);flex:0 0 auto;animation:fw-pulse 2.6s ease-out infinite}
+.fw-speed .n{font-weight:700;color:var(--ink);font-size:var(--s1);letter-spacing:-.015em;font-feature-settings:"tnum" 1}
+.fw-speed .u{color:var(--ink-2)}
+@keyframes fw-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--live) 55%,transparent)}70%{box-shadow:0 0 0 .55rem color-mix(in srgb,var(--live) 0%,transparent)}100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--live) 0%,transparent)}}
+@media (prefers-reduced-motion:reduce){.fw-speed .dot{animation:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--live) 16%,transparent)}}
 </style>
 </head>
 <body>
@@ -475,10 +476,12 @@ img{max-width:100%;height:auto}
     var n = isFinite(ms) && ms > 0 ? Math.round(ms) : 0;
     var el = document.getElementById("fw-speed");
     if (!el) return;
-    el.textContent = "this page loaded in ";
-    var b = document.createElement("span");
-    b.className = "n"; b.textContent = "~" + n + " ms";
-    el.appendChild(b);
+    el.textContent = "";
+    var dot = document.createElement("span"); dot.className = "dot"; dot.setAttribute("aria-hidden", "true");
+    var lbl = document.createElement("span"); lbl.className = "lbl"; lbl.textContent = "this page loaded in";
+    var b = document.createElement("span"); b.className = "n"; b.textContent = "~" + n;
+    var u = document.createElement("span"); u.className = "u"; u.textContent = "ms";
+    el.appendChild(dot); el.appendChild(lbl); el.appendChild(b); el.appendChild(u);
     el.classList.add("on");
   }
   // Anonymous RUM: report this visit's real timings so latency can be measured from

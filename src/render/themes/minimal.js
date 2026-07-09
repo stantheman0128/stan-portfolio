@@ -53,12 +53,6 @@ function itemRow(it, i, ci, edit) {
   const meta = edit
     ? `<span${bindAttr("items." + ci + ".status", edit)}>${esc(it.status || "")}</span> · <span${bindAttr("items." + ci + ".year", edit)}>${esc(it.year || "")}</span>`
     : metaBits;
-  const tags = (it.tags || [])
-    .map((t) => `<span class="tag">${esc(t)}</span>`)
-    .join("");
-  const tagsHTML = edit
-    ? `<div class="tags"${bindAttr("items." + ci + ".tags", edit, "tags")}>${esc((it.tags || []).join(", "))}</div>`
-    : (tags ? `<div class="tags">${tags}</div>` : "");
   const detail = md(it.detail);
   const detailHTML = edit
     ? `<div class="detail"${bindAttr("items." + ci + ".detail", edit, "md")}>${detail}</div>`
@@ -77,7 +71,6 @@ function itemRow(it, i, ci, edit) {
           <div class="body">
             <p class="desc"${bindAttr("items." + ci + ".description", edit)}>${esc(it.description)}</p>
             ${detailHTML}
-            ${tagsHTML}
             ${itemLinks(it.links, ci, edit)}
             ${edit ? "" : rateStripHTML(esc(it.id || "item-" + num))}
           </div>
@@ -233,9 +226,12 @@ export function render(content, opts = {}) {
   const yearSpan = years.length ? `${Math.min(...years.map(Number))} — ${Math.max(...years.map(Number))}` : "";
 
   const contacts = [
-    p.email ? `<a href="mailto:${esc(p.email)}">Email</a>` : "",
     p.githubUrl ? `<a href="${esc(p.githubUrl)}" target="_blank" rel="noopener">GitHub</a>` : "",
     p.linkedinUrl ? `<a href="${esc(p.linkedinUrl)}" target="_blank" rel="noopener">LinkedIn</a>` : "",
+    p.email ? `<a href="mailto:${esc(p.email)}">Email</a>` : "",
+    p.instagramUrl ? `<a href="${esc(p.instagramUrl)}" target="_blank" rel="noopener">Instagram</a>` : "",
+    p.dcardUrl ? `<a href="${esc(p.dcardUrl)}" target="_blank" rel="noopener">Dcard</a>` : "",
+    p.threadsUrl ? `<a href="${esc(p.threadsUrl)}" target="_blank" rel="noopener">Threads</a>` : "",
   ]
     .filter(Boolean)
     .join("");
@@ -356,9 +352,6 @@ img{max-width:100%;display:block}
 .detail{color:#3a3833;font-size:14.5px;margin:0 0 16px;max-width:52ch}
 .detail p{margin:0 0 10px}.detail p:last-child{margin-bottom:0}
 .detail a{border-bottom:1px solid var(--accent);color:var(--accent)}
-.tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
-.tag{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted);
-  border:1px solid var(--line);border-radius:999px;padding:3px 9px}
 .links{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:13px}
 .links a{display:inline-flex;align-items:center;gap:6px;border-bottom:1px solid var(--line-strong);
   padding-bottom:2px;transition:color .2s,border-color .2s}
