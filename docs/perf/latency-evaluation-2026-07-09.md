@@ -6,9 +6,15 @@
 ## TL;DR
 
 網站對真實訪客其實已經接近 Abe 等級。`curl` 量到的 ~205ms 是 HTTP/1.1 的假象；
-真實瀏覽器走 HTTP/3，正式站首訪 TTFB 只有 ~65–90ms。真正值得做、而且免費的只有一件：
+真實瀏覽器走 HTTP/3，正式站首訪 TTFB 只有 ~65–90ms。台灣區的免費改動只有一件有效：
 **把回訪從每次白花一個 ~80ms 的 304 revalidation，變成讀瀏覽器快取（~10ms）。**
 「做 2–4KB ultra front door」對延遲省不到 1ms，不做。
+
+全球面（globalping 實測）：節點有快取時全球 TTFB 12–38ms（比 Abe 還快）；唯一缺口是
+低流量冷節點的「第一個訪客」cache MISS 吃 300–470ms（自癒，下一位就 ~15ms）。免費方案
+沒有任何旋鈕能消除它（Tiered Cache 免費部分 Pages 已自動套用、能真正縮短的區域上層是
+Enterprise、Cache Reserve 要付費）。**採用的鐵板解：把 `/` 改由 Pages Function 送**——
+程式常駐每個節點、回傳內嵌的烤好 HTML，永不 MISS，全球每個首訪都 ~10–40ms。
 
 ## 一手實測（同機、同網、真實瀏覽器走 h3）
 
@@ -53,8 +59,13 @@ curl（HTTP/1.1）對照僅供分解：正式站冷連線 TTFB ~205ms = TCP + TL
 2. `src/render/themes/featherweight.js`：mailto 包 `<!--email_off-->`，
    阻止 Cloudflare 注入 `email-decode.min.js`，維持零外部 JS。（+26 bytes brotli，附測試）
 3. `tools/perf/`：browser-nav.mjs（真實瀏覽器 h3 計時）+ size-report.mjs（raw/gzip/brotli）。
+4. **`functions/index.js`：`/` 改由 Pages Function 送**（全球鐵板）。回傳內嵌的 brotli
+   payload（6398 B，與靜態版同 wire），content-negotiate + raw fallback，browser cache
+   policy 同靜態 `_headers`。`tools/front-door-bake.mjs` 從單一來源烤 payload，`postbuild.mjs`
+   同源產出 `functions/_front-door.js`（gitignore、零手維護）。用**檔案式路由**故 `functions/api/*`
+   完全不受影響；刻意不用 `_worker.js`（會廢掉 API）、不手寫 `_routes.json`（Pages 自動產）。
 
-測試：64 passed（原 60 + email guard 4）。build 正常。
+測試：67 passed（原 60 + email guard 4 + front-door payload 3）。build 正常。
 
 ## 待 Stan 手動做的 Cloudflare 後台設定（checklist）
 
