@@ -8,6 +8,11 @@
 name = "stan-portfolio"
 pages_build_output_dir = "dist"
 
+# The / front door is served by functions/index.js, which returns a
+# manually Brotli-encoded Response. That requires a modern runtime; without
+# this the Git build compiled it on an old compat date and the / route 404d.
+compatibility_date = "2024-11-01"
+
 # Production environment bindings.
 [[kv_namespaces]]
 binding = "RATINGS"
