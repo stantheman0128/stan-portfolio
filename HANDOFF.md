@@ -4,7 +4,61 @@
 
 ---
 
-## Latest Session: 2026-07-02 — Live Studio 自助編輯器（HackMD 式）
+## Latest Session: 2026-07-10 — Paper Stan「活化」升級（交接給 Codex 實作）
+
+> **這段是寫給接手實作的 Codex**：任務、脈絡、鐵律、驗證方式都在這裡。開工前先讀完本段＋兩份文件：
+> ① spec（已由 Stan 核可）：`docs/superpowers/specs/2026-07-10-paper-stan-alive-design.md`
+> ② 現況台詞/觸發總表：`docs/superpowers/specs/2026-07-09-paper-stan-script.md`
+
+### 你的任務
+
+在 branch `feat/moana-puppet-guide` 上開新分支 `feat/paper-stan-alive`，實作 spec 的五件事：
+
+1. **表情軸解鎖**：kit 把皺眉臉(face-frown.png)硬綁在 `sad` 動作；掛載後在 puppet **instance** 上 shadow `applyHeadEffects`（prototype 與 kit 檔案都不動），讓 `expression ∈ {smile, frown}` 變獨立狀態（皺眉條件 = expression==="frown" 或 action==="sad"）。
+2. **情緒引擎**：export `MOODS`（cheerful/calm/sleepy/miffed 四情緒；進入條件、閒置池權重、朝向/表情偏好、台詞池 key、節奏倍率；強度會隨時間衰減、miffed ~45s 消氣回 calm）。情緒調變：lifeLoop 池與間隔、台詞選池、視線積極度、反應編排。
+3. **視線系統**：游標相對紙片人位置 → 3×3 視線格（lookLeft/front/lookRight × heroUp/front/shyDown），節流（區域變化＋≥400ms）、僅 idle、優先權低於手勢/演出；miffed 反轉（別過頭）、sleepy 遲鈍；reduced-motion 保留視線但去漫遊。
+4. **演出序列器**：`perform([{action, orientation, expression, ms}...])` 可取消（拖曳/點擊/travel 打斷）；點擊與區塊反應升級成 2-3 步、與當下情緒一致的小劇（spec 有範例）。export `PERFORMANCES` 供測試驗證。
+5. **烘焙台詞池**：`LINES[情境][情緒]` 每格 6-12 句英文變體（第一人稱 Paper Stan 口吻，語氣依情緒），選句避開同情境上一句。**你自己生成台詞**，Stan 會在 commit review 過稿。
+
+外加：資料切檔到新 `src/render/fx/sprite-data.js`（純資料，`sprite.js` 留 runtime 並用 `JSON.stringify` 內插進 spriteJS 字串——這是現有的「單一真相」模式，測試與 runtime 共用同一份物件，必須保留）；更新 `2026-07-09-paper-stan-script.md` 反映新行為。
+
+### 現況脈絡（你接手時的地基）
+
+- **branch `feat/moana-puppet-guide`**：11 commits（未 push，tip `e97a991`）＝ Moana 紙片人 kit 進 `public/moana-puppet-kit/`、刺蝟換成紙片人（PuppetActor adapter）、捲動指向/點擊彩蛋/首訪三站導覽、Paper Stan 第一人稱台詞、嘴巴旁對話框（rAF 跟隨＋左右自動換邊）、拖曳＋滾輪縮放、幾乎用滿 28 動作×9 朝向（有覆蓋率測試）、hover 反應池不重複。
+- **架構**：`src/render/fx/sprite.js` export 資料表＋`spriteCSS`/`spriteHTML`/`spriteJS` 三個字串；`src/render/themes/minimal.js` 把字串內插進渲染出的 HTML（互動版 `/interactive` 專用）。行為引擎（roam/lifeLoop/botherLoop/suggest/sectionDocent/runTour）全在 spriteJS 字串裡。`#sprite`＝定位層（JS translate），`#puppet-host`＝MoanaPuppet 掛載點；host transform 由 CSS 變數 `--flip`（翻面）×`--hscale`（hover 縮放）合成，別直接寫 host 的 transform。
+- **測試**：`tests/sprite-puppet-map.test.js` 9 tests——以 `public/moana-puppet-kit/motions.json` 為唯一權威，驗所有引用動作/朝向存在＋全覆蓋守衛＋無 hedgehog 殘留。全套 `npx vitest run` 目前 18 檔 69 綠。
+
+### 鐵律（違反任一條 = review 打回）
+
+- **TDD**：先擴測試再實作。必加：MOODS/PERFORMANCES/池引用全部對 motions.json 驗真；**台詞衛生測試**——掃 LINES 每一句，出現 em dash（—）、en dash（–）或 emoji 即紅。
+- **美術零更動**：`public/moana-puppet-kit/` 整包（PNG＋js＋css）一個 byte 都不改；表情解鎖只能 instance shadow。
+- **只用 explicit path commit**（工作區有其他 session 的髒檔）：`git add <明確路徑>`，禁 `git add -A`/`-u`。granular commits（schema+tests / 表情 / 情緒 / 視線 / 序列器 / 台詞 / docs 各自成 commit）。
+- **不 push、不 merge、不 rebase**；不碰 `featherweight.js`、`quest.js`/`cta.js`/`rate.js`/`shatter.js`、`freeform.js`/`studio.js`（別條線的地盤）；`minimal.js` 已接好 kit 的 link/script，原則上不用動。
+- 台詞一律英文第一人稱（他就是 Stan 本人的紙片版）、**零破折號零 emoji**；`prefers-reduced-motion` 的既有閘門與降級全部保留。
+- 引擎既有行為（漫遊/戳游標/引導/任務事件/評分反應）只能「換編排」不能刪功能。
+
+### 驗證（收工前全綠才算完）
+
+```bash
+npx vitest run          # 全套綠（現 69，做完應更多）
+npm run build           # vite build + postbuild 綠
+npx vite --port 5189 --strictPort   # 手動看 /interactive（見下面陷阱）
+```
+
+### 陷阱
+
+- **port 5173 是另一個 session 的 worktree（layout 線），跑的還是舊刺蝟**——手動驗證用自己的 port（5189）。port 5188 可能還掛著 Claude session 的舊 vite，別依賴它。
+- 首訪開場泡泡被 localStorage（`quest-v2`）擋——想看 onboarding 用無痕視窗或清 localStorage。
+- `sprite-data.js`/`sprite.js` 是 vitest 直接 import 的模組：**module top-level 不能碰 DOM**（runtime 邏輯都得住在 spriteJS 字串內）。
+- Windows：git 的 LF→CRLF 警告無害；PowerShell 用 `;` 不是 `&&`（bash 環境不受限）。
+
+### 做完之後
+
+把你的 session 摘要（做了什麼/決策/狀態/坑）追加在本段下方，然後停手——Claude 會對這條分支的 diff 做對抗式審查，過了才由 Stan 決定 merge。
+
+---
+
+## Previous Session: 2026-07-02 — Live Studio 自助編輯器（HackMD 式）
 
 ### 做了什麼
 - 從「純作品集」升級為「完整個人網站 + 自助編輯器」。先跑 6 設計方向探索（`demo-concepts/`），Stan 選定 **Featherweight + Minimal** 兩個。
