@@ -6,6 +6,9 @@ import {
   SECTION_ACTION_MAP,
   CLICK_CYCLE,
   INTENT_ACTIONS,
+  AMBIENT_ACTIONS,
+  AMBIENT_ORIENTATIONS,
+  TAP_ACTIONS,
   spriteCSS,
   spriteHTML,
   spriteJS,
@@ -51,6 +54,31 @@ describe("puppet action maps only reference real kit actions", () => {
     for (const banned of ["bow", "paperBendIn", "paperBendOut"]) {
       expect(CLICK_CYCLE).not.toContain(banned);
     }
+  });
+
+  it("ambient and tap pools only reference real actions/orientations", () => {
+    for (const a of AMBIENT_ACTIONS) expect(VALID_ACTIONS.has(a), `ambient ${a}`).toBe(true);
+    for (const a of TAP_ACTIONS) expect(VALID_ACTIONS.has(a), `tap ${a}`).toBe(true);
+    for (const o of AMBIENT_ORIENTATIONS) expect(VALID_ORIENTATIONS.has(o), `orient ${o}`).toBe(true);
+  });
+
+  it("actually uses most of the kit's motion range", () => {
+    const usedActions = new Set([
+      ...Object.values(PUPPET_MODE_MAP).map((v) => v.action),
+      ...Object.values(SECTION_ACTION_MAP).map((v) => v.action),
+      ...CLICK_CYCLE, ...INTENT_ACTIONS, ...AMBIENT_ACTIONS, ...TAP_ACTIONS,
+    ]);
+    const usedOrients = new Set([
+      "front",
+      ...Object.values(SECTION_ACTION_MAP).map((v) => v.orientation).filter(Boolean),
+      ...AMBIENT_ORIENTATIONS,
+    ]);
+    // bow / paperBendIn / paperBendOut are compat-only; the kit says not to show them.
+    const compat = new Set(["bow", "paperBendIn", "paperBendOut"]);
+    const unusedActions = [...VALID_ACTIONS].filter((a) => !usedActions.has(a) && !compat.has(a));
+    const unusedOrients = [...VALID_ORIENTATIONS].filter((o) => !usedOrients.has(o));
+    expect(unusedActions, `unused actions: ${unusedActions.join(", ")}`).toHaveLength(0);
+    expect(unusedOrients, `unused orientations: ${unusedOrients.join(", ")}`).toHaveLength(0);
   });
 });
 
