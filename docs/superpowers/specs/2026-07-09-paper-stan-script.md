@@ -76,12 +76,20 @@ motion allowed). He walks to the cursor, then:
 
 ## H. Direct interaction
 - **Hover** (idle, 1.5s cooldown): grows ~10% (CSS) and glances at you (action curious). Pressing shrinks him slightly.
-- **Tap / click** (not while dragging): one random reaction:
-  - ~34% annoyed (action shakeHead): "...must you?" / "That tickles. Stop. ...okay, again." / "I'm working here." / "Boop received. Rude."
-  - ~26% wiggle (action bothWave or playful), sometimes: "Hi. Yes. Hello." / "You rang?" / (silent)
-  - ~18% flee (bolts to the farthest corner): "Okay okay, personal space." / "Hey, I'm delicate paper." / "Nope. Catch me first." / "Alright, I'm relocating."
-  - ~17% flip (frontFlip / backFlip, alternating); backFlip: "Show-off, I know."
-  - ~5% weird: "...don't tell anyone I can do that."
+- **Tap / click** (not while dragging): one reaction drawn at random from a wide
+  weighted pool, so taps rarely repeat:
+  - annoyed (shakeHead): "...must you?" / "That tickles. Stop. ...okay, again." / "I'm working here." / "Boop received. Rude."
+  - wave at you (waveRight/waveLeft toward your side), sometimes: "Hi. Yes. Hello." / "You rang?" / "Over here."
+  - beckon (beckonBoth/beckonLeft): "Come closer, I'll show you." / "Psst. Over here." / "Lean in."
+  - wiggle (bothWave / playful), silent
+  - nod, sometimes: "Mm-hm?"
+  - startle (leanBack): "Whoa. Hi."
+  - spin (headRoll / twist), silent
+  - nose (nosePulse), sometimes: "That's my nose. Yes."
+  - flip (frontFlip / backFlip); backFlip: "Show-off, I know."
+  - weird: "...don't tell anyone I can do that."
+  - explode: the paper doll shakes apart and reassembles: "...whoops. Hold on."
+  - flee (bolts to the farthest corner): "Okay okay, personal space." / "Hey, I'm delicate paper." / "Nope. Catch me first." / "Alright, I'm relocating."
   - **3 quick taps** in a row -> he always flees.
 - **Drag**: pick him up and move him anywhere. No line.
 - **Wheel over him**: resize him between 0.62x and 2x. No line. (Persists for the session.)
@@ -103,6 +111,10 @@ When the reward photo is being chased (40s cooldown, ~60% chance) -> action look
 - "Got it, I'll hush. Tap me if you change your mind." Then he walks home and sleeps, and stays quiet for the rest of the session (remembered).
 
 ## Notes
+- Idle motion (silent): between the scripted moments he draws from a wide pose
+  pool so a resting Paper Stan keeps changing: head tilts, paper turns, head
+  rolls, torso twist, hands-in, nods, a nose pulse, glances toward the page, and
+  once in a while the full explode-and-reassemble. Nearly the whole kit is used.
 - Bubbles rate-limit themselves (20s minimum between non-forced lines; they also
   wait out active scrolling), so he never chatters.
 - `prefers-reduced-motion`: no roaming, boops, or flips-as-loop; gentle in-place
