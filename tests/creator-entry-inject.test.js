@@ -10,6 +10,11 @@ describe("creatorEntryJS", () => {
     expect(creatorEntryJS).toContain("/editor.js");
     expect(creatorEntryJS).not.toContain('href = "/edit"');
   });
+  it("offers an owner RUM panel backed by /api/rum-stats", () => {
+    expect(creatorEntryJS).toContain("cst-rum-btn");
+    expect(creatorEntryJS).toContain("/api/rum-stats");
+    expect(creatorEntryJS).toContain("edit-key");
+  });
   it("is a self-invoking string with no import/export", () => {
     expect(creatorEntryJS).toContain("(function");
     expect(creatorEntryJS).not.toContain("import ");
