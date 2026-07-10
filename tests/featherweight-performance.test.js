@@ -19,4 +19,12 @@ describe("featherweight paint behavior", () => {
     expect(html).toContain(".fw-speed.on{visibility:visible}");
     expect(html).not.toContain(".fw-speed{display:none}");
   });
+
+  it("reports LCP, CLS and transferred bytes through first-party RUM", () => {
+    expect(html).toContain("largest-contentful-paint");
+    expect(html).toContain("layout-shift");
+    expect(html).toContain("lcp: rumLcp");
+    expect(html).toContain("cls: rumCls");
+    expect(html).toContain("bytes: transferBytes(nav)");
+  });
 });

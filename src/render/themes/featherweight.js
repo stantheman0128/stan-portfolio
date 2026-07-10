@@ -480,8 +480,28 @@ img{max-width:100%;height:auto}
 </div>
 <script>
 (function(){
+  var rumLcp = 0;
+  var rumCls = 0;
+  var rumSent = false;
+  try {
+    new PerformanceObserver(function(list){
+      var entries = list.getEntries();
+      if (entries.length) rumLcp = entries[entries.length - 1].startTime || 0;
+    }).observe({type:"largest-contentful-paint", buffered:true});
+    new PerformanceObserver(function(list){
+      list.getEntries().forEach(function(entry){
+        if (!entry.hadRecentInput) rumCls += entry.value || 0;
+      });
+    }).observe({type:"layout-shift", buffered:true});
+  } catch (e) {}
   function navEntry(){
     return performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
+  }
+  function transferBytes(nav){
+    var total = nav && nav.transferSize ? nav.transferSize : 0;
+    var resources = performance.getEntriesByType ? performance.getEntriesByType("resource") : [];
+    for (var i = 0; i < resources.length; i++) total += resources[i].transferSize || 0;
+    return Math.round(total);
   }
   function readout(nav){
     var ms = nav && nav.domContentLoadedEventEnd ? nav.domContentLoadedEventEnd : performance.now();
@@ -500,7 +520,8 @@ img{max-width:100%;height:auto}
   // actual traffic. colo + country are stamped server-side from request.cf.
   function beacon(nav){
     try {
-      if (!nav || !navigator.sendBeacon) return;
+      if (!nav || !navigator.sendBeacon || rumSent) return;
+      rumSent = true;
       var paint = performance.getEntriesByType("paint").filter(function(p){
         return p.name === "first-contentful-paint";
       })[0];
@@ -512,14 +533,18 @@ img{max-width:100%;height:auto}
         dcl: nav.domContentLoadedEventEnd,
         load: nav.loadEventEnd || nav.duration,
         rtt: c.rtt || 0,
+        lcp: rumLcp,
+        cls: rumCls,
+        bytes: transferBytes(nav),
         conn: c.effectiveType || ""
       }));
     } catch (e) {}
   }
   function go(){
     readout(navEntry());
-    // loadEventEnd is 0 until load fully fires; read one tick later.
-    setTimeout(function(){ beacon(navEntry()); }, 0);
+    // Give buffered vitals and lazy-threshold resources a moment to settle.
+    setTimeout(function(){ beacon(navEntry()); }, 1000);
+    addEventListener("pagehide", function(){ beacon(navEntry()); }, {once:true});
   }
   if (document.readyState === "complete") go();
   else addEventListener("load", go);
