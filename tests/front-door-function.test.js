@@ -24,14 +24,10 @@ describe("front-door function payload", () => {
 });
 
 describe("front-door function cache policy", () => {
-  it("keeps browser SWR but bounds edge freshness without edge SWR", () => {
+  it("uses dev-minimal cache while actively shipping", () => {
     const response = onRequest();
 
-    expect(response.headers.get("cache-control")).toBe(
-      "public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800"
-    );
-    expect(response.headers.get("cloudflare-cdn-cache-control")).toBe(
-      "public, max-age=300"
-    );
+    expect(response.headers.get("cache-control")).toBe("no-cache");
+    expect(response.headers.get("cloudflare-cdn-cache-control")).toBe("max-age=0");
   });
 });
