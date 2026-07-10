@@ -44,6 +44,44 @@ export function revealSchedule(cellCount, steps, rnd = Math.random) {
   return out;
 }
 
+// N = steps + 2 seeds: the first two are pinned inside the fractional face
+// box (they open only on the catch click); the rest land outside it, so the
+// face region can never develop early by luck.
+export function pinnedSeeds(w, h, steps, faceBox, rnd = Math.random) {
+  const bx = faceBox.x * w, by = faceBox.y * h, bw = faceBox.w * w, bh = faceBox.h * h;
+  const seeds = [
+    { x: bx + bw * (0.2 + rnd() * 0.25), y: by + bh * (0.25 + rnd() * 0.25) },
+    { x: bx + bw * (0.55 + rnd() * 0.25), y: by + bh * (0.5 + rnd() * 0.25) },
+  ];
+  let guard = 0;
+  while (seeds.length < steps + 2 && guard++ < 1000) {
+    const x = rnd() * w, y = rnd() * h;
+    if (x >= bx && x <= bx + bw && y >= by && y <= by + bh) continue;
+    seeds.push({ x, y });
+  }
+  while (seeds.length < steps + 2) seeds.push({ x: rnd() * w, y: h - 1 });
+  return seeds;
+}
+
+// One flip per progress step: a permutation of 1..steps, so shard i (of the
+// non-face shards) opens exactly when the visitor finishes step order[i].
+export function flipOrder(steps, rnd = Math.random) {
+  const a = [];
+  for (let i = 1; i <= steps; i++) a.push(i);
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    const t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+// Develop ramp for one shard: the first half of d fades the sepia layer in
+// over the emulsion, the second half fades full color over the sepia.
+export function developAlphas(d) {
+  const t = Math.max(0, Math.min(1, d));
+  return { sepia: Math.min(1, t * 2), full: Math.max(0, t * 2 - 1) };
+}
+
 // Wire a <canvas> to develop the photo as shards. Returns { setStep, recut }.
 // Mask math runs at a capped width (MW) for perf; the canvas is scaled up by CSS.
 // Bottom layer is the whole photo blurred; the top layer is the sharp photo
