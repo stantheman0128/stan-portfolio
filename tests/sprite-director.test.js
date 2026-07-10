@@ -91,13 +91,31 @@ describe("Paper Stan local director", () => {
     expect(spriteJS).toContain('!bubble.classList.contains("on") || bubble.classList.contains("asking")');
   });
 
+  it("keeps invitations local and queues only bounded conversational gestures", () => {
+    for (const token of [
+      "startConversationInvitation",
+      "queueDialogueGesture",
+      "sessionStorage",
+      "visitIntent",
+      "conversationStage",
+      "followUp",
+    ]) {
+      expect(spriteJS).toContain(token);
+    }
+    expect(spriteJS).toContain('turn.reply.endsWith("?")');
+    expect(spriteJS).toContain("body: JSON.stringify({ question: question, context: dialogueRequestContext() })");
+    for (const disallowed of ["CF-Connecting-IP", "navigator.userAgent", "outerHTML"]) {
+      expect(spriteJS).not.toContain(disallowed);
+    }
+  });
+
   it("executes serialized local and dialogue helpers with their runtime configuration", () => {
     // Vite can minify the module binding used in a default parameter. The
     // serialized runtime must still work because its wrappers pass config.
     const minifiedDirector = spriteDirectorRuntime.replaceAll("config = DIRECTOR_CONFIG", "config = missingDirectorConfig");
     const minifiedDialogue = spriteDialogueRuntime.replaceAll("config = DIALOGUE_CONFIG", "config = missingDialogueConfig");
     const director = new Function(`${minifiedDirector} return { sanitizeDirectorContext, createLocalPlan };`)();
-    const dialogue = new Function(`${minifiedDialogue} return { normalizeDialogueQuestion, validateDialogueReply };`)();
+    const dialogue = new Function(`${minifiedDialogue} return { normalizeDialogueQuestion, sanitizeDialogueContext, validateDialogueReply, validateDialogueTurn };`)();
 
     expect(director.sanitizeDirectorContext({ event: "section", section: "works", mood: "calm" }))
       .toEqual({ event: "section", section: "works", mood: "calm" });
@@ -106,5 +124,21 @@ describe("Paper Stan local director", () => {
     expect(dialogue.validateDialogueReply("I built Course Checker to inspect graduation rules.")).toBe(
       "I built Course Checker to inspect graduation rules.",
     );
+    expect(dialogue.sanitizeDialogueContext({ section: "works", visitIntent: "curious", clientX: 912 }))
+      .toEqual({ section: "works", visitIntent: "curious" });
+    expect(dialogue.validateDialogueTurn({
+      reply: "I built Course Checker to inspect graduation rules.",
+      tone: "curious",
+      gesture: "think",
+      followUp: "I'm curious: what should I show you next?",
+    })).toMatchObject({ tone: "curious", gesture: "think" });
+  });
+
+  it("does not capture build-time helper names inside browser runtime strings", () => {
+    for (const runtime of [spriteDirectorRuntime, spriteDialogueRuntime]) {
+      expect(runtime).not.toContain("rawSanitize");
+      expect(runtime).not.toContain("rawValidate");
+      expect(runtime).not.toContain("rawCreate");
+    }
   });
 });

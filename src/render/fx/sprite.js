@@ -11,9 +11,13 @@ export {
 } from "./sprite-director.js";
 export {
   DIALOGUE_CONFIG,
+  completeDialogueTurn,
+  createFallbackDialogueTurn,
   normalizeDialogueQuestion,
+  sanitizeDialogueContext,
   sanitizeDialogueRequest,
   validateDialogueReply,
+  validateDialogueTurn,
 } from "./paper-stan-dialogue.js";
 
 // The guide sprite v7: the hand-drawn paper self-portrait ("Paper Stan", kit in
@@ -89,6 +93,21 @@ export const TAP_ACTIONS = [
   "leanBack", "headRoll", "twist", "nosePulse", "weird", "beckonBoth", "beckonLeft",
 ];
 
+export const CONVERSATION_INTENTS = {
+  projects: {
+    label: "Looking at projects",
+    question: "I'm here because I'm looking at your projects.",
+  },
+  recruiting: {
+    label: "Recruiting",
+    question: "I'm here because I'm recruiting.",
+  },
+  curious: {
+    label: "Just curious",
+    question: "I'm here because I'm curious.",
+  },
+};
+
 export const spriteCSS = `
 #sprite{position:fixed;left:0;top:0;z-index:70;pointer-events:none;will-change:transform;transition:transform 1.15s cubic-bezier(.33,.75,.35,1)}
 #sprite.s-scurrying{transition-duration:.72s;transition-timing-function:cubic-bezier(.45,.05,.55,.95)}
@@ -111,6 +130,7 @@ export const spriteCSS = `
 #bubble.point-right::after{right:-7px;top:calc(50% - 7px);border-top:7px solid transparent;border-bottom:7px solid transparent;border-left:8px solid #fffdfa}
 #bubble .b-x{position:absolute;top:4px;right:7px;all:unset;cursor:pointer;color:#b7b2a8;font-size:12px;padding:2px 4px}
 #bubble .b-x:hover{color:#c2522d}
+#bubble .b-text{white-space:pre-line}
 #bubble .b-chips{margin-top:.5rem;display:flex;gap:6px;flex-wrap:wrap}
 #bubble .b-chips button{all:unset;cursor:pointer;border:1px solid #17151a;border-radius:999px;padding:.22rem .7rem;font-size:11.5px}
 #bubble .b-chips button:hover,#bubble .b-chips button:focus-visible{background:#17151a;color:#fffdfa}
@@ -169,10 +189,45 @@ export const spriteJS = `
   var PERFORMANCES = ${JSON.stringify(PERFORMANCES)};
   var EXPRESSIONS = ${JSON.stringify(EXPRESSIONS)};
   var INTERACTION_POLICY = ${JSON.stringify(INTERACTION_POLICY)};
+  var CONVERSATION_INTENTS = ${JSON.stringify(CONVERSATION_INTENTS)};
 ${spriteDirectorRuntime}
 ${spriteDialogueRuntime}
 
   var q = window.QUEST.get();
+  var DIALOGUE_SESSION_KEY = "paper-stan-conversation-v1";
+  function loadDialogueMemory() {
+    var fallback = { invited: false, visitIntent: null, conversationStage: "new" };
+    try {
+      var saved = JSON.parse(sessionStorage.getItem(DIALOGUE_SESSION_KEY) || "null");
+      if (!saved || typeof saved !== "object") return fallback;
+      var context = sanitizeDialogueContext(saved);
+      return {
+        invited: saved.invited === true,
+        visitIntent: context.visitIntent || null,
+        conversationStage: context.conversationStage || "new",
+      };
+    } catch (err) {
+      return fallback;
+    }
+  }
+  var conversation = loadDialogueMemory();
+  var currentDialogueSection = "hero";
+  function saveDialogueMemory() {
+    try {
+      sessionStorage.setItem(DIALOGUE_SESSION_KEY, JSON.stringify({
+        invited: conversation.invited === true,
+        visitIntent: conversation.visitIntent,
+        conversationStage: conversation.conversationStage,
+      }));
+    } catch (err) {}
+  }
+  function dialogueRequestContext() {
+    return sanitizeDialogueContext({
+      section: currentDialogueSection,
+      visitIntent: conversation.visitIntent,
+      conversationStage: conversation.conversationStage,
+    });
+  }
   var dismissed = q.spriteDismissed;
   if (dismissed) askButton.hidden = true;
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -475,6 +530,57 @@ ${spriteDialogueRuntime}
     return true;
   }
   function towardPage() { return x > vw() / 2 ? "lookLeft" : "lookRight"; }
+  var dialogueGestureTimer = 0, dialogueGestureToken = 0;
+  function applyDialogueTone(tone) {
+    if (tone === "bright" || tone === "playful") setMood("cheerful", 0.62, 22000);
+    else if (tone === "kind") setMood("cheerful", 0.38, 18000);
+    else setMood("calm", tone === "thoughtful" ? 0.5 : 0.36, 18000);
+  }
+  function dialogueGestureBeats(name) {
+    if (name === "curious_look") {
+      return [reactionBeat("curious", mouse && mouse.x < x ? "lookLeft" : "lookRight", 1050)];
+    }
+    if (name === "think") {
+      return [reactionBeat("thinking", "tiltRight", 1250), reactionBeat("nod", "front", 580)];
+    }
+    if (name === "wave_right") {
+      return [reactionBeat(faceLeft ? "waveLeft" : "waveRight", "front", 900), reactionBeat("happy", "heroUp", 680)];
+    }
+    if (name === "point_project") {
+      return [reactionBeat("beckon", towardPage(), 860), reactionBeat("curious", "front", 650)];
+    }
+    if (name === "celebrate") {
+      return [reactionBeat("happy", "heroUp", 720), reactionBeat("bothWave", "front", 920)];
+    }
+    if (name === "shy") {
+      return [reactionBeat("shy", "shyDown", 980), reactionBeat("nod", "front", 620)];
+    }
+    return null;
+  }
+  function queueDialogueGesture(name, tone) {
+    clearTimeout(dialogueGestureTimer);
+    dialogueGestureTimer = 0;
+    if (!DIALOGUE_CONFIG.allowedGestures.includes(name)) return;
+    applyDialogueTone(tone);
+    if (name === "none") return;
+    var token = ++dialogueGestureToken;
+    var queuedAt = Date.now();
+    (function playWhenIdle() {
+      if (token !== dialogueGestureToken || dismissed || Date.now() - queuedAt > 7000) return;
+      if (!actor.ready || moving || dragging || touring || performing || mode !== "idle") {
+        dialogueGestureTimer = setTimeout(playWhenIdle, 180);
+        return;
+      }
+      var beats = dialogueGestureBeats(name);
+      if (!beats) return;
+      if (reduce) {
+        var first = beats[0];
+        gesture(first.action, first.orientation, Math.min(first.ms, 1200), "interaction");
+      } else {
+        perform(beats, "interaction");
+      }
+    })();
+  }
   function place(nx, ny, instant) {
     nx = Math.max(6, Math.min(vw() - W - 6, nx));
     ny = Math.max(6, Math.min(vh() - H - 6, ny));
@@ -592,23 +698,29 @@ ${spriteDialogueRuntime}
       followRAF = requestAnimationFrame(loop);
     })();
   }
-  var dialogueBusy = false, lastDialogueAt = 0;
+  var DEFAULT_ASK_PLACEHOLDER = "Ask about Stan or a project";
+  var dialogueBusy = false, lastDialogueAt = 0, invitationAttempts = 0;
   function setDialogueFormOpen(open) {
     bubble.classList.toggle("asking", !!open);
     bAskForm.hidden = !open;
-    if (!open) bAskInput.value = "";
+    if (!open) {
+      bAskInput.value = "";
+      bAskInput.placeholder = DEFAULT_ASK_PLACEHOLDER;
+    }
   }
   function setDialogueBusy(busy) {
     dialogueBusy = !!busy;
     bAskInput.disabled = dialogueBusy;
     bAskSubmit.disabled = dialogueBusy;
   }
-  function openDialogue() {
+  function openDialogue(prompt, placeholder) {
     if (dismissed || dialogueBusy) return;
     clearTimeout(bubbleTimer);
-    bText.textContent = "Ask me about my work or how I build.";
+    bText.textContent = prompt || "Ask me about my work or how I build.";
     bChips.replaceChildren();
     setDialogueFormOpen(true);
+    bAskInput.value = "";
+    bAskInput.placeholder = placeholder || DEFAULT_ASK_PLACEHOLDER;
     bubble.classList.add("on");
     placeBubble();
     startFollow();
@@ -617,9 +729,36 @@ ${spriteDialogueRuntime}
   function dialogueHold(reply) {
     return Math.max(5200, Math.min(14000, reply.length * 34));
   }
-  function submitDialogueQuestion() {
+  function startIntentConversation(intent) {
+    var choice = CONVERSATION_INTENTS[intent];
+    if (!choice || !DIALOGUE_CONFIG.allowedVisitIntents.includes(intent)) return;
+    conversation.invited = true;
+    conversation.visitIntent = intent;
+    conversation.conversationStage = "intent_shared";
+    saveDialogueMemory();
+    openDialogue("I'm glad you told me. Let me meet you there.");
+    submitDialogueQuestion(choice.question);
+  }
+  function startConversationInvitation() {
+    if (dismissed || conversation.invited || dialogueBusy || document.hidden) return;
+    if (touring || dragging || moving || performing || mode !== "idle" || bubble.classList.contains("on")) {
+      if (++invitationAttempts < 3) setTimeout(startConversationInvitation, 3000);
+      return;
+    }
+    conversation.invited = true;
+    conversation.conversationStage = "invited";
+    saveDialogueMemory();
+    queueDialogueGesture("curious_look", "curious");
+    say("I'm curious what brought you here.", [
+      { label: CONVERSATION_INTENTS.projects.label, go: function () { startIntentConversation("projects"); } },
+      { label: CONVERSATION_INTENTS.recruiting.label, go: function () { startIntentConversation("recruiting"); } },
+      { label: CONVERSATION_INTENTS.curious.label, go: function () { startIntentConversation("curious"); } },
+      { label: "Show me around", go: function () { runTour(); } },
+    ], { force: true });
+  }
+  function submitDialogueQuestion(questionOverride) {
     if (dismissed || dialogueBusy || !window.fetch) return;
-    var question = normalizeDialogueQuestion(bAskInput.value);
+    var question = normalizeDialogueQuestion(typeof questionOverride === "string" ? questionOverride : bAskInput.value);
     if (!question) {
       bAskInput.setCustomValidity("Ask a short project question.");
       bAskInput.reportValidity();
@@ -633,19 +772,34 @@ ${spriteDialogueRuntime}
     }
     lastDialogueAt = now;
     noteVisitorActivity(now);
+    if (conversation.conversationStage === "new" || conversation.conversationStage === "invited") {
+      conversation.conversationStage = "engaged";
+      saveDialogueMemory();
+    }
     setDialogueBusy(true);
     bText.textContent = "I'm thinking.";
     window.fetch(DIALOGUE_CONFIG.route, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ question: question }),
+      body: JSON.stringify({ question: question, context: dialogueRequestContext() }),
       credentials: "same-origin",
     }).then(function (response) {
       return response.ok ? response.json() : null;
     }).then(function (payload) {
-      var reply = payload && validateDialogueReply(payload.reply);
-      if (!reply) throw new Error("invalid_reply");
-      say(reply, null, { force: true, hold: dialogueHold(reply), dialogueReply: true });
+      var turn = payload && validateDialogueTurn(payload);
+      if (!turn) throw new Error("invalid_reply");
+      conversation.conversationStage = "engaged";
+      saveDialogueMemory();
+      queueDialogueGesture(turn.gesture, turn.tone);
+      var expectsReply = !!turn.followUp || turn.reply.endsWith("?");
+      var text = turn.followUp ? turn.reply + "\\n\\n" + turn.followUp : turn.reply;
+      say(text, null, {
+        force: true,
+        hold: dialogueHold(text),
+        dialogueReply: true,
+        keepDialogueOpen: expectsReply,
+      });
+      if (expectsReply) bAskInput.placeholder = "Reply to Paper Stan";
     }).catch(function () {
       bText.textContent = "I could not reach my public project notes just now. Try again in a moment.";
       setDialogueFormOpen(true);
@@ -662,7 +816,9 @@ ${spriteDialogueRuntime}
     if (!opts.force && now - lastBubble < 20000) return;
     if (!opts.force && now - lastScroll < 1200) return;
     lastBubble = now;
-    setDialogueFormOpen(false);
+    var keepDialogueOpen = !!opts.keepDialogueOpen;
+    setDialogueFormOpen(keepDialogueOpen);
+    if (keepDialogueOpen) bAskInput.value = "";
     bText.textContent = text;
     bChips.replaceChildren();
     (chips || []).forEach(function (c) {
@@ -676,9 +832,13 @@ ${spriteDialogueRuntime}
     placeBubble();
     startFollow();
     clearTimeout(bubbleTimer);
-    if (!chips || !chips.length) bubbleTimer = setTimeout(hide, opts.hold || 5200);
+    if (!keepDialogueOpen && (!chips || !chips.length)) bubbleTimer = setTimeout(hide, opts.hold || 5200);
+    if (keepDialogueOpen) setTimeout(function () { bAskInput.focus(); }, 0);
   }
   function hide() {
+    dialogueGestureToken++;
+    clearTimeout(dialogueGestureTimer);
+    dialogueGestureTimer = 0;
     setDialogueFormOpen(false);
     bubble.classList.remove("on");
   }
@@ -1027,6 +1187,7 @@ ${spriteDialogueRuntime}
       var key = best.target.getAttribute("data-docent");
       if (key === current) return;
       current = key;
+      currentDialogueSection = key;
       react(key);
     }, { threshold: [0.35, 0.6] });
     defs.forEach(function (d) { d.el.setAttribute("data-docent", d.key); io.observe(d.el); });
@@ -1174,17 +1335,10 @@ ${spriteDialogueRuntime}
 
   if (dismissed) {
     setMode("sleep");
-  } else if (q.visits <= 1 && q.pct === 0) {
-    setTimeout(function () {
-      if (bubble.classList.contains("on")) return;
-      say("Hey, I'm Stan. The paper version. Want the tour, or should I get out of your way?", [
-        { label: "Show me around", go: function () { runTour(); } },
-        { label: "I'll explore", go: function () { suggests = 4; setMode("sleep"); setTimeout(function () { setMode("idle"); }, 8000); } }
-      ], { force: true });
-    }, 900);
   } else if (q.ctaUnlocked) {
     setMode("sleep");
   } else {
+    if (!conversation.invited) setTimeout(startConversationInvitation, DIALOGUE_CONFIG.invitationDelayMs);
     setTimeout(function () { suggest(); }, 12000);
   }
 })();

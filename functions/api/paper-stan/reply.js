@@ -1,8 +1,9 @@
 import {
   buildDialogueMessages,
+  completeDialogueTurn,
+  createFallbackDialogueTurn,
   DIALOGUE_CONFIG,
   sanitizeDialogueRequest,
-  validateDialogueResponse,
 } from "../../../src/render/fx/paper-stan-dialogue.js";
 
 const JSON_HEADERS = {
@@ -84,15 +85,18 @@ export async function onRequestPost({ request, env }) {
 
   try {
     const result = await env.AI.run(DIALOGUE_CONFIG.model, {
-      messages: buildDialogueMessages(input.question),
+      messages: buildDialogueMessages(input.question, input.context),
       temperature: DIALOGUE_CONFIG.temperature,
       max_tokens: DIALOGUE_CONFIG.maxReplyTokens,
     });
     const rawModelResponse = result && result.response;
-    const reply = validateDialogueResponse(parseModelResponse(rawModelResponse));
-    if (!reply) return json({ error: "invalid_reply" }, 422);
-    return json({ reply }, 200);
+    const turn = completeDialogueTurn(parseModelResponse(rawModelResponse), input.context);
+    const safeTurn = turn || createFallbackDialogueTurn(input.context);
+    if (!safeTurn) return json({ error: "invalid_reply" }, 422);
+    return json(safeTurn, 200);
   } catch {
-    return json({ error: "inference_failed" }, 502);
+    const safeTurn = createFallbackDialogueTurn(input.context);
+    if (!safeTurn) return json({ error: "inference_failed" }, 502);
+    return json(safeTurn, 200);
   }
 }

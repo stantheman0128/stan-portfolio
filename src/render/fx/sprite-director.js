@@ -31,7 +31,7 @@ export function sanitizeDirectorContext(input, config = DIRECTOR_CONFIG) {
   return context;
 }
 
-// The event owns its purpose. A remote model can choose the emotional read,
+// The event owns its purpose. The local policy can choose the emotional read,
 // but cannot repurpose a section visit into a movement it was never meant to do.
 export function directorPlanShape(input, mood, config = DIRECTOR_CONFIG) {
   const context = sanitizeDirectorContext(input, config);
@@ -113,24 +113,73 @@ export function createLocalPlan(input, config = DIRECTOR_CONFIG) {
   return validateDirectorPlan(directorPlanShape(context, context.mood, config), context, config);
 }
 
-// sprite.js emits a self-contained browser script. Keep the browser copy tied
-// to these pure functions rather than maintaining a second director contract.
+// sprite.js emits a self-contained browser script. It mirrors the small pure
+// contract below instead of serializing function source, which build minifiers
+// can make dependent on module-scoped identifiers that do not exist at runtime.
 export const spriteDirectorRuntime = `
   var DIRECTOR_CONFIG = ${JSON.stringify(DIRECTOR_CONFIG)};
-  var rawSanitizeDirectorContext = ${sanitizeDirectorContext.toString()};
-  var rawDirectorPlanShape = ${directorPlanShape.toString()};
-  var rawValidateDirectorPlan = ${validateDirectorPlan.toString()};
-  var rawCreateLocalPlan = ${createLocalPlan.toString()};
-  var sanitizeDirectorContext = function(input, config) {
-    return rawSanitizeDirectorContext(input, config || DIRECTOR_CONFIG);
-  };
-  var directorPlanShape = function(input, mood, config) {
-    return rawDirectorPlanShape(input, mood, config || DIRECTOR_CONFIG);
-  };
-  var validateDirectorPlan = function(candidate, input, config) {
-    return rawValidateDirectorPlan(candidate, input, config || DIRECTOR_CONFIG);
-  };
-  var createLocalPlan = function(input, config) {
-    return rawCreateLocalPlan(input, config || DIRECTOR_CONFIG);
-  };
+  function sanitizeDirectorContext(input, config) {
+    config = config || DIRECTOR_CONFIG;
+    var source = input && typeof input === "object" && !Array.isArray(input) ? input : {};
+    var event = config.allowedEvents.includes(source.event) ? source.event : "tap";
+    var mood = config.allowedMoods.includes(source.mood) ? source.mood : "calm";
+    var context = { event: event, mood: mood };
+    if (event === "section" && config.allowedSections.includes(source.section)) context.section = source.section;
+    if (config.allowedDwellBuckets.includes(source.dwell)) context.dwell = source.dwell;
+    return context;
+  }
+  function directorPlanShape(input, mood, config) {
+    config = config || DIRECTOR_CONFIG;
+    var context = sanitizeDirectorContext(input, config);
+    var selectedMood = config.allowedMoods.includes(mood) ? mood : context.mood;
+    if (context.event === "hover") {
+      return { goal: "acknowledge", mood: "cheerful", purpose: "hover", performance: null, linePool: null, expiresInMs: 1800 };
+    }
+    if (context.event === "section") {
+      var section = context.section || "hero";
+      return {
+        goal: "introduce_section",
+        mood: selectedMood,
+        purpose: "section",
+        performance: "section." + section + "." + selectedMood,
+        linePool: "section",
+        expiresInMs: 3600,
+      };
+    }
+    if (context.event === "project-dwell") {
+      return { goal: "invite_project", mood: selectedMood, purpose: "interaction", performance: null, linePool: "suggest", expiresInMs: 9000 };
+    }
+    if (context.event === "cursor") {
+      return { goal: "inspect_cursor", mood: "cheerful", purpose: "event", performance: null, linePool: "bother", expiresInMs: 2400 };
+    }
+    return {
+      goal: "acknowledge",
+      mood: selectedMood,
+      purpose: "interaction",
+      performance: "tap." + selectedMood,
+      linePool: "tap",
+      expiresInMs: 2400,
+    };
+  }
+  function validateDirectorPlan(candidate, input, config) {
+    config = config || DIRECTOR_CONFIG;
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) return null;
+    var fields = ["goal", "mood", "purpose", "performance", "linePool", "expiresInMs"];
+    if (Object.keys(candidate).some(function(key) { return !fields.includes(key); })) return null;
+    if (!config.allowedMoods.includes(candidate.mood)) return null;
+    var expected = directorPlanShape(input, candidate.mood, config);
+    if (candidate.goal !== expected.goal || candidate.mood !== expected.mood || candidate.purpose !== expected.purpose) return null;
+    if (candidate.performance !== expected.performance || candidate.linePool !== expected.linePool) return null;
+    if (candidate.performance && !config.performanceKeys.includes(candidate.performance)) return null;
+    if (candidate.linePool && !config.linePools.includes(candidate.linePool)) return null;
+    var expiresInMs = candidate.expiresInMs;
+    if (!Number.isInteger(expiresInMs) || expiresInMs < config.minExpiryMs || expiresInMs > config.maxExpiryMs) return null;
+    if (expiresInMs !== expected.expiresInMs) return null;
+    return Object.assign({}, expected, { expiresInMs: expiresInMs });
+  }
+  function createLocalPlan(input, config) {
+    config = config || DIRECTOR_CONFIG;
+    var context = sanitizeDirectorContext(input, config);
+    return validateDirectorPlan(directorPlanShape(context, context.mood, config), context, config);
+  }
 `;
