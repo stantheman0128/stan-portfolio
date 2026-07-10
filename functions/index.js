@@ -15,13 +15,13 @@
 // top-level _worker.js: that would disable the whole functions/ directory (the API).
 import { HTML } from "./_front-door.js";
 
-// Pages does not apply public/_headers to Function responses. Keep the browser's
-// short TTL + SWR, but bound Cloudflare's own cached copy to five minutes with no
-// edge SWR. Cloudflare consumes the edge-only header before returning the response.
+// Pages does not apply public/_headers to Function responses. Match the dev-minimal
+// policy in public/_headers while actively shipping; restore the perf profile in
+// that file's comment block when stable.
 const HEADERS = {
   "content-type": "text/html; charset=utf-8",
-  "cache-control": "public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800",
-  "cloudflare-cdn-cache-control": "public, max-age=300",
+  "cache-control": "no-cache",
+  "cloudflare-cdn-cache-control": "max-age=0",
   "x-content-type-options": "nosniff",
 };
 
