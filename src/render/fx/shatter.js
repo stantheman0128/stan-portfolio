@@ -40,6 +40,25 @@ export function pinnedSeeds(w, h, steps, faceBox, rnd = Math.random) {
   return seeds;
 }
 
+// Voronoi alone can't protect the face: a non-face seed placed just outside the
+// box still owns box pixels near the edge, so those shards leak the face when
+// they flip. Reassign every pixel inside the fractional box to the nearer of the
+// two pinned face seeds (cells 0,1), which stay shut until the catch. Now the
+// whole box is face-shard, and nothing develops there early.
+export function clampFaceBox(cells, w, h, faceBox, seeds) {
+  const bx = faceBox.x * w, by = faceBox.y * h, bw = faceBox.w * w, bh = faceBox.h * h;
+  for (let y = 0; y < h; y++) {
+    if (y < by || y > by + bh) continue;
+    for (let x = 0; x < w; x++) {
+      if (x < bx || x > bx + bw) continue;
+      const dx0 = x - seeds[0].x, dy0 = y - seeds[0].y;
+      const dx1 = x - seeds[1].x, dy1 = y - seeds[1].y;
+      cells[y * w + x] = dx0 * dx0 + dy0 * dy0 <= dx1 * dx1 + dy1 * dy1 ? 0 : 1;
+    }
+  }
+  return cells;
+}
+
 // One flip per progress step: a permutation of 1..steps, so shard i (of the
 // non-face shards) opens exactly when the visitor finishes step order[i].
 export function flipOrder(steps, rnd = Math.random) {
@@ -79,7 +98,8 @@ export function createShatterReveal(canvas, imgSrc, opts = {}) {
 
   function recut() {
     if (!ready) return;
-    cellIndex = voronoiCells(W, H, pinnedSeeds(W, H, steps, faceBox));
+    const seeds = pinnedSeeds(W, H, steps, faceBox);
+    cellIndex = clampFaceBox(voronoiCells(W, H, seeds), W, H, faceBox, seeds);
     const order = flipOrder(steps);
     stepOf = [Infinity, Infinity];
     for (let i = 0; i < steps; i++) stepOf.push(order[i]);
@@ -106,6 +126,9 @@ export function createShatterReveal(canvas, imgSrc, opts = {}) {
 
   function apply(n) {
     step = Math.max(0, Math.min(steps, n));
+    // cta.js may call setStep before the reward image's onload runs recut(),
+    // so stepOf/cellIndex aren't cut yet. Keep the step; recut() re-applies it.
+    if (!ready || !stepOf) return;
     for (let c = 0; c < N; c++) {
       dGoal[c] = c < 2 ? (faceOpen ? 1 : 0) : (stepOf[c] <= step ? 1 : 0);
     }
@@ -185,6 +208,7 @@ ${pinnedSeeds.toString()}
 ${flipOrder.toString()}
 ${developAlphas.toString()}
 ${voronoiCells.toString()}
+${clampFaceBox.toString()}
 ${createShatterReveal.toString()}
 window.Shatter = { createShatterReveal: ${createShatterReveal.name} };
 `;
