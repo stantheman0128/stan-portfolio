@@ -302,8 +302,15 @@ function buildToolbar(initialStatus) {
     }
   }, "primary");
 
-  mkBtn("Exit", "Leave editing (reload as a visitor)", function () {
-    location.reload();
+  mkBtn("Exit", "Leave editing (keep owner tools)", function () {
+    try {
+      var k = sessionStorage.getItem("edit-key") || "";
+      var u = location.pathname;
+      if (k) u += "?unlock=" + encodeURIComponent(k);
+      location.href = u + location.hash;
+    } catch (e) {
+      location.reload();
+    }
   });
 
   statusEl = document.createElement("span");

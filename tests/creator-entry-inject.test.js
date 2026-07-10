@@ -14,6 +14,17 @@ describe("creatorEntryJS", () => {
     expect(creatorEntryJS).toContain("cst-rum-btn");
     expect(creatorEntryJS).toContain("/api/rum-stats");
     expect(creatorEntryJS).toContain("edit-key");
+    expect(creatorEntryJS).toContain("function metricCard");
+    expect(creatorEntryJS).toContain("var METRIC");
+  });
+  it("keeps bottom offsets parseable (semicolon before bottom: in cssText)", () => {
+    expect(creatorEntryJS).toMatch(/box-shadow:[^"]+;\s*"/);
+    expect(creatorEntryJS).toContain('BTN + "bottom:14px"');
+    expect(creatorEntryJS).toContain('BTN + "bottom:58px"');
+  });
+  it("keeps ?unlock= in the URL after a successful verify", () => {
+    expect(creatorEntryJS).toMatch(/showButtons\(\);\s*ensureDevUrl\(\);\s*\} else \{/);
+    expect(creatorEntryJS).toContain("function ensureDevUrl()");
   });
   it("is a self-invoking string with no import/export", () => {
     expect(creatorEntryJS).toContain("(function");
