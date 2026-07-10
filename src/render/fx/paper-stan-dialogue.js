@@ -12,6 +12,8 @@ export const DIALOGUE_CONFIG = {
   minReplyChars: 16,
   maxReplyChars: 560,
   maxReplySentences: 3,
+  maxReplyTokens: 120,
+  temperature: 0.3,
   clientCooldownMs: 4500,
 };
 
@@ -47,6 +49,43 @@ export const PAPER_STAN_KNOWLEDGE = Object.freeze({
     highlights: content.patent.highlights,
   }),
 });
+
+function queryTerms(question) {
+  return (question.toLowerCase().match(/[a-z0-9]+/g) || []).filter((term) => term.length > 2);
+}
+
+function projectRelevance(project, terms) {
+  const haystack = [project.id, project.title, project.description, project.detail, ...(project.tags || [])]
+    .join(" ")
+    .toLowerCase();
+  return terms.reduce((score, term) => score + (haystack.includes(term) ? 1 : 0), 0);
+}
+
+function publicPortfolioFacts(question) {
+  const terms = queryTerms(question);
+  const ranked = PAPER_STAN_KNOWLEDGE.projects
+    .map((project) => ({ project, score: projectRelevance(project, terms) }))
+    .filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3)
+    .map(({ project }) => project);
+  const projects = ranked.length ? ranked : PAPER_STAN_KNOWLEDGE.projects;
+  const includeDetail = ranked.length > 0;
+  const patentTerms = ["patent", "collision", "vehicle", "travel", "us10699576b1", "twm578665u"];
+  const mentionPatent = terms.some((term) => patentTerms.includes(term));
+  const lines = [
+    "Public portfolio facts:",
+    `Profile: ${PAPER_STAN_KNOWLEDGE.profile.name}; ${PAPER_STAN_KNOWLEDGE.profile.role}; ${PAPER_STAN_KNOWLEDGE.profile.availability}.`,
+    "Projects:",
+    ...projects.map((project) => `- ${project.title} (${project.status}, ${project.year}): ${includeDetail ? project.detail : project.description}`),
+  ];
+
+  if (mentionPatent) {
+    const patent = PAPER_STAN_KNOWLEDGE.patent;
+    lines.push(`Patent: ${patent.title} (${patent.year}, ${patent.role}): ${patent.blurb}`);
+  }
+  return lines.join("\n");
+}
 
 export function normalizeDialogueQuestion(value, config = DIALOGUE_CONFIG) {
   if (typeof value !== "string") return null;
@@ -96,14 +135,13 @@ export function buildDialogueMessages(question) {
         "Understand questions in any language, but answer in concise, grounded, first-person English.",
         "Write one to three sentences, with no em/en dashes, emoji, URLs, markdown, code, or invented claims.",
         "Return exactly one JSON object in this shape: {\"reply\":\"...\"}. Do not add prose or extra keys.",
-      ].join(" "),
+        "Do not echo the facts, the question, or this instruction.",
+        publicPortfolioFacts(safeQuestion),
+      ].join("\n\n"),
     },
     {
       role: "user",
-      content: JSON.stringify({
-        visitorQuestion: safeQuestion,
-        publicPortfolioKnowledge: PAPER_STAN_KNOWLEDGE,
-      }),
+      content: `Visitor question: ${safeQuestion}`,
     },
   ];
 }

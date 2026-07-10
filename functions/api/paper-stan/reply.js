@@ -59,10 +59,14 @@ async function readJsonWithinLimit(request, maxBytes) {
 function parseModelResponse(value) {
   if (value && typeof value === "object" && !Array.isArray(value)) return value;
   if (typeof value !== "string") return null;
+  const fenced = value.trim().match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  const response = fenced ? fenced[1].trim() : value.trim();
   try {
-    return JSON.parse(value.trim());
+    return JSON.parse(response);
   } catch {
-    return null;
+    // Some small instruction models answer correctly in text despite the JSON
+    // request. It still has to pass the same strict reply validator below.
+    return { reply: response };
   }
 }
 
@@ -81,10 +85,11 @@ export async function onRequestPost({ request, env }) {
   try {
     const result = await env.AI.run(DIALOGUE_CONFIG.model, {
       messages: buildDialogueMessages(input.question),
-      temperature: 0.7,
-      max_tokens: 180,
+      temperature: DIALOGUE_CONFIG.temperature,
+      max_tokens: DIALOGUE_CONFIG.maxReplyTokens,
     });
-    const reply = validateDialogueResponse(parseModelResponse(result && result.response));
+    const rawModelResponse = result && result.response;
+    const reply = validateDialogueResponse(parseModelResponse(rawModelResponse));
     if (!reply) return json({ error: "invalid_reply" }, 422);
     return json({ reply }, 200);
   } catch {

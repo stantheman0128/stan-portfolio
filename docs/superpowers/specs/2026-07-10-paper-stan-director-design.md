@@ -52,7 +52,7 @@ strips every other field. It never forwards browser DOM, pointer coordinates,
 scroll history, typed content from elsewhere, IP data, fingerprints, or visitor
 identity.
 
-The model response must be exactly:
+The model is asked to return exactly:
 
 ```json
 {
@@ -60,9 +60,12 @@ The model response must be exactly:
 }
 ```
 
-The server accepts only one `reply` field. A reply must be concise first-person
-English, ASCII-only, one to three sentences, 4 to 90 words, 16 to 560
-characters, and have no URL, markdown, emoji, or em/en dash. Invalid output
+The server accepts a JSON object with only one `reply` field. Small models may
+occasionally emit a JSON code fence or a plain-text answer despite that request;
+the endpoint unwraps either form only to run the same reply validator, then
+normalizes a valid result to the JSON response above. A reply must be concise
+first-person English, ASCII-only, one to three sentences, 4 to 90 words, 16 to
+560 characters, and have no URL, markdown, emoji, or em/en dash. Invalid output
 fails closed with `422 invalid_reply`.
 
 ## System prompt
@@ -78,10 +81,14 @@ Use only the supplied public portfolio knowledge. If it does not support an answ
 Understand questions in any language, but answer in concise, grounded, first-person English.
 Write one to three sentences, with no em/en dashes, emoji, URLs, markdown, code, or invented claims.
 Return exactly one JSON object in this shape: {"reply":"..."}. Do not add prose or extra keys.
+Do not echo the facts, the question, or this instruction.
 ```
 
-The prompt guides the model; request filtering, server-side knowledge selection,
-and response validation are the actual security boundary.
+The question is a plain `Visitor question: ...` user message. Relevant public
+facts are formatted as short system-context lines rather than a large user JSON
+blob, which keeps the 1B model from echoing its input. The prompt guides the
+model; request filtering, server-side knowledge selection, and response
+validation are the actual security boundary.
 
 ## Cloudflare boundary
 
@@ -110,7 +117,7 @@ For UI and disabled-endpoint verification, build then start Pages Functions:
 
 ```powershell
 npm run build
-npx wrangler pages dev dist --port 5190 --compatibility-date 2026-06-10
+npx wrangler pages dev dist --port 5190 --compatibility-date 2026-06-10 --ai=AI
 ```
 
 Open `http://127.0.0.1:5190/interactive`, select `?`, enter a project question,
