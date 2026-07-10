@@ -1,40 +1,26 @@
-# Cache strategy: split the browser TTL from the Cloudflare edge TTL.
+# DEV MODE (active shipping): minimal browser + edge cache so production reflects
+# each deploy immediately. Restore the perf profile in the comment below when stable.
 #
-# The old rule (max-age=0, s-maxage=86400, must-revalidate) forced every RETURN
-# visit to spend a full network round trip on a 304 revalidation. Measured from
-# Taiwan that is ~80ms wasted per return visit. This is the one change that
-# actually moves the needle (first-visit TTFB is bound by handshake + edge
-# distance, not by these headers).
-#
-# - Cache-Control (what the browser sees): short max-age so a fresh publish shows
-#   up quickly, plus stale-while-revalidate so a slightly-stale return visit is
-#   served instantly from cache while the browser refreshes in the background.
-#   Do NOT add s-maxage / must-revalidate / no-cache here: Cloudflare disables
-#   stale-while-revalidate when any of those are present and returns EXPIRED.
-# - Cloudflare-CDN-Cache-Control (edge only, stripped before it reaches the
-#   browser): a longer edge TTL so the HTML stays a cache HIT at the POP.
-#
-# A new deployment purges the edge cache automatically.
+# Perf profile (restore later):
+#   HTML browser: public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800
+#   HTML edge (/interactive, /fast via _headers): max-age=86400 + edge SWR
+#   / function edge: cloudflare-cdn-cache-control: public, max-age=300 (in functions/index.js)
+#   /editor.js edge: max-age=86400
+#   /assets/* browser: max-age=3600; edge: max-age=604800 + edge SWR
 /
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800
-  Cloudflare-CDN-Cache-Control: public, max-age=86400, stale-while-revalidate=604800, stale-if-error=604800
+  Cache-Control: no-cache
+  Cloudflare-CDN-Cache-Control: max-age=0
 /interactive
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800
-  Cloudflare-CDN-Cache-Control: public, max-age=86400, stale-while-revalidate=604800, stale-if-error=604800
+  Cache-Control: no-cache
+  Cloudflare-CDN-Cache-Control: max-age=0
 /fast/
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800
-  Cloudflare-CDN-Cache-Control: public, max-age=86400, stale-while-revalidate=604800, stale-if-error=604800
+  Cache-Control: no-cache
+  Cloudflare-CDN-Cache-Control: max-age=0
 
-# editor.js is unhashed and only pulled on demand when the owner clicks Edit.
-# Short browser TTL keeps edits current; longer edge TTL keeps it a HIT.
 /editor.js
-  Cache-Control: public, max-age=300, stale-while-revalidate=86400
-  Cloudflare-CDN-Cache-Control: public, max-age=86400
+  Cache-Control: no-cache
+  Cloudflare-CDN-Cache-Control: max-age=0
 
-# /assets holds both Vite content-hashed JS and NON-hashed images copied from
-# public/assets. Because the filenames are not all content-hashed, keep a modest
-# 1-hour browser TTL (not a year of immutable) so a replaced image is picked up,
-# with a longer edge TTL + stale-while-revalidate to stay fast.
 /assets/*
-  Cache-Control: public, max-age=3600, stale-while-revalidate=86400, stale-if-error=604800
-  Cloudflare-CDN-Cache-Control: public, max-age=604800, stale-while-revalidate=604800, stale-if-error=604800
+  Cache-Control: no-cache
+  Cloudflare-CDN-Cache-Control: max-age=0

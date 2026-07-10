@@ -3,7 +3,8 @@
 // (blobs = strings, doubles = numbers, exactly one index <= 96 bytes) is unit-tested.
 //
 // Column map (for the SQL API): blob1=colo blob2=country blob3=path blob4=conn;
-// double1=ttfb double2=fcp double3=dcl double4=load double5=rtt; index1=country.
+// double1=ttfb double2=fcp double3=dcl double4=load double5=rtt;
+// double6=lcp double7=cls double8=bytes; index1=country.
 export function buildRumDataPoint(body, cf) {
   const b = body || {};
   const c = cf || {};
@@ -13,7 +14,16 @@ export function buildRumDataPoint(body, cf) {
   const country = str(c.country, 8) || "unknown";
   return {
     blobs: [str(c.colo, 8), country, str(b.path, 256), str(b.conn, 12)],
-    doubles: [num(b.ttfb), num(b.fcp), num(b.dcl), num(b.load), num(b.rtt)],
+    doubles: [
+      num(b.ttfb),
+      num(b.fcp),
+      num(b.dcl),
+      num(b.load),
+      num(b.rtt),
+      num(b.lcp),
+      num(b.cls),
+      num(b.bytes),
+    ],
     indexes: [country.slice(0, 96)],
   };
 }
