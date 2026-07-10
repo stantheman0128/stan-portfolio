@@ -52,4 +52,13 @@ describe("clampFaceBox", () => {
     expect(clamped[18 * w + 1]).toBe(raw[18 * w + 1]);
     expect(new Set(clamped).size).toBeGreaterThan(2); // outside shards survive
   });
+
+  it("keeps every shard alive through the clamp on a spread layout", () => {
+    // 8 steps => 10 seeds (2 pinned face + 8 outside). The face box collapses to
+    // cells 0/1; the 8 non-face seeds sit outside and keep their own pixels, so
+    // all 10 cells still own >=1 pixel after clamping.
+    const seeds = pinnedSeeds(40, 40, 8, box, mulberry(1));
+    const clamped = clampFaceBox(voronoiCells(40, 40, seeds), 40, 40, box, seeds);
+    expect(new Set(clamped).size).toBe(10);
+  });
 });

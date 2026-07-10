@@ -141,6 +141,7 @@ ${stampAngle.toString()}
     function showResult(r, animate) {
       box.classList.add("done");
       stampEl.textContent = r + " / 10";
+      stampEl.setAttribute("aria-label", "Your stamp: " + r + " of 10 \\u2014 click to re-rate");
       stampEl.style.setProperty("--stamp-rot", stampAngle(id) + "deg");
       if (animate) {
         stampEl.classList.remove("stamped");

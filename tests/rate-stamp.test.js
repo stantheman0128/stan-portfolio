@@ -31,4 +31,7 @@ describe("rate v4 markup", () => {
   it("serializes stampAngle into the inline script", () => {
     expect(rateJS).toContain("function stampAngle");
   });
+  it("labels the stamp with its value for screen readers", () => {
+    expect(rateJS).toContain('setAttribute("aria-label"');
+  });
 });

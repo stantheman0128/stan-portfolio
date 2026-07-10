@@ -23,6 +23,9 @@ describe("shatterJS injection", () => {
     new Function("window", shatterJS)(win);
     expect(shatterJS).toContain("revealFace");
     expect(shatterJS).toContain("function pinnedSeeds");
+    expect(shatterJS).toContain("function clampFaceBox");
+    expect(shatterJS).toContain("function flipOrder");
+    expect(shatterJS).toContain("function developAlphas");
     expect(shatterJS).not.toContain("revealSchedule");
   });
 });

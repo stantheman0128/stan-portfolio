@@ -119,8 +119,8 @@ export const ctaJS = `
     }
   }
 
-  // Catch at 100% just settles the reveal fully sharp; the photo is a public
-  // asset, so there's no token to fetch.
+  // Catch at 100% opens the two face shards via revealFace(); the photo is a
+  // public asset, so there's no token to fetch.
   function develop() {
     if (developed) return;
     if (shatter) shatter.revealFace();
