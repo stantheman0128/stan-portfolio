@@ -1,9 +1,11 @@
-// The photo IS the progress bar — the ONE progress object on the page.
-// A small polaroid sits below the hero from the first paint: blurred while
-// locked, and it literally DEVELOPS (blur 16px -> 3px) as the visitor
-// explores. It dodges the cursor with a damped rAF glide (paper sliding on a
-// desk — no spring overshoot), leans into its direction of travel, and lifts
-// while moving. At 100% it stops and gets caught with a click. The photo is a
+// The photo IS the progress bar, the ONE progress object on the page.
+// A small polaroid sits below the hero from the first paint: an emulsion of
+// shards covers the image while locked, and those shards un-cover as the
+// visitor explores, driven by how many works they've watched. The face keeps
+// its own two shards on until the very end. It dodges the cursor with a damped
+// rAF glide (paper sliding on a desk, no spring overshoot), leans into its
+// direction of travel, and lifts while moving. At 100% it stops and gets
+// caught with a click, and that catch opens the face shards. The photo is a
 // public asset now (a friendly easter egg, not a secret), so there is no token
 // gate. The code-word panel at the bottom stays. Events kept for the sprite:
 // cta:chase, cta:opened, photo:developed.
@@ -70,7 +72,8 @@ export const ctaJS = `
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var q = window.QUEST.get();
   var hops = 0, lastJuke = 0, lastChase = 0;
-  var shatter = window.Shatter ? window.Shatter.createShatterReveal(img, "/assets/reward-photo.jpg", { steps: Math.max(1, q.total), reduce: reduce }) : null;
+  var FACE_BOX = { x: 0.30, y: 0.12, w: 0.40, h: 0.38 }; // owner tunes vs the real photo
+  var shatter = window.Shatter ? window.Shatter.createShatterReveal(img, "/assets/reward-photo.jpg", { steps: Math.max(1, q.total), reduce: reduce, faceBox: FACE_BOX }) : null;
 
   function p() { return Math.min(1, q.pct / 100); }
   function unlocked() { return q.pct >= 100; }
@@ -97,10 +100,11 @@ export const ctaJS = `
   }
   document.addEventListener("quest:note", function (e) { setNote(e.detail.msg); });
 
-  // Blur IS the progress bar: 16px at 0% develops down to 3px at 100%.
+  // Coverage IS the progress bar: shards un-cover as watched climbs; the face
+  // shards stay shut until the catch fires revealFace().
   var developing = false, developed = false;
   function paint() {
-    if (shatter && !developed) shatter.setStep(unlocked() ? q.total : q.watched.length);
+    if (shatter && !developed) shatter.setStep(q.watched.length);
     if (q.ctaUnlocked) {
       photo.classList.add("ph-free");
       if (!developing && !developed) cap.textContent = "caught \\u00b7 tap to develop";
@@ -119,7 +123,7 @@ export const ctaJS = `
   // asset, so there's no token to fetch.
   function develop() {
     if (developed) return;
-    if (shatter) shatter.setStep(q.total);
+    if (shatter) shatter.revealFace();
     developed = true;
     cap.textContent = "the full Stan \\u00b7 you earned this";
     note.textContent = statusNote();
