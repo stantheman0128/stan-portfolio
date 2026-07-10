@@ -121,7 +121,7 @@ When the reward photo is being chased (40s cooldown, ~60% chance) -> action look
   first-person Paper Stan voice, with no em/en dash or emoji. Selection avoids
   repeating the last line for the same situation.
 
-## N. Director brain v1.5
+## N. Director brain v2
 - **Local first**: `src/render/fx/sprite-director.js` turns hover, tap, section,
   project prompt, and cursor events into a bounded plan. This chooses the
   purpose, compatible performance key, baked line pool, mood, and expiry before
@@ -130,8 +130,15 @@ When the reward photo is being chased (40s cooldown, ~60% chance) -> action look
   and only when the page URL carries `?paperStanAi=1`. The current local plan
   still starts first. A validated remote plan is cached for the next matching
   event rather than cutting into a live gesture.
-- **No generated visible copy**: the remote director selects a permitted plan;
-  it does not produce a line. `LINES` remains the sole source of on-page speech.
+- **Constrained generated copy**: the remote director may add one brief line to
+  a permitted `section` or `project-dwell` plan. It must be 4 to 22 words,
+  English, first person, one ASCII sentence, and have no em/en dash, emoji,
+  number, URL, markdown, or unsupported claim. The server rejects a broken
+  line and the existing `LINES` pool remains the local fallback.
+- **No model timing authority**: all plan fields apart from the permitted mood
+  choice and generated line must match the server's expected plan exactly.
+  Existing gesture tokens, cooldowns, and purpose priority still decide when a
+  movement may start or finish.
 - **Privacy boundary**: remote context is limited to event, current mood, an
   allowed section name, and a coarse dwell bucket. It excludes raw pointer
   coordinates, DOM, project titles, typed text, and persistent visitor identity.

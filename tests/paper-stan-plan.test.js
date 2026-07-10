@@ -41,6 +41,7 @@ describe("Paper Stan director endpoint", () => {
         performance: "section.works.cheerful",
         linePool: "section",
         expiresInMs: 3600,
+        line: "I'm keeping this part in view for you.",
       }),
     });
     const response = await post({
@@ -61,6 +62,7 @@ describe("Paper Stan director endpoint", () => {
         performance: "section.works.cheerful",
         linePool: "section",
         expiresInMs: 3600,
+        line: "I'm keeping this part in view for you.",
       },
     });
     expect(run).toHaveBeenCalledWith(DIRECTOR_CONFIG.model, expect.objectContaining({
@@ -68,9 +70,13 @@ describe("Paper Stan director endpoint", () => {
       max_tokens: 120,
     }));
     const requestBody = run.mock.calls[0][1].messages.at(-1).content;
+    const systemPrompt = run.mock.calls[0][1].messages[0].content;
     expect(requestBody).toContain('"section":"works"');
     expect(requestBody).not.toContain("912");
     expect(requestBody).not.toContain("Do not send this");
+    expect(systemPrompt).toContain("Paper Stan");
+    expect(systemPrompt).toContain("first-person English");
+    expect(systemPrompt).toContain("No em/en dashes");
   });
 
   it("does not invoke Workers AI for a malformed event", async () => {
@@ -120,6 +126,27 @@ describe("Paper Stan director endpoint", () => {
         performance: "make_up_a_move",
         linePool: "section",
         expiresInMs: 3600,
+      }),
+    });
+    const response = await post({ event: "section", section: "works", mood: "calm" }, {
+      PAPER_STAN_AI_ENABLED: "true",
+      AI: { run },
+    });
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ error: "invalid_plan" });
+  });
+
+  it("fails closed when a model omits or breaks the generated-line contract", async () => {
+    const run = vi.fn().mockResolvedValue({
+      response: JSON.stringify({
+        goal: "introduce_section",
+        mood: "cheerful",
+        purpose: "section",
+        performance: "section.works.cheerful",
+        linePool: "section",
+        expiresInMs: 3600,
+        line: "This section is worth a look.",
       }),
     });
     const response = await post({ event: "section", section: "works", mood: "calm" }, {

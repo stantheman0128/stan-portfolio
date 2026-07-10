@@ -8,6 +8,7 @@ export {
   directorContextKey,
   isRemoteEligible,
   sanitizeDirectorContext,
+  validateDirectorLine,
   validateDirectorPlan,
 } from "./sprite-director.js";
 
@@ -659,7 +660,8 @@ ${spriteDirectorRuntime}
       window.QUEST.pulse(t);
       setTimeout(function () {
         setMode("idle");
-        say(pickLine(plan.linePool || "suggest") + " (" + name + ")", null, { force: !!force });
+        var line = plan.line || pickLine(plan.linePool || "suggest");
+        say(line + (plan.line ? "" : " (" + name + ")"), null, { force: !!force });
       }, 1000);
     });
   }
@@ -713,7 +715,7 @@ ${spriteDirectorRuntime}
     var plan = selectDirectorPlan("tap") || { performance: "tap." + currentMood(), linePool: "tap", purpose: "interaction" };
     applyDirectorMood(plan, 0.55, 24000);
     perform(PERFORMANCES[plan.performance] || PERFORMANCES["tap." + currentMood()], plan.purpose || "interaction");
-    say(pickLine(plan.linePool || "tap"), null, { force: true, hold: 2400 });
+    say(plan.line || pickLine(plan.linePool || "tap"), null, { force: true, hold: 2400 });
   }
   function reactAnnoyed() {
     setMood("miffed", 1, 45000);
@@ -968,7 +970,7 @@ ${spriteDirectorRuntime}
         { action: cfg.action, orientation: cfg.orientation || "front", expression: MOODS[currentMood()].expression, ms: 1500 },
         { action: "idle", orientation: "front", expression: MOODS[currentMood()].expression, ms: 700 },
       ], plan.purpose || "section");
-      if (Math.random() < 0.5) say(pickLine(plan.linePool || "section"), null, {});
+      if (plan.line || Math.random() < 0.5) say(plan.line || pickLine(plan.linePool || "section"), null, {});
     }
   })();
 

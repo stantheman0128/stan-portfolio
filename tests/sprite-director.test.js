@@ -6,6 +6,7 @@ import {
   createLocalPlan,
   isRemoteEligible,
   sanitizeDirectorContext,
+  validateDirectorLine,
   validateDirectorPlan,
 } from "../src/render/fx/sprite-director.js";
 
@@ -90,6 +91,50 @@ describe("Paper Stan local director", () => {
     }, context)).toBeNull();
   });
 
+  it("accepts only a short, first-person Paper Stan line from a remote model", () => {
+    const line = "I'm keeping this part in view for you.";
+    expect(validateDirectorLine(line)).toBe(line);
+    for (const invalid of [
+      "This part is worth a look.",
+      "I'm keeping this part in view for you — carefully.",
+      "I'm keeping this part in view for you 😊.",
+      "I'm keeping this part in view for you. I hope it helps.",
+      "I'm at https://example.com right now.",
+      "I'm keeping 3 details in view for you.",
+    ]) {
+      expect(validateDirectorLine(invalid), invalid).toBeNull();
+    }
+  });
+
+  it("keeps a valid generated line but rejects it when attached to an otherwise valid plan", () => {
+    const context = sanitizeDirectorContext({ event: "section", section: "works", mood: "calm" });
+    const base = {
+      goal: "introduce_section",
+      mood: "cheerful",
+      purpose: "section",
+      performance: "section.works.cheerful",
+      linePool: "section",
+      expiresInMs: 3600,
+    };
+
+    expect(validateDirectorPlan({ ...base, line: "I'm keeping this part in view for you." }, context))
+      .toMatchObject({ line: "I'm keeping this part in view for you." });
+    expect(validateDirectorPlan({ ...base, line: "This part is worth a look." }, context)).toBeNull();
+  });
+
+  it("does not let a remote plan alter the event's fixed timing", () => {
+    const context = sanitizeDirectorContext({ event: "section", section: "works", mood: "calm" });
+    expect(validateDirectorPlan({
+      goal: "introduce_section",
+      mood: "cheerful",
+      purpose: "section",
+      performance: "section.works.cheerful",
+      linePool: "section",
+      expiresInMs: 3601,
+      line: "I'm keeping this part in view for you.",
+    }, context)).toBeNull();
+  });
+
   it("only considers a remote model for deliberate, meaningful events", () => {
     expect(isRemoteEligible(sanitizeDirectorContext({ event: "hover", mood: "calm" }))).toBe(false);
     expect(isRemoteEligible(sanitizeDirectorContext({ event: "tap", mood: "calm" }))).toBe(false);
@@ -105,6 +150,8 @@ describe("Paper Stan local director", () => {
       "remotePlanCache",
       "validateDirectorPlan(payload.plan, context)",
       "isRemoteEligible(context)",
+      "validateDirectorLine",
+      "plan.line ||",
     ]) {
       expect(spriteJS).toContain(token);
     }

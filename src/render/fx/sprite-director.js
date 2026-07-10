@@ -10,6 +10,9 @@ export const DIRECTOR_CONFIG = {
   maxRequestBytes: 1200,
   minExpiryMs: 1800,
   maxExpiryMs: 12000,
+  minGeneratedLineWords: 4,
+  maxGeneratedLineWords: 22,
+  maxGeneratedLineChars: 160,
   remoteRequestCooldownMs: 12000,
   allowedEvents: ["hover", "tap", "section", "project-dwell", "cursor"],
   remoteEligibleEvents: ["section", "project-dwell"],
@@ -94,9 +97,23 @@ export function directorPlanShape(input, mood, config = DIRECTOR_CONFIG) {
   };
 }
 
+export function validateDirectorLine(value, config = DIRECTOR_CONFIG) {
+  if (typeof value !== "string") return null;
+  const line = value.trim();
+  if (line !== value || !line || line.length > config.maxGeneratedLineChars) return null;
+  if (!/^[\x20-\x7E]+$/.test(line) || /\s{2,}/.test(line)) return null;
+  if (!/[.!?]$/.test(line) || /[.!?].+/.test(line)) return null;
+  if (/[0-9]/.test(line) || /https?:|www\.|[<>{}\[\]#*_]/i.test(line)) return null;
+  if (!/\b(?:I|I'm|I've|I'll|me|my|mine)\b/i.test(line)) return null;
+
+  const words = line.split(/\s+/).length;
+  if (words < config.minGeneratedLineWords || words > config.maxGeneratedLineWords) return null;
+  return line;
+}
+
 export function validateDirectorPlan(candidate, input, config = DIRECTOR_CONFIG) {
   if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) return null;
-  const fields = ["goal", "mood", "purpose", "performance", "linePool", "expiresInMs"];
+  const fields = ["goal", "mood", "purpose", "performance", "linePool", "expiresInMs", "line"];
   if (Object.keys(candidate).some((key) => !fields.includes(key))) return null;
   if (!config.allowedMoods.includes(candidate.mood)) return null;
 
@@ -106,11 +123,15 @@ export function validateDirectorPlan(candidate, input, config = DIRECTOR_CONFIG)
   if (candidate.performance && !config.performanceKeys.includes(candidate.performance)) return null;
   if (candidate.linePool && !config.linePools.includes(candidate.linePool)) return null;
 
-  const expiresInMs = Number(candidate.expiresInMs);
+  const expiresInMs = candidate.expiresInMs;
   if (!Number.isInteger(expiresInMs) || expiresInMs < config.minExpiryMs || expiresInMs > config.maxExpiryMs) {
     return null;
   }
-  return { ...expected, expiresInMs };
+  if (expiresInMs !== expected.expiresInMs) return null;
+  const hasLine = Object.prototype.hasOwnProperty.call(candidate, "line");
+  const line = hasLine ? validateDirectorLine(candidate.line, config) : null;
+  if (hasLine && !line) return null;
+  return hasLine ? { ...expected, expiresInMs, line } : { ...expected, expiresInMs };
 }
 
 export function createLocalPlan(input, config = DIRECTOR_CONFIG) {
@@ -133,6 +154,7 @@ export const spriteDirectorRuntime = `
   var DIRECTOR_CONFIG = ${JSON.stringify(DIRECTOR_CONFIG)};
   var sanitizeDirectorContext = ${sanitizeDirectorContext.toString()};
   var directorPlanShape = ${directorPlanShape.toString()};
+  var validateDirectorLine = ${validateDirectorLine.toString()};
   var validateDirectorPlan = ${validateDirectorPlan.toString()};
   var createLocalPlan = ${createLocalPlan.toString()};
   var isRemoteEligible = ${isRemoteEligible.toString()};
