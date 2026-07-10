@@ -8,6 +8,12 @@
 name = "stan-portfolio"
 pages_build_output_dir = "dist"
 
+# Paper Stan's remote director uses this native binding only behind the
+# PAPER_STAN_AI_ENABLED === "true" runtime gate. Leave that variable unset
+# until the feature has been reviewed and explicitly approved for deployment.
+[ai]
+binding = "AI"
+
 # Production environment bindings.
 [[kv_namespaces]]
 binding = "RATINGS"
@@ -18,3 +24,7 @@ id = "6ac0b3e4dc6d4b89a010abb0b5dbfe65"
 [[env.preview.kv_namespaces]]
 binding = "RATINGS"
 id = "0f18e001510f41faa6c476809cbab224"
+
+# Named environments do not inherit AI bindings from the production block.
+[env.preview.ai]
+binding = "AI"

@@ -121,6 +121,21 @@ When the reward photo is being chased (40s cooldown, ~60% chance) -> action look
   first-person Paper Stan voice, with no em/en dash or emoji. Selection avoids
   repeating the last line for the same situation.
 
+## N. Director brain v1.5
+- **Local first**: `src/render/fx/sprite-director.js` turns hover, tap, section,
+  project prompt, and cursor events into a bounded plan. This chooses the
+  purpose, compatible performance key, baked line pool, mood, and expiry before
+  any network work can happen.
+- **Remote is optional**: only `section` and `project-dwell` are remote-eligible,
+  and only when the page URL carries `?paperStanAi=1`. The current local plan
+  still starts first. A validated remote plan is cached for the next matching
+  event rather than cutting into a live gesture.
+- **No generated visible copy**: the remote director selects a permitted plan;
+  it does not produce a line. `LINES` remains the sole source of on-page speech.
+- **Privacy boundary**: remote context is limited to event, current mood, an
+  allowed section name, and a coarse dwell bucket. It excludes raw pointer
+  coordinates, DOM, project titles, typed text, and persistent visitor identity.
+
 ## Notes
 - Idle motion (silent): between scripted moments he draws from the weighted pool
   for his current mood. Cheerful is lively, calm is reflective, sleepy is slow,

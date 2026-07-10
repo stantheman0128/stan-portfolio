@@ -1,6 +1,15 @@
 import { EXPRESSIONS, INTERACTION_POLICY, LINES, MOODS, PERFORMANCES } from "./sprite-data.js";
+import { spriteDirectorRuntime } from "./sprite-director.js";
 
 export { EXPRESSIONS, INTERACTION_POLICY, LINES, MOODS, PERFORMANCES } from "./sprite-data.js";
+export {
+  DIRECTOR_CONFIG,
+  createLocalPlan,
+  directorContextKey,
+  isRemoteEligible,
+  sanitizeDirectorContext,
+  validateDirectorPlan,
+} from "./sprite-director.js";
 
 // The guide sprite v7: the hand-drawn paper self-portrait ("Paper Stan", kit in
 // /moana-puppet-kit) replaces the licensed hedgehog. The character is the site
@@ -134,6 +143,7 @@ export const spriteJS = `
   var PERFORMANCES = ${JSON.stringify(PERFORMANCES)};
   var EXPRESSIONS = ${JSON.stringify(EXPRESSIONS)};
   var INTERACTION_POLICY = ${JSON.stringify(INTERACTION_POLICY)};
+${spriteDirectorRuntime}
 
   var q = window.QUEST.get();
   var dismissed = q.spriteDismissed;
@@ -311,6 +321,60 @@ export const spriteJS = `
     var line = choices[Math.floor(Math.random() * choices.length)];
     lastLineBySituation[situation] = line;
     return line;
+  }
+  // Local plans start immediately. With the explicit query flag, a small edge
+  // model may prepare one constrained alternative for the next matching event;
+  // it never preempts the action the visitor just caused.
+  var remoteDirectorEnabled = new URLSearchParams(window.location.search).get(DIRECTOR_CONFIG.remoteFeatureQuery) === "1";
+  var remotePlanCache = {}, remotePlanInFlight = {}, lastRemoteRequest = 0;
+  function directorContext(event, details) {
+    details = details || {};
+    return sanitizeDirectorContext({
+      event: event,
+      mood: currentMood(),
+      section: details.section,
+      dwell: details.dwell,
+    });
+  }
+  function requestRemotePlan(context, key) {
+    if (!remoteDirectorEnabled || !isRemoteEligible(context) || !window.fetch) return;
+    var now = Date.now();
+    if (remotePlanInFlight[key] || now - lastRemoteRequest < DIRECTOR_CONFIG.remoteRequestCooldownMs) return;
+    remotePlanInFlight[key] = true;
+    lastRemoteRequest = now;
+    window.fetch(DIRECTOR_CONFIG.route, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(context),
+      credentials: "same-origin",
+    }).then(function (response) {
+      return response.ok ? response.json() : null;
+    }).then(function (payload) {
+      var plan = payload && validateDirectorPlan(payload.plan, context);
+      if (plan) remotePlanCache[key] = { plan: plan, expiresAt: Date.now() + plan.expiresInMs };
+    }).catch(function () {
+      // Local planning is already active, so a failed optional request is silent.
+    }).then(function () {
+      delete remotePlanInFlight[key];
+    });
+  }
+  function selectDirectorPlan(event, details) {
+    var context = directorContext(event, details);
+    var key = directorContextKey(context);
+    var cached = remotePlanCache[key];
+    if (cached && cached.expiresAt > Date.now()) {
+      delete remotePlanCache[key];
+      return cached.plan;
+    }
+    if (cached) delete remotePlanCache[key];
+    var plan = createLocalPlan(context);
+    if (isRemoteEligible(context)) requestRemotePlan(context, key);
+    return plan;
+  }
+  function applyDirectorMood(plan, intensity, duration) {
+    if (plan && plan.mood && MOODS[plan.mood] && plan.mood !== mood) {
+      setMood(plan.mood, intensity || 0.5, duration || 22000);
+    }
   }
   var performanceTimer = 0, performanceToken = 0, performing = false;
   var gestureTimer = 0, gestureToken = 0, activePurpose = "idle";
@@ -581,6 +645,8 @@ export const spriteJS = `
     if (dismissed || suggests >= 4) return;
     var t = nextTarget();
     if (!t) return;
+    var plan = selectDirectorPlan("project-dwell", { dwell: force ? "engaged" : "lingering" });
+    applyDirectorMood(plan, 0.42, 22000);
     suggests++;
     var r = t.getBoundingClientRect();
     var name = t.querySelector(".title") ? t.querySelector(".title").textContent : "the patent";
@@ -593,7 +659,7 @@ export const spriteJS = `
       window.QUEST.pulse(t);
       setTimeout(function () {
         setMode("idle");
-        say(pickLine("suggest") + " (" + name + ")", null, { force: !!force });
+        say(pickLine(plan.linePool || "suggest") + " (" + name + ")", null, { force: !!force });
       }, 1000);
     });
   }
@@ -603,11 +669,11 @@ export const spriteJS = `
   // from a small "noticed you" pool and never repeats twice in a row, so hover
   // does not always look like the same head turn.
   var HOVER = [
-    function () { return gesture("curious", (mouse && mouse.x < x) ? "lookLeft" : "lookRight", 1400, "hover"); }, // looks at you
-    function () { return gesture("idle", Math.random() < 0.5 ? "tiltLeft" : "tiltRight", 1400, "hover"); },       // curious head tilt
-    function () { return gesture(x > vw() / 2 ? "waveLeft" : "waveRight", null, 1500, "hover"); },                 // quick wave hello
-    function () { return gesture("happy", null, 1300, "hover"); },                                                 // pleased little bounce
-    function () { return gesture("nod", null, 1200, "hover"); }                                                    // acknowledges you
+    function (purpose) { return gesture("curious", (mouse && mouse.x < x) ? "lookLeft" : "lookRight", 1400, purpose); }, // looks at you
+    function (purpose) { return gesture("idle", Math.random() < 0.5 ? "tiltLeft" : "tiltRight", 1400, purpose); },       // curious head tilt
+    function (purpose) { return gesture(x > vw() / 2 ? "waveLeft" : "waveRight", null, 1500, purpose); },                 // quick wave hello
+    function (purpose) { return gesture("happy", null, 1300, purpose); },                                                 // pleased little bounce
+    function (purpose) { return gesture("nod", null, 1200, purpose); }                                                     // acknowledges you
   ];
   var lastHover = 0, lastHoverIdx = -1, hoverTimer = 0, hoverInside = false;
   function runHoverReaction() {
@@ -617,10 +683,11 @@ export const spriteJS = `
     if (now - lastHover < INTERACTION_POLICY.hoverCooldownMs) return;
     if (mode !== "idle" || moving || touring || performing || bubble.classList.contains("on")) return;
     noteVisitorActivity(now);
-    setMood("cheerful", 0.55, 24000);
+    var plan = selectDirectorPlan("hover") || { mood: "cheerful", purpose: "hover" };
+    applyDirectorMood(plan, 0.55, 24000);
     var i;
     do { i = Math.floor(Math.random() * HOVER.length); } while (i === lastHoverIdx);
-    if (HOVER[i]()) {
+    if (HOVER[i](plan.purpose || "hover")) {
       lastHoverIdx = i;
       lastHover = now;
     }
@@ -643,8 +710,10 @@ export const spriteJS = `
     return { action: action, orientation: orientation || "front", expression: MOODS[currentMood()].expression, ms: ms };
   }
   function reactMoodScene() {
-    perform(PERFORMANCES["tap." + currentMood()]);
-    say(pickLine("tap"), null, { force: true, hold: 2400 });
+    var plan = selectDirectorPlan("tap") || { performance: "tap." + currentMood(), linePool: "tap", purpose: "interaction" };
+    applyDirectorMood(plan, 0.55, 24000);
+    perform(PERFORMANCES[plan.performance] || PERFORMANCES["tap." + currentMood()], plan.purpose || "interaction");
+    say(pickLine(plan.linePool || "tap"), null, { force: true, hold: 2400 });
   }
   function reactAnnoyed() {
     setMood("miffed", 1, 45000);
@@ -841,10 +910,11 @@ export const spriteJS = `
             say(MISS_LINES[Math.floor(Math.random() * MISS_LINES.length)], null, { force: true });
             setTimeout(function () { if (mode === "look") setMode("idle"); }, 1800);
           } else {
-            setMood("cheerful", 0.5, 22000);
+            var plan = selectDirectorPlan("cursor") || { mood: "cheerful", linePool: "bother" };
+            applyDirectorMood(plan, 0.5, 22000);
             face(false);
             setMode("poke");
-            say(pickLine("bother"), null, { force: true });
+            say(pickLine(plan.linePool || "bother"), null, { force: true });
             setTimeout(function () { if (mode === "poke") setMode("idle"); }, 1200);
           }
           setTimeout(function () {
@@ -891,12 +961,14 @@ export const spriteJS = `
       var now = Date.now();
       if (now - lastReact < 4500) return;
       lastReact = now;
-      var sequence = PERFORMANCES["section." + key + "." + currentMood()];
+      var plan = selectDirectorPlan("section", { section: key, dwell: "engaged" }) || {};
+      applyDirectorMood(plan, 0.45, 18000);
+      var sequence = plan.performance && PERFORMANCES[plan.performance];
       perform(sequence || [
         { action: cfg.action, orientation: cfg.orientation || "front", expression: MOODS[currentMood()].expression, ms: 1500 },
         { action: "idle", orientation: "front", expression: MOODS[currentMood()].expression, ms: 700 },
-      ], "section");
-      if (Math.random() < 0.5) say(pickLine("section"), null, {});
+      ], plan.purpose || "section");
+      if (Math.random() < 0.5) say(pickLine(plan.linePool || "section"), null, {});
     }
   })();
 
