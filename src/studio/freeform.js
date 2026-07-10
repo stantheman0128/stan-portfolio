@@ -74,7 +74,6 @@ function bindEditable() {
     const path = el.getAttribute("data-bind");
     const kind = el.getAttribute("data-edit");
     if (kind === "md") return bindMd(el, path);
-    if (kind === "tags") return bindTags(el, path);
     if (kind === "image") return bindImage(el, path);
     el.setAttribute("contenteditable", "true");
     el.addEventListener("input", () => {
@@ -82,17 +81,6 @@ function bindEditable() {
       scheduleSave();
       scheduleCommit();
     });
-  });
-}
-
-// Tags edit as one comma-separated string; split back into an array on input.
-function bindTags(el, path) {
-  el.setAttribute("contenteditable", "true");
-  el.addEventListener("input", () => {
-    const arr = el.textContent.split(",").map((s) => s.trim()).filter(Boolean);
-    setPath(state.content, path, arr);
-    scheduleSave();
-    scheduleCommit();
   });
 }
 
