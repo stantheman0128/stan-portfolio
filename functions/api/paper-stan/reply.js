@@ -2,6 +2,7 @@ import {
   buildDialogueMessages,
   completeDialogueTurn,
   createFallbackDialogueTurn,
+  createProjectContinuationTurn,
   DIALOGUE_CONFIG,
   sanitizeDialogueRequest,
 } from "../../../src/render/fx/paper-stan-dialogue.js";
@@ -83,19 +84,22 @@ export async function onRequestPost({ request, env }) {
   const input = parsed.error ? null : sanitizeDialogueRequest(parsed.value);
   if (!input) return json({ error: "bad_question" }, 400);
 
+  const continuation = createProjectContinuationTurn(input.context, input.history, input.question);
+  if (continuation) return json(continuation, 200);
+
   try {
     const result = await env.AI.run(DIALOGUE_CONFIG.model, {
-      messages: buildDialogueMessages(input.question, input.context),
+      messages: buildDialogueMessages(input.question, input.context, input.history),
       temperature: DIALOGUE_CONFIG.temperature,
       max_tokens: DIALOGUE_CONFIG.maxReplyTokens,
     });
     const rawModelResponse = result && result.response;
     const turn = completeDialogueTurn(parseModelResponse(rawModelResponse), input.context);
-    const safeTurn = turn || createFallbackDialogueTurn(input.context);
+    const safeTurn = turn || createFallbackDialogueTurn(input.context, input.history, input.question);
     if (!safeTurn) return json({ error: "invalid_reply" }, 422);
     return json(safeTurn, 200);
   } catch {
-    const safeTurn = createFallbackDialogueTurn(input.context);
+    const safeTurn = createFallbackDialogueTurn(input.context, input.history, input.question);
     if (!safeTurn) return json({ error: "inference_failed" }, 502);
     return json(safeTurn, 200);
   }

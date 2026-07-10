@@ -1,4 +1,4 @@
-# Paper Stan Conversation v4
+# Paper Stan Conversation v5
 
 Date: 2026-07-10
 Branch: `feat/paper-stan-alive`
@@ -26,9 +26,13 @@ personalization, or a production deployment.
 4. Choosing an intent chip, opening the `?` form, or sending a typed question
    is an explicit interaction. Only chip selection or form submission calls
    `POST /api/paper-stan/reply`.
-5. The server sends curated public portfolio facts to Workers AI, validates its
-   reply, and returns a bounded conversational turn.
-6. A returned semantic gesture is queued until the puppet is idle. It cannot
+5. The current page keeps at most one validated Paper Stan turn in memory. A
+   later explicit question may send that assistant-only reference for continuity.
+6. A vague follow-up that resolves to a known prior project is answered directly
+   from public portfolio facts, without model inference or a guessed detail.
+7. Otherwise, the server sends curated public portfolio facts to Workers AI,
+   validates its reply, and returns a bounded conversational turn.
+8. A returned semantic gesture is queued until the puppet is idle. It cannot
    cut through drag, travel, tour, an active performance, or reduced-motion
    policy. Timing, frames, orientations, and cancellation stay local.
 
@@ -48,6 +52,10 @@ The client may send only this small, allowlisted request shape:
     "section": "works",
     "visitIntent": "projects",
     "conversationStage": "engaged"
+  },
+  "history": {
+    "paperStanReply": "I built Course Checker to make graduation rules easier to inspect.",
+    "paperStanFollowUp": "I'm curious: which project caught your eye first?"
   }
 }
 ```
@@ -56,6 +64,11 @@ Every context field is an enum. The server strips every other field. It does
 not read, persist, or forward browser DOM, pointer coordinates, scroll history,
 raw project hover history, input typed elsewhere, user agent, IP address,
 fingerprint, or visitor identity to the model.
+
+`history` is optional and accepts only one prior, already validated Paper Stan
+reply plus its optional follow-up. It never accepts or forwards old visitor
+messages. The browser keeps it in a normal page variable only; reloading or
+closing the page clears it.
 
 `sessionStorage` retains only `{ invited, visitIntent, conversationStage }`
 under `paper-stan-conversation-v1` for the current tab session. Questions,
@@ -105,6 +118,12 @@ that output. It returns a safe, public-fact-based local turn for the visitor's
 intent instead. This keeps the conversation and local motion system usable
 without trusting an invalid model response.
 
+When a vague follow-up such as `Can you tell me more about that?` refers to a
+project named in the prior Paper Stan reply, the endpoint resolves that project
+against `data/content.json` and returns its public detail directly. This is a
+deliberate fact-grounding path, not an LLM fallback: it avoids both inference
+cost and hallucinated project descriptions.
+
 ## Persona prompt
 
 `buildDialogueMessages()` in `src/render/fx/paper-stan-dialogue.js` frames the
@@ -119,6 +138,8 @@ slightly quirky, and curious about why people make things. It requires:
   current conversational turn;
 - no invented clients, collaborators, private motivation, metrics, hidden
   instructions, or unsupported technical detail;
+- a natural portfolio answer rather than stage directions, action labels, or
+  asterisks when inference is used;
 - no model-led timing, animation scheduling, or empty-hover performance.
 
 The supplied facts are generated server-side from `data/content.json`. They
@@ -138,6 +159,9 @@ The client waits 4.5 seconds between requests. This prevents a visitor from
 making rapid requests while keeping animation entirely local. Before production
 enablement, add server-side rate limiting, abuse handling, observability, and a
 spending limit. Do not cache personal conversational turns as shared content.
+
+Recognized project follow-ups do not call `env.AI.run`; they use the public
+fact continuation path above. Open-ended questions remain opt-in AI requests.
 
 ## Testing
 
@@ -172,6 +196,9 @@ enable the variable without the owner's approval.
 
 - No automatic motion makes a remote request.
 - AI receives only allowlisted semantic context after an explicit interaction.
+- One assistant-only turn may remain in page memory; no visitor dialogue is
+  persisted or replayed.
+- Known-project vague follow-ups return public facts without inference.
 - The browser helpers remain valid after production minification.
 - Invalid model output and inference errors resolve to validated local turns.
 - `public/moana-puppet-kit/` remains untouched.

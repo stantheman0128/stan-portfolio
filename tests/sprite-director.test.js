@@ -99,11 +99,18 @@ describe("Paper Stan local director", () => {
       "visitIntent",
       "conversationStage",
       "followUp",
+      "dialogueHistory",
+      "sanitizeDialogueHistory",
     ]) {
       expect(spriteJS).toContain(token);
     }
     expect(spriteJS).toContain('turn.reply.endsWith("?")');
-    expect(spriteJS).toContain("body: JSON.stringify({ question: question, context: dialogueRequestContext() })");
+    expect(spriteJS).toContain("history: dialogueRequestHistory()");
+    const persistedDialogueMemory = spriteJS.slice(
+      spriteJS.indexOf("function saveDialogueMemory"),
+      spriteJS.indexOf("function dialogueRequestContext"),
+    );
+    expect(persistedDialogueMemory).not.toContain("paperStanReply");
     for (const disallowed of ["CF-Connecting-IP", "navigator.userAgent", "outerHTML"]) {
       expect(spriteJS).not.toContain(disallowed);
     }
@@ -115,7 +122,7 @@ describe("Paper Stan local director", () => {
     const minifiedDirector = spriteDirectorRuntime.replaceAll("config = DIRECTOR_CONFIG", "config = missingDirectorConfig");
     const minifiedDialogue = spriteDialogueRuntime.replaceAll("config = DIALOGUE_CONFIG", "config = missingDialogueConfig");
     const director = new Function(`${minifiedDirector} return { sanitizeDirectorContext, createLocalPlan };`)();
-    const dialogue = new Function(`${minifiedDialogue} return { normalizeDialogueQuestion, sanitizeDialogueContext, validateDialogueReply, validateDialogueTurn };`)();
+    const dialogue = new Function(`${minifiedDialogue} return { normalizeDialogueQuestion, sanitizeDialogueContext, sanitizeDialogueHistory, validateDialogueReply, validateDialogueTurn };`)();
 
     expect(director.sanitizeDirectorContext({ event: "section", section: "works", mood: "calm" }))
       .toEqual({ event: "section", section: "works", mood: "calm" });
@@ -126,6 +133,10 @@ describe("Paper Stan local director", () => {
     );
     expect(dialogue.sanitizeDialogueContext({ section: "works", visitIntent: "curious", clientX: 912 }))
       .toEqual({ section: "works", visitIntent: "curious" });
+    expect(dialogue.sanitizeDialogueHistory({
+      paperStanReply: "I built Course Checker to inspect graduation rules.",
+      visitorMessage: "Do not retain this.",
+    })).toEqual({ paperStanReply: "I built Course Checker to inspect graduation rules." });
     expect(dialogue.validateDialogueTurn({
       reply: "I built Course Checker to inspect graduation rules.",
       tone: "curious",

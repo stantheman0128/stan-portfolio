@@ -13,8 +13,10 @@ export {
   DIALOGUE_CONFIG,
   completeDialogueTurn,
   createFallbackDialogueTurn,
+  createProjectContinuationTurn,
   normalizeDialogueQuestion,
   sanitizeDialogueContext,
+  sanitizeDialogueHistory,
   sanitizeDialogueRequest,
   validateDialogueReply,
   validateDialogueTurn,
@@ -227,6 +229,25 @@ ${spriteDialogueRuntime}
       visitIntent: conversation.visitIntent,
       conversationStage: conversation.conversationStage,
     });
+  }
+  // This survives only while this page remains open. Do not add it to the
+  // sessionStorage memory above: prior visitor text is intentionally absent.
+  var dialogueHistory = null;
+  function dialogueRequestHistory() {
+    return sanitizeDialogueHistory(dialogueHistory);
+  }
+  function dialogueRequestPayload(question) {
+    var payload = {
+      question: question,
+      context: dialogueRequestContext(),
+      history: dialogueRequestHistory(),
+    };
+    if (!payload.history) delete payload.history;
+    return payload;
+  }
+  function rememberDialogueTurn(turn) {
+    dialogueHistory = { paperStanReply: turn.reply };
+    if (turn.followUp) dialogueHistory.paperStanFollowUp = turn.followUp;
   }
   var dismissed = q.spriteDismissed;
   if (dismissed) askButton.hidden = true;
@@ -781,7 +802,7 @@ ${spriteDialogueRuntime}
     window.fetch(DIALOGUE_CONFIG.route, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ question: question, context: dialogueRequestContext() }),
+      body: JSON.stringify(dialogueRequestPayload(question)),
       credentials: "same-origin",
     }).then(function (response) {
       return response.ok ? response.json() : null;
@@ -790,6 +811,7 @@ ${spriteDialogueRuntime}
       if (!turn) throw new Error("invalid_reply");
       conversation.conversationStage = "engaged";
       saveDialogueMemory();
+      rememberDialogueTurn(turn);
       queueDialogueGesture(turn.gesture, turn.tone);
       var expectsReply = !!turn.followUp || turn.reply.endsWith("?");
       var text = turn.followUp ? turn.reply + "\\n\\n" + turn.followUp : turn.reply;
