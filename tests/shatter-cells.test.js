@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { voronoiCells, randomSeeds } from "../src/render/fx/shatter.js";
+import { voronoiCells, pinnedSeeds } from "../src/render/fx/shatter.js";
 
 function mulberry(a) {
   return function () {
@@ -19,9 +19,8 @@ describe("voronoiCells", () => {
     expect(cells[99]).toBe(1);
   });
   it("uses every seed at least once for spread seeds", () => {
-    const seeds = randomSeeds(40, 40, 10, mulberry(1));
+    const seeds = pinnedSeeds(40, 40, 8, { x: 0.25, y: 0.25, w: 0.5, h: 0.5 }, mulberry(1));
     const cells = voronoiCells(40, 40, seeds);
-    const used = new Set(cells);
-    expect(used.size).toBe(10);
+    expect(new Set(cells).size).toBe(10);
   });
 });

@@ -1,13 +1,8 @@
-// Shatter reveal: the reward photo is split into N irregular Voronoi shards,
-// each with its own random develop schedule, so some shards stay blurred until
-// the very last unlock. Pure geometry helpers here; DOM/canvas wiring is added
-// in createShatterReveal below.
-
-export function randomSeeds(w, h, n, rnd = Math.random) {
-  const s = [];
-  for (let i = 0; i < n; i++) s.push({ x: rnd() * w, y: rnd() * h });
-  return s;
-}
+// Shatter reveal: the reward photo is split into N irregular Voronoi shards over
+// an opaque grey-green emulsion base (a just-ejected polaroid), so covered
+// pixels leak nothing. Shards flip one per unlock step, developing dark ->
+// sepia -> full color; two pinned face shards open only on the catch click.
+// Pure geometry helpers here; DOM/canvas wiring is added in createShatterReveal.
 
 // For each pixel, the index of the nearest seed. Returns a flat Uint8Array of
 // length w*h (row-major). N is expected small (<= ~16), so a linear scan wins.
@@ -24,24 +19,6 @@ export function voronoiCells(w, h, seeds) {
     }
   }
   return cells;
-}
-
-// One cumulative-clarity curve per cell across `steps` unlocks. Each step's
-// increment is random, so cells develop at different paces; the last step is
-// pinned to 1 so every shard is fully sharp once exploration completes.
-export function revealSchedule(cellCount, steps, rnd = Math.random) {
-  const out = [];
-  for (let c = 0; c < cellCount; c++) {
-    const inc = [];
-    let sum = 0;
-    for (let s = 0; s < steps; s++) { const v = 0.15 + rnd(); inc.push(v); sum += v; }
-    let cum = 0;
-    const row = [];
-    for (let s = 0; s < steps; s++) { cum += inc[s] / sum; row.push(cum); }
-    row[steps - 1] = 1;
-    out.push(row);
-  }
-  return out;
 }
 
 // N = steps + 2 seeds: the first two are pinned inside the fractional face
@@ -82,67 +59,106 @@ export function developAlphas(d) {
   return { sepia: Math.min(1, t * 2), full: Math.max(0, t * 2 - 1) };
 }
 
-// Wire a <canvas> to develop the photo as shards. Returns { setStep, recut }.
-// Mask math runs at a capped width (MW) for perf; the canvas is scaled up by CSS.
-// Bottom layer is the whole photo blurred; the top layer is the sharp photo
-// masked by per-shard alpha (destination-in), so clear shards punch through.
+// Wire a <canvas> to reveal the photo as emulsion shards. Undeveloped area is
+// an OPAQUE grey-green emulsion (a just-ejected polaroid), so covered pixels
+// carry zero information. A flipped shard develops dark -> warm sepia -> full
+// color via two masked photo layers. Mask math runs at a capped width (MW);
+// the canvas is scaled up by CSS.
 export function createShatterReveal(canvas, imgSrc, opts = {}) {
-  const N = 10, MW = 300;
+  const MW = 300;
   const steps = opts.steps || 9;
   const reduce = !!opts.reduce;
+  const faceBox = opts.faceBox || { x: 0.3, y: 0.12, w: 0.4, h: 0.38 };
+  const N = steps + 2;
   const ctx = canvas.getContext("2d");
   const img = new Image();
-  let W = MW, H = 0, ready = false, step = 0, raf = 0;
-  let cellIndex = null, schedule = null;
-  const clarity = new Float32Array(N), target = new Float32Array(N);
-  let tmp, tctx, mask, mctx, maskImg;
+  let W = MW, H = 0, ready = false, step = 0, faceOpen = false, raf = 0;
+  let cellIndex = null, stepOf = null;
+  const dNow = new Float32Array(N), dGoal = new Float32Array(N);
+  let base, sepia, tmp, tctx, mask, mctx, maskImg;
 
   function recut() {
     if (!ready) return;
-    cellIndex = voronoiCells(W, H, randomSeeds(W, H, N));
-    schedule = revealSchedule(N, steps);
+    cellIndex = voronoiCells(W, H, pinnedSeeds(W, H, steps, faceBox));
+    const order = flipOrder(steps);
+    stepOf = [Infinity, Infinity];
+    for (let i = 0; i < steps; i++) stepOf.push(order[i]);
+    paintEmulsion();
     apply(step);
   }
+
+  // Flat emulsion with a small deterministic per-shard tone shift, so the
+  // undeveloped surface reads as physical pieces instead of one slab.
+  function paintEmulsion() {
+    const bctx = base.getContext("2d");
+    const px = bctx.createImageData(W, H);
+    const tones = [];
+    for (let c = 0; c < N; c++) tones.push(((c * 53) % 17) - 8);
+    for (let p = 0; p < W * H; p++) {
+      const t = tones[cellIndex[p]];
+      px.data[p * 4] = 58 + t;
+      px.data[p * 4 + 1] = 66 + t;
+      px.data[p * 4 + 2] = 59 + t;
+      px.data[p * 4 + 3] = 255;
+    }
+    bctx.putImageData(px, 0, 0);
+  }
+
   function apply(n) {
     step = Math.max(0, Math.min(steps, n));
-    for (let c = 0; c < N; c++) target[c] = step === 0 ? 0 : schedule[c][step - 1];
-    if (reduce) { clarity.set(target); render(); }
+    for (let c = 0; c < N; c++) {
+      dGoal[c] = c < 2 ? (faceOpen ? 1 : 0) : (stepOf[c] <= step ? 1 : 0);
+    }
+    if (reduce) { dNow.set(dGoal); render(); }
     else if (!raf) raf = requestAnimationFrame(anim);
   }
+
   function anim() {
     raf = 0;
     let moving = false;
     for (let c = 0; c < N; c++) {
-      const d = target[c] - clarity[c];
-      if (Math.abs(d) > 0.003) { clarity[c] += d * 0.18; moving = true; } else clarity[c] = target[c];
+      const dd = dGoal[c] - dNow[c];
+      if (Math.abs(dd) > 0.003) { dNow[c] += dd * 0.1; moving = true; } else dNow[c] = dGoal[c];
     }
     render();
     if (moving) raf = requestAnimationFrame(anim);
   }
-  function render() {
-    if (!ready) return;
+
+  function layer(src, alpha) {
     const d = maskImg.data;
-    // ease-in: a shard's clarity contributes to the sharp layer's alpha as
-    // clarity^2, so shards read as blurred until they near full unlock and the
-    // photo only resolves close to 100% (not at 20-30%).
-    for (let p = 0; p < W * H; p++) { const c = clarity[cellIndex[p]]; d[p * 4 + 3] = c * c * 255; }
+    for (let p = 0; p < W * H; p++) d[p * 4 + 3] = alpha[cellIndex[p]];
     mctx.putImageData(maskImg, 0, 0);
     tctx.clearRect(0, 0, W, H);
     tctx.globalCompositeOperation = "source-over";
-    tctx.drawImage(img, 0, 0, W, H);
+    tctx.drawImage(src, 0, 0, W, H);
     tctx.globalCompositeOperation = "destination-in";
     tctx.drawImage(mask, 0, 0);
-    ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = "#0b0b0d";
-    ctx.fillRect(0, 0, W, H);
-    ctx.filter = "blur(18px)";
-    ctx.drawImage(img, 0, 0, W, H);
-    ctx.filter = "none";
     ctx.drawImage(tmp, 0, 0);
   }
+
+  function render() {
+    if (!ready) return;
+    const aS = [], aF = [];
+    for (let c = 0; c < N; c++) {
+      const a = developAlphas(dNow[c]);
+      aS.push(a.sepia * 255);
+      aF.push(a.full * 255);
+    }
+    ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(base, 0, 0);
+    layer(sepia, aS);
+    layer(img, aF);
+  }
+
   img.onload = () => {
     H = Math.max(1, Math.round(MW * img.naturalHeight / img.naturalWidth));
     canvas.width = W; canvas.height = H;
+    base = document.createElement("canvas"); base.width = W; base.height = H;
+    sepia = document.createElement("canvas"); sepia.width = W; sepia.height = H;
+    const sctx = sepia.getContext("2d");
+    sctx.filter = "brightness(0.5) sepia(0.7) saturate(0.55)";
+    sctx.drawImage(img, 0, 0, W, H);
+    sctx.filter = "none";
     tmp = document.createElement("canvas"); tmp.width = W; tmp.height = H; tctx = tmp.getContext("2d");
     mask = document.createElement("canvas"); mask.width = W; mask.height = H; mctx = mask.getContext("2d");
     maskImg = mctx.createImageData(W, H);
@@ -153,7 +169,11 @@ export function createShatterReveal(canvas, imgSrc, opts = {}) {
   img.onerror = () => { ready = false; };
   img.src = imgSrc;
 
-  return { setStep: apply, recut };
+  return {
+    setStep: apply,
+    revealFace() { faceOpen = true; apply(step); },
+    recut,
+  };
 }
 
 // Inline-script form for the Minimal theme's <script> injection. The tested
@@ -161,9 +181,10 @@ export function createShatterReveal(canvas, imgSrc, opts = {}) {
 // into a global window.Shatter that cta.js's inline script can call, the same
 // way it reaches window.QUEST. .name keeps the wiring minify-safe.
 export const shatterJS = `
-${randomSeeds.toString()}
+${pinnedSeeds.toString()}
+${flipOrder.toString()}
+${developAlphas.toString()}
 ${voronoiCells.toString()}
-${revealSchedule.toString()}
 ${createShatterReveal.toString()}
 window.Shatter = { createShatterReveal: ${createShatterReveal.name} };
 `;

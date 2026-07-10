@@ -17,4 +17,12 @@ describe("shatterJS injection", () => {
     new Function("window", shatterJS)(win);
     expect(win.Shatter.createShatterReveal.length).toBe(2);
   });
+
+  it("serializes the face reveal API and the new schedulers", () => {
+    const win = {};
+    new Function("window", shatterJS)(win);
+    expect(shatterJS).toContain("revealFace");
+    expect(shatterJS).toContain("function pinnedSeeds");
+    expect(shatterJS).not.toContain("revealSchedule");
+  });
 });
