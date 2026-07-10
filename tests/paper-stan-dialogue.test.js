@@ -46,6 +46,23 @@ describe("Paper Stan dialogue contract", () => {
     expect(system).not.toContain("stan@stan-shih.com");
   });
 
+  it("grounds identity and project answers in a concise public dossier", () => {
+    const identity = buildDialogueMessages("Who are you, and what kind of work do you build?");
+    const identityFacts = identity[0].content;
+    const course = buildDialogueMessages("What technology did you use for Course Checker?");
+    const courseFacts = course[0].content;
+
+    expect(identityFacts).toContain("Identity:");
+    expect(identityFacts).toContain("Based in: Taipei, Taiwan.");
+    expect(identityFacts).toContain("Personal approach:");
+    expect(identityFacts).toContain("Background:");
+    expect(identityFacts).toContain("include my role, personal approach, and relevant build scope");
+    expect(identityFacts).not.toContain("stan@stan-shih.com");
+    expect(courseFacts).toContain("Course Checker");
+    expect(courseFacts).toContain("Technologies and themes: PWA, React, TypeScript, Credit rules.");
+    expect(courseFacts).not.toContain("ETF Tracker");
+  });
+
   it("accepts a concise first-person grounded-style reply and rejects unsafe formatting", () => {
     const reply = "I built Course Checker to make graduation rules easier to inspect.";
     expect(validateDialogueReply(reply)).toBe(reply);

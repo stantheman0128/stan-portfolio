@@ -137,7 +137,7 @@ export const spriteHTML = `
   <span class="b-text"></span>
   <div class="b-chips"></div>
   <form class="b-ask-form" hidden>
-    <input class="b-ask-input" type="text" maxlength="420" autocomplete="off" placeholder="Ask about a project" aria-label="Ask Paper Stan about a project">
+    <input class="b-ask-input" type="text" maxlength="420" autocomplete="off" placeholder="Ask about Stan or a project" aria-label="Ask Paper Stan about Stan or a project">
     <button class="b-ask-submit" type="submit" aria-label="Send question" title="Send question">&gt;</button>
   </form>
 </div>
@@ -606,7 +606,7 @@ ${spriteDialogueRuntime}
   function openDialogue() {
     if (dismissed || dialogueBusy) return;
     clearTimeout(bubbleTimer);
-    bText.textContent = "Ask me about a project I built.";
+    bText.textContent = "Ask me about my work or how I build.";
     bChips.replaceChildren();
     setDialogueFormOpen(true);
     bubble.classList.add("on");
