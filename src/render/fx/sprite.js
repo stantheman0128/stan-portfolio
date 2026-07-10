@@ -1,16 +1,20 @@
 import { EXPRESSIONS, INTERACTION_POLICY, LINES, MOODS, PERFORMANCES } from "./sprite-data.js";
 import { spriteDirectorRuntime } from "./sprite-director.js";
+import { spriteDialogueRuntime } from "./paper-stan-dialogue.js";
 
 export { EXPRESSIONS, INTERACTION_POLICY, LINES, MOODS, PERFORMANCES } from "./sprite-data.js";
 export {
   DIRECTOR_CONFIG,
   createLocalPlan,
-  directorContextKey,
-  isRemoteEligible,
   sanitizeDirectorContext,
-  validateDirectorLine,
   validateDirectorPlan,
 } from "./sprite-director.js";
+export {
+  DIALOGUE_CONFIG,
+  normalizeDialogueQuestion,
+  sanitizeDialogueRequest,
+  validateDialogueReply,
+} from "./paper-stan-dialogue.js";
 
 // The guide sprite v7: the hand-drawn paper self-portrait ("Paper Stan", kit in
 // /moana-puppet-kit) replaces the licensed hedgehog. The character is the site
@@ -94,6 +98,9 @@ export const spriteCSS = `
 #puppet-host:hover{--hscale:1.1}
 #puppet-host:active{--hscale:.96}
 #sprite.s-sleep{opacity:.62}
+#sprite-ask{position:absolute;right:-4px;top:-8px;z-index:2;width:24px;height:24px;padding:0;display:grid;place-items:center;pointer-events:auto;border:1px solid #17151a;border-radius:50%;background:#fffdfa;color:#17151a;font:700 13px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;cursor:pointer;box-shadow:0 3px 8px rgba(41,31,23,.16)}
+#sprite-ask:hover,#sprite-ask:focus-visible{background:#17151a;color:#fffdfa}
+#sprite-ask:focus-visible{outline:2px solid #c2522d;outline-offset:2px}
 @media (prefers-reduced-motion:reduce){#sprite{transition:none}#puppet-host{transition:none}#puppet-host:hover{--hscale:1}#puppet-host:active{--hscale:1}}
 #bubble{position:fixed;left:0;top:0;z-index:71;max-width:15.5rem;background:#fffdfa;border:1px solid #d8d0c4;border-radius:12px;padding:.65rem .8rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.55;color:#3a3833;box-shadow:0 8px 28px rgba(41,31,23,.12);display:none}
 #bubble.on{display:block}
@@ -108,18 +115,31 @@ export const spriteCSS = `
 #bubble .b-chips button{all:unset;cursor:pointer;border:1px solid #17151a;border-radius:999px;padding:.22rem .7rem;font-size:11.5px}
 #bubble .b-chips button:hover,#bubble .b-chips button:focus-visible{background:#17151a;color:#fffdfa}
 #bubble .b-chips button:focus-visible{outline:2px solid #c2522d;outline-offset:2px}
+#bubble .b-ask-form{display:none;grid-template-columns:minmax(0,1fr) 28px;gap:5px;margin-top:.55rem}
+#bubble.asking .b-ask-form{display:grid}
+#bubble .b-ask-input{box-sizing:border-box;min-width:0;width:100%;border:1px solid #17151a;border-radius:4px;background:#fffdfa;padding:.38rem .48rem;font:inherit;color:#17151a}
+#bubble .b-ask-input:focus-visible{outline:2px solid #c2522d;outline-offset:1px}
+#bubble .b-ask-submit{border:1px solid #17151a;border-radius:4px;background:#17151a;color:#fffdfa;font:700 15px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;cursor:pointer}
+#bubble .b-ask-submit:hover,#bubble .b-ask-submit:focus-visible{background:#c2522d;border-color:#c2522d}
+#bubble .b-ask-submit:focus-visible{outline:2px solid #c2522d;outline-offset:1px}
+#bubble .b-ask-input:disabled,#bubble .b-ask-submit:disabled{opacity:.55;cursor:wait}
 @media print{#sprite,#bubble{display:none !important}}
-@media (max-width:640px){#puppet-host{--moana-size:84px}}
+@media (max-width:640px){#puppet-host{--moana-size:84px}#sprite-ask{width:22px;height:22px;font-size:12px}}
 `;
 
 export const spriteHTML = `
-<div id="sprite" class="s-idle" aria-hidden="true">
-  <div id="puppet-host"></div>
+<div id="sprite" class="s-idle">
+  <div id="puppet-host" aria-hidden="true"></div>
+  <button id="sprite-ask" type="button" aria-label="Ask Paper Stan" title="Ask Paper Stan">?</button>
 </div>
-<div id="bubble" role="presentation">
+<div id="bubble" role="dialog" aria-label="Paper Stan">
   <button class="b-x" type="button" aria-label="Stop guiding me">&times;</button>
   <span class="b-text"></span>
   <div class="b-chips"></div>
+  <form class="b-ask-form" hidden>
+    <input class="b-ask-input" type="text" maxlength="420" autocomplete="off" placeholder="Ask about a project" aria-label="Ask Paper Stan about a project">
+    <button class="b-ask-submit" type="submit" aria-label="Send question" title="Send question">&gt;</button>
+  </form>
 </div>
 `;
 
@@ -128,10 +148,15 @@ export const spriteJS = `
   var sprite = document.getElementById("sprite");
   var bubble = document.getElementById("bubble");
   var host = document.getElementById("puppet-host");
-  if (!sprite || !bubble || !host || !window.QUEST) return;
+  var askButton = document.getElementById("sprite-ask");
+  if (!sprite || !bubble || !host || !askButton || !window.QUEST) return;
   var bText = bubble.querySelector(".b-text");
   var bChips = bubble.querySelector(".b-chips");
   var bX = bubble.querySelector(".b-x");
+  var bAskForm = bubble.querySelector(".b-ask-form");
+  var bAskInput = bubble.querySelector(".b-ask-input");
+  var bAskSubmit = bubble.querySelector(".b-ask-submit");
+  if (!bText || !bChips || !bX || !bAskForm || !bAskInput || !bAskSubmit) return;
 
   var MODE_MAP = ${JSON.stringify(PUPPET_MODE_MAP)};
   var SECTION_MAP = ${JSON.stringify(SECTION_ACTION_MAP)};
@@ -145,9 +170,11 @@ export const spriteJS = `
   var EXPRESSIONS = ${JSON.stringify(EXPRESSIONS)};
   var INTERACTION_POLICY = ${JSON.stringify(INTERACTION_POLICY)};
 ${spriteDirectorRuntime}
+${spriteDialogueRuntime}
 
   var q = window.QUEST.get();
   var dismissed = q.spriteDismissed;
+  if (dismissed) askButton.hidden = true;
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var lastBubble = 0, suggests = 0, lastScroll = 0, bubbleTimer = 0;
   var mode = "idle", moving = false, touring = false, dragging = false, x = 0, y = 0, faceLeft = false;
@@ -323,11 +350,8 @@ ${spriteDirectorRuntime}
     lastLineBySituation[situation] = line;
     return line;
   }
-  // Local plans start immediately. With the explicit query flag, a small edge
-  // model may prepare one constrained alternative for the next matching event;
-  // it never preempts the action the visitor just caused.
-  var remoteDirectorEnabled = new URLSearchParams(window.location.search).get(DIRECTOR_CONFIG.remoteFeatureQuery) === "1";
-  var remotePlanCache = {}, remotePlanInFlight = {}, lastRemoteRequest = 0;
+  // Motion planning is intentionally local. The optional model only answers an
+  // explicit visitor question below, so network latency never changes a gesture.
   function directorContext(event, details) {
     details = details || {};
     return sanitizeDirectorContext({
@@ -337,40 +361,9 @@ ${spriteDirectorRuntime}
       dwell: details.dwell,
     });
   }
-  function requestRemotePlan(context, key) {
-    if (!remoteDirectorEnabled || !isRemoteEligible(context) || !window.fetch) return;
-    var now = Date.now();
-    if (remotePlanInFlight[key] || now - lastRemoteRequest < DIRECTOR_CONFIG.remoteRequestCooldownMs) return;
-    remotePlanInFlight[key] = true;
-    lastRemoteRequest = now;
-    window.fetch(DIRECTOR_CONFIG.route, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(context),
-      credentials: "same-origin",
-    }).then(function (response) {
-      return response.ok ? response.json() : null;
-    }).then(function (payload) {
-      var plan = payload && validateDirectorPlan(payload.plan, context);
-      if (plan) remotePlanCache[key] = { plan: plan, expiresAt: Date.now() + plan.expiresInMs };
-    }).catch(function () {
-      // Local planning is already active, so a failed optional request is silent.
-    }).then(function () {
-      delete remotePlanInFlight[key];
-    });
-  }
-  function selectDirectorPlan(event, details) {
+  function selectLocalPlan(event, details) {
     var context = directorContext(event, details);
-    var key = directorContextKey(context);
-    var cached = remotePlanCache[key];
-    if (cached && cached.expiresAt > Date.now()) {
-      delete remotePlanCache[key];
-      return cached.plan;
-    }
-    if (cached) delete remotePlanCache[key];
-    var plan = createLocalPlan(context);
-    if (isRemoteEligible(context)) requestRemotePlan(context, key);
-    return plan;
+    return createLocalPlan(context);
   }
   function applyDirectorMood(plan, intensity, duration) {
     if (plan && plan.mood && MOODS[plan.mood] && plan.mood !== mood) {
@@ -594,18 +587,82 @@ ${spriteDirectorRuntime}
   function startFollow() {
     if (followRAF) return;
     (function loop() {
-      if (!bubble.classList.contains("on")) { followRAF = 0; return; }
+      if (!bubble.classList.contains("on") || bubble.classList.contains("asking")) { followRAF = 0; return; }
       placeBubble();
       followRAF = requestAnimationFrame(loop);
     })();
   }
+  var dialogueBusy = false, lastDialogueAt = 0;
+  function setDialogueFormOpen(open) {
+    bubble.classList.toggle("asking", !!open);
+    bAskForm.hidden = !open;
+    if (!open) bAskInput.value = "";
+  }
+  function setDialogueBusy(busy) {
+    dialogueBusy = !!busy;
+    bAskInput.disabled = dialogueBusy;
+    bAskSubmit.disabled = dialogueBusy;
+  }
+  function openDialogue() {
+    if (dismissed || dialogueBusy) return;
+    clearTimeout(bubbleTimer);
+    bText.textContent = "Ask me about a project I built.";
+    bChips.replaceChildren();
+    setDialogueFormOpen(true);
+    bubble.classList.add("on");
+    placeBubble();
+    startFollow();
+    setTimeout(function () { bAskInput.focus(); }, 0);
+  }
+  function dialogueHold(reply) {
+    return Math.max(5200, Math.min(14000, reply.length * 34));
+  }
+  function submitDialogueQuestion() {
+    if (dismissed || dialogueBusy || !window.fetch) return;
+    var question = normalizeDialogueQuestion(bAskInput.value);
+    if (!question) {
+      bAskInput.setCustomValidity("Ask a short project question.");
+      bAskInput.reportValidity();
+      return;
+    }
+    bAskInput.setCustomValidity("");
+    var now = Date.now();
+    if (now - lastDialogueAt < DIALOGUE_CONFIG.clientCooldownMs) {
+      bText.textContent = "I need one small moment before the next answer.";
+      return;
+    }
+    lastDialogueAt = now;
+    noteVisitorActivity(now);
+    setDialogueBusy(true);
+    bText.textContent = "I'm thinking.";
+    window.fetch(DIALOGUE_CONFIG.route, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ question: question }),
+      credentials: "same-origin",
+    }).then(function (response) {
+      return response.ok ? response.json() : null;
+    }).then(function (payload) {
+      var reply = payload && validateDialogueReply(payload.reply);
+      if (!reply) throw new Error("invalid_reply");
+      say(reply, null, { force: true, hold: dialogueHold(reply), dialogueReply: true });
+    }).catch(function () {
+      bText.textContent = "I could not reach my public project notes just now. Try again in a moment.";
+      setDialogueFormOpen(true);
+      placeBubble();
+    }).then(function () {
+      setDialogueBusy(false);
+    });
+  }
   function say(text, chips, opts) {
     opts = opts || {};
     if (dismissed) return;
+    if (bubble.classList.contains("asking") && !opts.dialogueReply) return;
     var now = Date.now();
     if (!opts.force && now - lastBubble < 20000) return;
     if (!opts.force && now - lastScroll < 1200) return;
     lastBubble = now;
+    setDialogueFormOpen(false);
     bText.textContent = text;
     bChips.replaceChildren();
     (chips || []).forEach(function (c) {
@@ -621,11 +678,30 @@ ${spriteDirectorRuntime}
     clearTimeout(bubbleTimer);
     if (!chips || !chips.length) bubbleTimer = setTimeout(hide, opts.hold || 5200);
   }
-  function hide() { bubble.classList.remove("on"); }
+  function hide() {
+    setDialogueFormOpen(false);
+    bubble.classList.remove("on");
+  }
+  askButton.addEventListener("click", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    openDialogue();
+  });
+  bAskForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    submitDialogueQuestion();
+  });
+  bAskSubmit.addEventListener("click", function (event) {
+    event.preventDefault();
+    submitDialogueQuestion();
+  });
   bX.addEventListener("click", function () {
+    askButton.disabled = true;
+    setDialogueFormOpen(false);
     say("Got it, I'll hush. Tap me if you change your mind.", null, { force: true, hold: 3000 });
     setTimeout(function () {
       dismissed = true;
+      askButton.hidden = true;
       window.QUEST.dismissSprite(true);
       var h = home();
       travel(h.x, h.y, function () { setMode("sleep"); });
@@ -643,10 +719,10 @@ ${spriteDirectorRuntime}
     return null;
   }
   function suggest(force) {
-    if (dismissed || suggests >= 4) return;
+    if (dismissed || suggests >= 4 || dialogueBusy || bubble.classList.contains("on")) return;
     var t = nextTarget();
     if (!t) return;
-    var plan = selectDirectorPlan("project-dwell", { dwell: force ? "engaged" : "lingering" });
+    var plan = selectLocalPlan("project-dwell", { dwell: force ? "engaged" : "lingering" });
     applyDirectorMood(plan, 0.42, 22000);
     suggests++;
     var r = t.getBoundingClientRect();
@@ -660,8 +736,7 @@ ${spriteDirectorRuntime}
       window.QUEST.pulse(t);
       setTimeout(function () {
         setMode("idle");
-        var line = plan.line || pickLine(plan.linePool || "suggest");
-        say(line + (plan.line ? "" : " (" + name + ")"), null, { force: !!force });
+        say(pickLine(plan.linePool || "suggest") + " (" + name + ")", null, { force: !!force });
       }, 1000);
     });
   }
@@ -685,7 +760,7 @@ ${spriteDirectorRuntime}
     if (now - lastHover < INTERACTION_POLICY.hoverCooldownMs) return;
     if (mode !== "idle" || moving || touring || performing || bubble.classList.contains("on")) return;
     noteVisitorActivity(now);
-    var plan = selectDirectorPlan("hover") || { mood: "cheerful", purpose: "hover" };
+    var plan = selectLocalPlan("hover") || { mood: "cheerful", purpose: "hover" };
     applyDirectorMood(plan, 0.55, 24000);
     var i;
     do { i = Math.floor(Math.random() * HOVER.length); } while (i === lastHoverIdx);
@@ -712,10 +787,10 @@ ${spriteDirectorRuntime}
     return { action: action, orientation: orientation || "front", expression: MOODS[currentMood()].expression, ms: ms };
   }
   function reactMoodScene() {
-    var plan = selectDirectorPlan("tap") || { performance: "tap." + currentMood(), linePool: "tap", purpose: "interaction" };
+    var plan = selectLocalPlan("tap") || { performance: "tap." + currentMood(), linePool: "tap", purpose: "interaction" };
     applyDirectorMood(plan, 0.55, 24000);
     perform(PERFORMANCES[plan.performance] || PERFORMANCES["tap." + currentMood()], plan.purpose || "interaction");
-    say(plan.line || pickLine(plan.linePool || "tap"), null, { force: true, hold: 2400 });
+    say(pickLine(plan.linePool || "tap"), null, { force: true, hold: 2400 });
   }
   function reactAnnoyed() {
     setMood("miffed", 1, 45000);
@@ -912,7 +987,7 @@ ${spriteDirectorRuntime}
             say(MISS_LINES[Math.floor(Math.random() * MISS_LINES.length)], null, { force: true });
             setTimeout(function () { if (mode === "look") setMode("idle"); }, 1800);
           } else {
-            var plan = selectDirectorPlan("cursor") || { mood: "cheerful", linePool: "bother" };
+            var plan = selectLocalPlan("cursor") || { mood: "cheerful", linePool: "bother" };
             applyDirectorMood(plan, 0.5, 22000);
             face(false);
             setMode("poke");
@@ -963,14 +1038,14 @@ ${spriteDirectorRuntime}
       var now = Date.now();
       if (now - lastReact < 4500) return;
       lastReact = now;
-      var plan = selectDirectorPlan("section", { section: key, dwell: "engaged" }) || {};
+      var plan = selectLocalPlan("section", { section: key, dwell: "engaged" }) || {};
       applyDirectorMood(plan, 0.45, 18000);
       var sequence = plan.performance && PERFORMANCES[plan.performance];
       perform(sequence || [
         { action: cfg.action, orientation: cfg.orientation || "front", expression: MOODS[currentMood()].expression, ms: 1500 },
         { action: "idle", orientation: "front", expression: MOODS[currentMood()].expression, ms: 700 },
       ], plan.purpose || "section");
-      if (plan.line || Math.random() < 0.5) say(plan.line || pickLine(plan.linePool || "section"), null, {});
+      if (Math.random() < 0.5) say(pickLine(plan.linePool || "section"), null, {});
     }
   })();
 
@@ -1101,6 +1176,7 @@ ${spriteDirectorRuntime}
     setMode("sleep");
   } else if (q.visits <= 1 && q.pct === 0) {
     setTimeout(function () {
+      if (bubble.classList.contains("on")) return;
       say("Hey, I'm Stan. The paper version. Want the tour, or should I get out of your way?", [
         { label: "Show me around", go: function () { runTour(); } },
         { label: "I'll explore", go: function () { suggests = 4; setMode("sleep"); setTimeout(function () { setMode("idle"); }, 8000); } }

@@ -8,9 +8,9 @@
 name = "stan-portfolio"
 pages_build_output_dir = "dist"
 
-# Paper Stan's remote director uses this native binding only behind the
-# PAPER_STAN_AI_ENABLED === "true" runtime gate. Leave that variable unset
-# until the feature has been reviewed and explicitly approved for deployment.
+# Paper Stan's explicit project-question reply endpoint uses this native binding
+# only behind the PAPER_STAN_AI_ENABLED === "true" runtime gate. Leave that
+# variable unset until the feature has been reviewed and approved for deployment.
 [ai]
 binding = "AI"
 

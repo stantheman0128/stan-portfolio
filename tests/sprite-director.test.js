@@ -4,14 +4,14 @@ import { LINES, MOODS, PERFORMANCES } from "../src/render/fx/sprite-data.js";
 import {
   DIRECTOR_CONFIG,
   createLocalPlan,
-  isRemoteEligible,
   sanitizeDirectorContext,
-  validateDirectorLine,
+  spriteDirectorRuntime,
   validateDirectorPlan,
 } from "../src/render/fx/sprite-director.js";
+import { spriteDialogueRuntime } from "../src/render/fx/paper-stan-dialogue.js";
 
 describe("Paper Stan local director", () => {
-  it("turns each supported visitor event into a bounded plan", () => {
+  it("turns each supported visitor event into a bounded local plan", () => {
     const contexts = [
       { event: "hover", mood: "calm" },
       { event: "tap", mood: "cheerful" },
@@ -34,7 +34,7 @@ describe("Paper Stan local director", () => {
     }
   });
 
-  it("forwards only a small, semantic context to a remote director", () => {
+  it("normalizes only the fields local motion needs", () => {
     const context = sanitizeDirectorContext({
       event: "section",
       mood: "cheerful",
@@ -53,60 +53,9 @@ describe("Paper Stan local director", () => {
       section: "works",
       dwell: "lingering",
     });
-    expect(JSON.stringify(context)).not.toContain("912");
-    expect(JSON.stringify(context)).not.toContain("Private prototype");
   });
 
-  it("rejects a remote plan that attempts an unknown action or mismatched section", () => {
-    const context = sanitizeDirectorContext({ event: "section", section: "works", mood: "calm" });
-
-    expect(validateDirectorPlan({
-      goal: "introduce_section",
-      mood: "cheerful",
-      purpose: "section",
-      performance: "section.works.cheerful",
-      linePool: "section",
-      expiresInMs: 3600,
-    }, context)).toMatchObject({
-      performance: "section.works.cheerful",
-      mood: "cheerful",
-    });
-
-    expect(validateDirectorPlan({
-      goal: "introduce_section",
-      mood: "cheerful",
-      purpose: "section",
-      performance: "frontFlip",
-      linePool: "section",
-      expiresInMs: 3600,
-    }, context)).toBeNull();
-
-    expect(validateDirectorPlan({
-      goal: "introduce_section",
-      mood: "cheerful",
-      purpose: "section",
-      performance: "section.about.cheerful",
-      linePool: "section",
-      expiresInMs: 3600,
-    }, context)).toBeNull();
-  });
-
-  it("accepts only a short, first-person Paper Stan line from a remote model", () => {
-    const line = "I'm keeping this part in view for you.";
-    expect(validateDirectorLine(line)).toBe(line);
-    for (const invalid of [
-      "This part is worth a look.",
-      "I'm keeping this part in view for you — carefully.",
-      "I'm keeping this part in view for you 😊.",
-      "I'm keeping this part in view for you. I hope it helps.",
-      "I'm at https://example.com right now.",
-      "I'm keeping 3 details in view for you.",
-    ]) {
-      expect(validateDirectorLine(invalid), invalid).toBeNull();
-    }
-  });
-
-  it("keeps a valid generated line but rejects it when attached to an otherwise valid plan", () => {
+  it("rejects a local plan with an unknown action, wrong section, free-form line, or altered timing", () => {
     const context = sanitizeDirectorContext({ event: "section", section: "works", mood: "calm" });
     const base = {
       goal: "introduce_section",
@@ -117,45 +66,45 @@ describe("Paper Stan local director", () => {
       expiresInMs: 3600,
     };
 
-    expect(validateDirectorPlan({ ...base, line: "I'm keeping this part in view for you." }, context))
-      .toMatchObject({ line: "I'm keeping this part in view for you." });
-    expect(validateDirectorPlan({ ...base, line: "This part is worth a look." }, context)).toBeNull();
+    expect(validateDirectorPlan(base, context)).toMatchObject(base);
+    expect(validateDirectorPlan({ ...base, performance: "frontFlip" }, context)).toBeNull();
+    expect(validateDirectorPlan({ ...base, performance: "section.about.cheerful" }, context)).toBeNull();
+    expect(validateDirectorPlan({ ...base, expiresInMs: 3601 }, context)).toBeNull();
+    expect(validateDirectorPlan({ ...base, line: "I should not be here." }, context)).toBeNull();
   });
 
-  it("does not let a remote plan alter the event's fixed timing", () => {
-    const context = sanitizeDirectorContext({ event: "section", section: "works", mood: "calm" });
-    expect(validateDirectorPlan({
-      goal: "introduce_section",
-      mood: "cheerful",
-      purpose: "section",
-      performance: "section.works.cheerful",
-      linePool: "section",
-      expiresInMs: 3601,
-      line: "I'm keeping this part in view for you.",
-    }, context)).toBeNull();
-  });
-
-  it("only considers a remote model for deliberate, meaningful events", () => {
-    expect(isRemoteEligible(sanitizeDirectorContext({ event: "hover", mood: "calm" }))).toBe(false);
-    expect(isRemoteEligible(sanitizeDirectorContext({ event: "tap", mood: "calm" }))).toBe(false);
-    expect(isRemoteEligible(sanitizeDirectorContext({ event: "section", section: "about", mood: "calm" }))).toBe(true);
-    expect(isRemoteEligible(sanitizeDirectorContext({ event: "project-dwell", mood: "calm" }))).toBe(true);
-  });
-
-  it("keeps the browser bridge opt-in and queues remote plans without interrupting a live action", () => {
-    for (const token of [
-      "remoteDirectorEnabled",
-      "selectDirectorPlan",
-      "requestRemotePlan",
-      "remotePlanCache",
-      "validateDirectorPlan(payload.plan, context)",
-      "isRemoteEligible(context)",
-      "validateDirectorLine",
-      "plan.line ||",
-    ]) {
+  it("keeps automatic movement local while the browser exposes a separate dialogue runtime", () => {
+    for (const token of ["selectLocalPlan", "submitDialogueQuestion", "DIALOGUE_CONFIG", "sprite-ask"]) {
       expect(spriteJS).toContain(token);
     }
-    expect(spriteJS).toContain(DIRECTOR_CONFIG.remoteFeatureQuery);
+    expect(spriteJS).toContain('bAskSubmit.addEventListener("click"');
+    for (const removed of ["requestRemotePlan", "remotePlanCache", "selectDirectorPlan", "plan.line ||"]) {
+      expect(spriteJS).not.toContain(removed);
+    }
     expect(() => new Function(spriteJS)).not.toThrow();
+  });
+
+  it("gives an open visitor question priority over delayed greetings and project nudges", () => {
+    expect(spriteJS).toContain('dismissed || suggests >= 4 || dialogueBusy || bubble.classList.contains("on")');
+    expect(spriteJS).toContain('if (bubble.classList.contains("on")) return;');
+    expect(spriteJS).toContain('bubble.classList.contains("asking") && !opts.dialogueReply');
+    expect(spriteJS).toContain('!bubble.classList.contains("on") || bubble.classList.contains("asking")');
+  });
+
+  it("executes serialized local and dialogue helpers with their runtime configuration", () => {
+    // Vite can minify the module binding used in a default parameter. The
+    // serialized runtime must still work because its wrappers pass config.
+    const minifiedDirector = spriteDirectorRuntime.replaceAll("config = DIRECTOR_CONFIG", "config = missingDirectorConfig");
+    const minifiedDialogue = spriteDialogueRuntime.replaceAll("config = DIALOGUE_CONFIG", "config = missingDialogueConfig");
+    const director = new Function(`${minifiedDirector} return { sanitizeDirectorContext, createLocalPlan };`)();
+    const dialogue = new Function(`${minifiedDialogue} return { normalizeDialogueQuestion, validateDialogueReply };`)();
+
+    expect(director.sanitizeDirectorContext({ event: "section", section: "works", mood: "calm" }))
+      .toEqual({ event: "section", section: "works", mood: "calm" });
+    expect(director.createLocalPlan({ event: "tap", mood: "calm" })).toMatchObject({ performance: "tap.calm" });
+    expect(dialogue.normalizeDialogueQuestion("  What did you build?  ")).toBe("What did you build?");
+    expect(dialogue.validateDialogueReply("I built Course Checker to inspect graduation rules.")).toBe(
+      "I built Course Checker to inspect graduation rules.",
+    );
   });
 });

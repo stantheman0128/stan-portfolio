@@ -121,27 +121,24 @@ When the reward photo is being chased (40s cooldown, ~60% chance) -> action look
   first-person Paper Stan voice, with no em/en dash or emoji. Selection avoids
   repeating the last line for the same situation.
 
-## N. Director brain v2
-- **Local first**: `src/render/fx/sprite-director.js` turns hover, tap, section,
-  project prompt, and cursor events into a bounded plan. This chooses the
-  purpose, compatible performance key, baked line pool, mood, and expiry before
-  any network work can happen.
-- **Remote is optional**: only `section` and `project-dwell` are remote-eligible,
-  and only when the page URL carries `?paperStanAi=1`. The current local plan
-  still starts first. A validated remote plan is cached for the next matching
-  event rather than cutting into a live gesture.
-- **Constrained generated copy**: the remote director may add one brief line to
-  a permitted `section` or `project-dwell` plan. It must be 4 to 22 words,
-  English, first person, one ASCII sentence, and have no em/en dash, emoji,
-  number, URL, markdown, or unsupported claim. The server rejects a broken
-  line and the existing `LINES` pool remains the local fallback.
-- **No model timing authority**: all plan fields apart from the permitted mood
-  choice and generated line must match the server's expected plan exactly.
-  Existing gesture tokens, cooldowns, and purpose priority still decide when a
-  movement may start or finish.
-- **Privacy boundary**: remote context is limited to event, current mood, an
-  allowed section name, and a coarse dwell bucket. It excludes raw pointer
-  coordinates, DOM, project titles, typed text, and persistent visitor identity.
+## N. Conversation v3
+- **All automatic behavior is local**: `src/render/fx/sprite-director.js` turns
+  hover, tap, section, project prompt, and cursor events into bounded local
+  plans. Gesture tokens, cooldowns, purpose priority, and baked `LINES` remain
+  the only source of automatic motion and speech.
+- **Explicit questions only**: the `?` control opens a compact Paper Stan form.
+  Only submitting that form calls `/api/paper-stan/reply`; there is no query
+  flag, event-triggered model request, cache, or model timing authority.
+- **Bounded project knowledge**: the server sends only the visitor's normalized
+  question plus selected public facts from `data/content.json`. It never sends
+  raw pointer coordinates, DOM, scroll history, other inputs, or visitor
+  identity.
+- **Constrained generated reply**: the model returns exactly one `reply` field.
+  The reply must be concise, first-person English, ASCII-only, one to three
+  sentences, and have no URL, markdown, emoji, or em/en dash. Broken output is
+  rejected, while the local character continues normally.
+- **Question priority**: an open question form holds the bubble in place so a
+  delayed greeting or project nudge cannot overwrite the visitor's interaction.
 
 ## Notes
 - Idle motion (silent): between scripted moments he draws from the weighted pool

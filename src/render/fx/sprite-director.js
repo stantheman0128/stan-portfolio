@@ -4,18 +4,9 @@
 import { LINES, MOODS, PERFORMANCES } from "./sprite-data.js";
 
 export const DIRECTOR_CONFIG = {
-  route: "/api/paper-stan/plan",
-  remoteFeatureQuery: "paperStanAi",
-  model: "@cf/meta/llama-3.2-1b-instruct",
-  maxRequestBytes: 1200,
   minExpiryMs: 1800,
   maxExpiryMs: 12000,
-  minGeneratedLineWords: 4,
-  maxGeneratedLineWords: 22,
-  maxGeneratedLineChars: 160,
-  remoteRequestCooldownMs: 12000,
   allowedEvents: ["hover", "tap", "section", "project-dwell", "cursor"],
-  remoteEligibleEvents: ["section", "project-dwell"],
   allowedGoals: ["acknowledge", "introduce_section", "invite_project", "inspect_cursor"],
   allowedPurposes: ["hover", "interaction", "section", "event"],
   allowedMoods: Object.keys(MOODS),
@@ -97,23 +88,9 @@ export function directorPlanShape(input, mood, config = DIRECTOR_CONFIG) {
   };
 }
 
-export function validateDirectorLine(value, config = DIRECTOR_CONFIG) {
-  if (typeof value !== "string") return null;
-  const line = value.trim();
-  if (line !== value || !line || line.length > config.maxGeneratedLineChars) return null;
-  if (!/^[\x20-\x7E]+$/.test(line) || /\s{2,}/.test(line)) return null;
-  if (!/[.!?]$/.test(line) || /[.!?].+/.test(line)) return null;
-  if (/[0-9]/.test(line) || /https?:|www\.|[<>{}\[\]#*_]/i.test(line)) return null;
-  if (!/\b(?:I|I'm|I've|I'll|me|my|mine)\b/i.test(line)) return null;
-
-  const words = line.split(/\s+/).length;
-  if (words < config.minGeneratedLineWords || words > config.maxGeneratedLineWords) return null;
-  return line;
-}
-
 export function validateDirectorPlan(candidate, input, config = DIRECTOR_CONFIG) {
   if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) return null;
-  const fields = ["goal", "mood", "purpose", "performance", "linePool", "expiresInMs", "line"];
+  const fields = ["goal", "mood", "purpose", "performance", "linePool", "expiresInMs"];
   if (Object.keys(candidate).some((key) => !fields.includes(key))) return null;
   if (!config.allowedMoods.includes(candidate.mood)) return null;
 
@@ -128,10 +105,7 @@ export function validateDirectorPlan(candidate, input, config = DIRECTOR_CONFIG)
     return null;
   }
   if (expiresInMs !== expected.expiresInMs) return null;
-  const hasLine = Object.prototype.hasOwnProperty.call(candidate, "line");
-  const line = hasLine ? validateDirectorLine(candidate.line, config) : null;
-  if (hasLine && !line) return null;
-  return hasLine ? { ...expected, expiresInMs, line } : { ...expected, expiresInMs };
+  return { ...expected, expiresInMs };
 }
 
 export function createLocalPlan(input, config = DIRECTOR_CONFIG) {
@@ -139,24 +113,24 @@ export function createLocalPlan(input, config = DIRECTOR_CONFIG) {
   return validateDirectorPlan(directorPlanShape(context, context.mood, config), context, config);
 }
 
-export function isRemoteEligible(input, config = DIRECTOR_CONFIG) {
-  return config.remoteEligibleEvents.includes(sanitizeDirectorContext(input, config).event);
-}
-
-export function directorContextKey(input, config = DIRECTOR_CONFIG) {
-  const context = sanitizeDirectorContext(input, config);
-  return [context.event, context.mood, context.section || "", context.dwell || ""].join("|");
-}
-
 // sprite.js emits a self-contained browser script. Keep the browser copy tied
 // to these pure functions rather than maintaining a second director contract.
 export const spriteDirectorRuntime = `
   var DIRECTOR_CONFIG = ${JSON.stringify(DIRECTOR_CONFIG)};
-  var sanitizeDirectorContext = ${sanitizeDirectorContext.toString()};
-  var directorPlanShape = ${directorPlanShape.toString()};
-  var validateDirectorLine = ${validateDirectorLine.toString()};
-  var validateDirectorPlan = ${validateDirectorPlan.toString()};
-  var createLocalPlan = ${createLocalPlan.toString()};
-  var isRemoteEligible = ${isRemoteEligible.toString()};
-  var directorContextKey = ${directorContextKey.toString()};
+  var rawSanitizeDirectorContext = ${sanitizeDirectorContext.toString()};
+  var rawDirectorPlanShape = ${directorPlanShape.toString()};
+  var rawValidateDirectorPlan = ${validateDirectorPlan.toString()};
+  var rawCreateLocalPlan = ${createLocalPlan.toString()};
+  var sanitizeDirectorContext = function(input, config) {
+    return rawSanitizeDirectorContext(input, config || DIRECTOR_CONFIG);
+  };
+  var directorPlanShape = function(input, mood, config) {
+    return rawDirectorPlanShape(input, mood, config || DIRECTOR_CONFIG);
+  };
+  var validateDirectorPlan = function(candidate, input, config) {
+    return rawValidateDirectorPlan(candidate, input, config || DIRECTOR_CONFIG);
+  };
+  var createLocalPlan = function(input, config) {
+    return rawCreateLocalPlan(input, config || DIRECTOR_CONFIG);
+  };
 `;
