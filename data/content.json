@@ -1,5 +1,5 @@
 {
-  "_note": "Single source of truth for the live site and the Studio editor. Website copy is English. Each item has: title, description (one line), detail (markdown, longer), links[], image.",
+  "_note": "Single source of truth for the live site and the Studio editor. Website copy is English. Each item has: title, description (one line), detail (markdown, longer), links[], image (+imageWidth/imageHeight in px, for CLS-free rendering).",
   "profile": {
     "name": "Stan Shih",
     "latinName": "Po-Han Shih",
@@ -31,6 +31,8 @@
       "detail": "Parses the in-page game log with a MutationObserver and reconstructs board state to show live dice distribution, each player's resources, and hidden-card uncertainty. Runs entirely in the browser — no data leaves the machine.",
       "image": "/assets/colonist-stats-icon.png",
       "imageMode": "icon",
+      "imageWidth": 128,
+      "imageHeight": 128,
       "links": [
         { "label": "Chrome Web Store", "href": "https://chromewebstore.google.com/detail/colonistio-stats-tracker/midjajejbacllkidpmngcffkgncmgndm" },
         { "label": "GitHub", "href": "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/colonist-stats-tracker" }
@@ -45,6 +47,8 @@
       "detail": "Loads a transcript and the department's catalog rules, then reports remaining required credits by category. Installable as a PWA and used by real students.",
       "image": "/assets/course-hero.png",
       "imageMode": "contain",
+      "imageWidth": 343,
+      "imageHeight": 361,
       "links": [
         { "label": "Live", "href": "https://course.stan-shih.com" },
         { "label": "GitHub", "href": "https://github.com/stantheman0128/course" }
@@ -59,6 +63,8 @@
       "detail": "Next.js + Upstash Redis with server-side price caching. Follows a real mixed portfolio — cost basis, live valuation, and per-holding breakdowns — without hammering the quote APIs.",
       "image": "/assets/etf-tracker-screenshot.png",
       "imageMode": "contain",
+      "imageWidth": 1280,
+      "imageHeight": 720,
       "links": [
         { "label": "Live", "href": "https://etf-tracker-seven.vercel.app" },
         { "label": "GitHub", "href": "https://github.com/stantheman0128/etf-tracker" }
@@ -73,6 +79,8 @@
       "detail": "Next.js + Supabase + Gemini, with admin tools and a reservation flow. Handles customer questions on LINE and hands off to staff when needed.",
       "image": "/assets/antnest-logo.png",
       "imageMode": "contain",
+      "imageWidth": 820,
+      "imageHeight": 261,
       "links": [
         { "label": "Live", "href": "https://antnest-chatbot-0410.zeabur.app" },
         { "label": "GitHub", "href": "https://github.com/stantheman0128/antnest-chatbot" }
@@ -87,6 +95,8 @@
       "detail": "Groups chat notifications, adds per-source settings, and ships with full Play Store assets. Built in Kotlin with Jetpack Compose.",
       "image": "/assets/line-notify-screenshot.png",
       "imageMode": "",
+      "imageWidth": 1080,
+      "imageHeight": 2412,
       "links": [
         { "label": "Google Play", "href": "https://play.google.com/store/apps/details?id=com.stanslab.linenotify" },
         { "label": "GitHub", "href": "https://github.com/stantheman0128/line-notify-plus" }
@@ -101,6 +111,8 @@
       "detail": "Tracks permission waits, idle states, and activity across many concurrent Claude Code sessions via local hooks, surfaced in a lightweight .NET tray app.",
       "image": "/assets/claudepulse-screenshot.png",
       "imageMode": "contain",
+      "imageWidth": 355,
+      "imageHeight": 307,
       "links": [{ "label": "GitHub", "href": "https://github.com/stantheman0128/claudepulse-win" }]
     },
     {
@@ -112,6 +124,8 @@
       "detail": "A Chrome MV3 extension that embeds a live status widget into claude.ai: a 30-day uptime timeline from status.claude.com, hover previews of each day's incidents, pinned incident details, and outage durations.",
       "image": "/assets/claude-status-icon.png",
       "imageMode": "icon",
+      "imageWidth": 128,
+      "imageHeight": 128,
       "links": [
         { "label": "Chrome Web Store", "href": "https://chromewebstore.google.com/detail/claude-status-monitor/ocjhnlhllljkehgcfkicipmognjlamdp" },
         { "label": "GitHub", "href": "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/claude-status-monitor" }
@@ -126,6 +140,8 @@
       "detail": "Replaces YouTube's fuzzy \"2 weeks ago\" with exact upload timestamps — on watch pages, Shorts, home, subscriptions, history, and playlists.",
       "image": "/assets/youtube-precise-time-icon.png",
       "imageMode": "icon",
+      "imageWidth": 128,
+      "imageHeight": 128,
       "links": [
         { "label": "Chrome Web Store", "href": "https://chromewebstore.google.com/detail/youtube-precise-time/cakbaflkobhcpnmlcbkbmdaioikjighm" },
         { "label": "GitHub", "href": "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/youtube-video-upload-time" }

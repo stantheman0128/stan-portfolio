@@ -80,6 +80,24 @@ Owner-approved idea, deferred. Phases:
 - [ ] Bind RATINGS prod KV + set EXPORT_KEY (ask Stan first)
 - [ ] /fast/ footer link points to `/site?theme=minimal&v=full` — change to `/?v=full` when minimal becomes the root page
 
+## Round 6 (2026-07-10) — Minimal thumbs: intrinsic dimensions (CLS)
+Spec: abe-check Minimal fails "all <img> dimensioned" — 8 work-item thumbs render
+without width/height (minimal.js itemThumb). Fix = bake real pixel sizes into
+content.json (`imageWidth`/`imageHeight`, same convention as patent) and emit the
+attributes in itemThumb with a 4:3 fallback (800x600, matches the .thumb card) so a
+future item without baked dims degrades gracefully. Featherweight untouched (its
+thumbs are fixed 44x44). Verify: `node tools/abe-check.mjs` Minimal dimensioned →
+PASS + Featherweight all green (exit 0), `npx vitest run` green. No push (push
+deploys production; Stan confirms).
+- [x] Measure 8 PNGs (header parse): colonist 128x128 · course 343x361 · etf 1280x720 ·
+      antnest 820x261 · line-notify 1080x2412 · claudepulse 355x307 ·
+      claude-status 128x128 · yt-precise-time 128x128
+- [x] content.json: add imageWidth/imageHeight to the 8 items with images
+- [x] minimal.js itemThumb: emit width/height (+decoding=async), 800x600 fallback
+- [x] Verified: abe-check Minimal 0 of 9 missing w/h (exit 0, Featherweight 9/9),
+      vitest 115/115, live dev check — before/after load box shift 0.00px, tall
+      1080x2412 shot draws undistorted (contain) in the 4:3 card
+
 ## Review
 Round 4 verified end-to-end on https://sprite.stan-portfolio.pages.dev (deployed preview):
 15/15 render smoke checks, featherweight abe-check 9/9 (6.5KB gzip, 9 imgs lazy+dimensioned),

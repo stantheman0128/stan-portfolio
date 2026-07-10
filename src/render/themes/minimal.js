@@ -22,7 +22,11 @@ function itemThumb(it, ci, edit) {
   const mode = it.imageMode || "";
   if (it.image) {
     const cls = mode === "contain" ? "thumb thumb-contain" : mode === "icon" ? "thumb thumb-icon" : "thumb";
-    return `<div class="${cls}"><img src="${esc(it.image)}" alt="${esc(it.title)} preview" loading="lazy"${bindAttr("items." + ci + ".image", edit, "image")}></div>`;
+    // Intrinsic dimensions from content.json keep CLS at 0; the 4:3 fallback
+    // matches the .thumb card so an item without baked dims still reserves space.
+    const w = it.imageWidth | 0 || 800;
+    const h = it.imageHeight | 0 || 600;
+    return `<div class="${cls}"><img src="${esc(it.image)}" alt="${esc(it.title)} preview" width="${w}" height="${h}" loading="lazy" decoding="async"${bindAttr("items." + ci + ".image", edit, "image")}></div>`;
   }
   // No image: a typographic card built from the initials, never a broken <img>.
   const initials = esc(
