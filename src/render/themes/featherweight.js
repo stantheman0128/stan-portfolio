@@ -4,6 +4,17 @@
 import { esc, md, realLinks, bindAttr, editLinksHTML } from "../util.js";
 import { creatorEntryJS } from "../fx/creator-entry.js";
 
+function thumbnailBase(image) {
+  const match = String(image || "").match(/^\/assets\/(.+)\.[a-z0-9]+$/i);
+  const segments = match ? match[1].split("/") : [];
+  if (
+    !match ||
+    match[1].includes("\\") ||
+    segments.some((segment) => !segment || segment === "." || segment === "..")
+  ) return "";
+  return `/assets/thumbs/${match[1]}`;
+}
+
 export function render(content, opts = {}) {
   const edit = !!(opts && opts.edit);
   const p = content.profile || {};
@@ -71,9 +82,15 @@ export function render(content, opts = {}) {
       if (it.image) {
         const mode =
           it.imageMode === "icon" ? " icon" : it.imageMode === "contain" ? " contain" : "";
+        const thumbBase = edit ? "" : thumbnailBase(it.image);
+        const imageAttrs = thumbBase
+          ? `src="${esc(thumbBase + "-88.webp")}" ` +
+            `srcset="${esc(thumbBase + "-88.webp")} 88w, ${esc(thumbBase + "-132.webp")} 132w" ` +
+            `sizes="(max-width: 30rem) 38px, 44px"`
+          : `src="${esc(it.image)}"`;
         thumb =
           `<span class="thumb${mode}">` +
-          `<img src="${esc(it.image)}" alt="${esc(it.title)} thumbnail" ` +
+          `<img ${imageAttrs} alt="${esc(it.title)} thumbnail" ` +
           `width="44" height="44" loading="lazy" decoding="async"></span>`;
       } else {
         // Derive a short glyph from the title so the card never reads "undefined".
@@ -369,11 +386,6 @@ section{margin-top:calc(var(--space)*2.1)}
 .skills .body span{font-size:var(--s-1);color:var(--ink-2);border:var(--rule) solid var(--line);border-radius:99px;padding:.16rem .65rem;background:var(--bg)}
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 @media (prefers-reduced-motion:no-preference){
-.hero > *{animation:fwrise .55s cubic-bezier(.165,.84,.44,1) backwards}
-.hero > :nth-child(2){animation-delay:.06s}.hero > :nth-child(3){animation-delay:.12s}
-.hero > :nth-child(4){animation-delay:.18s}.hero > :nth-child(5){animation-delay:.24s}
-.hero > :nth-child(6){animation-delay:.3s}.hero > :nth-child(7){animation-delay:.36s}
-@keyframes fwrise{from{opacity:0;transform:translateY(9px)}}
 .thumb{transition:transform .18s cubic-bezier(.165,.84,.44,1)}
 .item:hover .thumb{transform:translateY(-2px)}
 }
@@ -404,8 +416,8 @@ footer .grow{flex:1}
 .entry .top{flex-direction:column;gap:.1rem}
 }
 img{max-width:100%;height:auto}
-.fw-speed{display:none}
-.fw-speed.on{display:inline-flex;align-items:baseline;gap:.5rem;margin-top:calc(var(--space)*.8);font-size:var(--s-1);color:var(--ink-3);letter-spacing:.01em}
+.fw-speed{display:inline-flex;visibility:hidden;min-height:2.3rem;align-items:baseline;gap:.5rem;margin-top:calc(var(--space)*.8);font-size:var(--s-1);color:var(--ink-3);letter-spacing:.01em}
+.fw-speed.on{visibility:visible}
 .fw-speed .dot{align-self:center;width:.42rem;height:.42rem;border-radius:50%;background:var(--live);flex:0 0 auto;animation:fw-pulse 2.6s ease-out infinite}
 .fw-speed .n{font-weight:700;color:var(--ink);font-size:var(--s1);letter-spacing:-.015em;font-feature-settings:"tnum" 1}
 .fw-speed .u{color:var(--ink-2)}
@@ -468,8 +480,28 @@ img{max-width:100%;height:auto}
 </div>
 <script>
 (function(){
+  var rumLcp = 0;
+  var rumCls = 0;
+  var rumSent = false;
+  try {
+    new PerformanceObserver(function(list){
+      var entries = list.getEntries();
+      if (entries.length) rumLcp = entries[entries.length - 1].startTime || 0;
+    }).observe({type:"largest-contentful-paint", buffered:true});
+    new PerformanceObserver(function(list){
+      list.getEntries().forEach(function(entry){
+        if (!entry.hadRecentInput) rumCls += entry.value || 0;
+      });
+    }).observe({type:"layout-shift", buffered:true});
+  } catch (e) {}
   function navEntry(){
     return performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
+  }
+  function transferBytes(nav){
+    var total = nav && nav.transferSize ? nav.transferSize : 0;
+    var resources = performance.getEntriesByType ? performance.getEntriesByType("resource") : [];
+    for (var i = 0; i < resources.length; i++) total += resources[i].transferSize || 0;
+    return Math.round(total);
   }
   function readout(nav){
     var ms = nav && nav.domContentLoadedEventEnd ? nav.domContentLoadedEventEnd : performance.now();
@@ -488,7 +520,8 @@ img{max-width:100%;height:auto}
   // actual traffic. colo + country are stamped server-side from request.cf.
   function beacon(nav){
     try {
-      if (!nav || !navigator.sendBeacon) return;
+      if (!nav || !navigator.sendBeacon || rumSent) return;
+      rumSent = true;
       var paint = performance.getEntriesByType("paint").filter(function(p){
         return p.name === "first-contentful-paint";
       })[0];
@@ -500,14 +533,18 @@ img{max-width:100%;height:auto}
         dcl: nav.domContentLoadedEventEnd,
         load: nav.loadEventEnd || nav.duration,
         rtt: c.rtt || 0,
+        lcp: rumLcp,
+        cls: rumCls,
+        bytes: transferBytes(nav),
         conn: c.effectiveType || ""
       }));
     } catch (e) {}
   }
   function go(){
     readout(navEntry());
-    // loadEventEnd is 0 until load fully fires; read one tick later.
-    setTimeout(function(){ beacon(navEntry()); }, 0);
+    // Give buffered vitals and lazy-threshold resources a moment to settle.
+    setTimeout(function(){ beacon(navEntry()); }, 1000);
+    addEventListener("pagehide", function(){ beacon(navEntry()); }, {once:true});
   }
   if (document.readyState === "complete") go();
   else addEventListener("load", go);

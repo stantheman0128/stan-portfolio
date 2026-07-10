@@ -1,8 +1,7 @@
 // Front door on the edge. This Pages Function answers "/" from an embedded copy of
-// the baked featherweight HTML, so every Cloudflare POP serves it from resident code
-// with no origin fetch and no cache dependency. That removes the cold-POP cache-MISS
-// penalty (a first visitor at a low-traffic POP otherwise waits ~300-470ms to refill).
-// Warm and cold now behave identically: ~25-50ms TTFB worldwide.
+// the baked featherweight HTML, so a cache miss still stays inside resident edge code
+// with no asset-origin fetch. A short CDN cache keeps the fast HIT path without letting
+// stale-while-revalidate pin an old deployment at a POP for a day.
 //
 // We return RAW HTML and let the Cloudflare edge apply Brotli/gzip. Setting
 // Content-Encoding ourselves double-compresses once the brotli_content_encoding
@@ -16,11 +15,13 @@
 // top-level _worker.js: that would disable the whole functions/ directory (the API).
 import { HTML } from "./_front-door.js";
 
-// Same browser cache policy as the static _headers rule: short browser TTL +
-// stale-while-revalidate so return visits are instant without a 304 round trip.
+// Pages does not apply public/_headers to Function responses. Keep the browser's
+// short TTL + SWR, but bound Cloudflare's own cached copy to five minutes with no
+// edge SWR. Cloudflare consumes the edge-only header before returning the response.
 const HEADERS = {
   "content-type": "text/html; charset=utf-8",
   "cache-control": "public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800",
+  "cloudflare-cdn-cache-control": "public, max-age=300",
   "x-content-type-options": "nosniff",
 };
 

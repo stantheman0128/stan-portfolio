@@ -9,7 +9,8 @@
 //
 // Column map (from functions/_lib/rum.js):
 //   blob1=colo blob2=country blob3=path blob4=conn
-//   double1=ttfb double2=fcp double3=dcl double4=load double5=rtt ; index1=country
+//   double1=ttfb double2=fcp double3=dcl double4=load double5=rtt
+//   double6=lcp double7=cls double8=bytes ; index1=country
 const ACCOUNT_ID = process.env.CF_ACCOUNT_ID || "97cf88bf307d6a78c496e80ae99677de";
 const TOKEN = process.env.CF_ANALYTICS_TOKEN || process.env.CLOUDFLARE_API_TOKEN;
 const DAYS = Number(process.argv[2] || 1);
@@ -49,6 +50,18 @@ SELECT SUM(_sample_interval) AS visits,
 FROM rum_events
 WHERE timestamp > NOW() - INTERVAL '${DAYS}' DAY`;
 
+// Rows written before the expanded beacon have double6=0. Keep them in the
+// historical timing table above, but exclude them from the new vitals summary.
+const vitals = `
+SELECT SUM(_sample_interval) AS visits,
+  quantileWeighted(0.50, double6, _sample_interval) AS lcp_p50,
+  quantileWeighted(0.75, double6, _sample_interval) AS lcp_p75,
+  quantileWeighted(0.75, double7, _sample_interval) AS cls_p75,
+  quantileWeighted(0.50, double8, _sample_interval) AS bytes_p50,
+  quantileWeighted(0.75, double8, _sample_interval) AS bytes_p75
+FROM rum_events
+WHERE timestamp > NOW() - INTERVAL '${DAYS}' DAY AND double6 > 0`;
+
 const round = (r) => {
   for (const k of Object.keys(r)) if (typeof r[k] === "number") r[k] = Math.round(r[k]);
   return r;
@@ -58,6 +71,9 @@ try {
   const o = await sql(overall);
   console.log(`\n=== RUM overall (last ${DAYS}d) ===`);
   console.table((o.data || []).map(round));
+  const v = await sql(vitals);
+  console.log(`=== expanded vitals (post-upgrade rows, ms / bytes) ===`);
+  console.table((v.data || []).map(round));
   const c = await sql(byCountry);
   console.log(`=== by country (ms) ===`);
   console.table((c.data || []).map(round));

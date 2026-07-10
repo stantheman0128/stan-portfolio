@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { frontDoorModuleSource } from "../tools/front-door-bake.mjs";
+import { onRequest } from "../functions/index.js";
 
 // The front-door Pages Function (functions/index.js) serves the baked HTML from an
 // embedded module so every POP answers from resident code with no origin fetch (kills
@@ -19,5 +20,18 @@ describe("front-door function payload", () => {
     // once the brotli_content_encoding runtime flag is on.
     const src = frontDoorModuleSource(html);
     expect(src).not.toContain("BR_B64");
+  });
+});
+
+describe("front-door function cache policy", () => {
+  it("keeps browser SWR but bounds edge freshness without edge SWR", () => {
+    const response = onRequest();
+
+    expect(response.headers.get("cache-control")).toBe(
+      "public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800"
+    );
+    expect(response.headers.get("cloudflare-cdn-cache-control")).toBe(
+      "public, max-age=300"
+    );
   });
 });

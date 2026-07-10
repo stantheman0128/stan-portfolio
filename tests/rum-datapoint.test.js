@@ -7,20 +7,40 @@ import { buildRumDataPoint } from "../functions/_lib/rum.js";
 describe("RUM data point builder", () => {
   it("maps timings to doubles and geo/context to blobs", () => {
     const dp = buildRumDataPoint(
-      { path: "/", ttfb: 90, fcp: 120, dcl: 200, load: 240, rtt: 50, conn: "4g" },
+      {
+        path: "/",
+        ttfb: 90,
+        fcp: 120,
+        dcl: 200,
+        load: 240,
+        rtt: 50,
+        lcp: 125,
+        cls: 0.004,
+        bytes: 21000,
+        conn: "4g",
+      },
       { colo: "TPE", country: "TW" },
     );
     expect(dp.blobs).toEqual(["TPE", "TW", "/", "4g"]);
-    expect(dp.doubles).toEqual([90, 120, 200, 240, 50]);
+    expect(dp.doubles).toEqual([90, 120, 200, 240, 50, 125, 0.004, 21000]);
     expect(dp.indexes).toEqual(["TW"]);
   });
 
   it("sanitizes non-numbers, negatives and Infinity to 0", () => {
     const dp = buildRumDataPoint(
-      { ttfb: -5, fcp: "x", dcl: NaN, load: undefined, rtt: Infinity },
+      {
+        ttfb: -5,
+        fcp: "x",
+        dcl: NaN,
+        load: undefined,
+        rtt: Infinity,
+        lcp: -1,
+        cls: "bad",
+        bytes: Infinity,
+      },
       {},
     );
-    expect(dp.doubles).toEqual([0, 0, 0, 0, 0]);
+    expect(dp.doubles).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
   });
 
   it("defaults country to unknown and caps the path blob", () => {
@@ -38,7 +58,7 @@ describe("RUM data point builder", () => {
 
   it("tolerates missing body and cf entirely", () => {
     const dp = buildRumDataPoint(undefined, undefined);
-    expect(dp.doubles).toEqual([0, 0, 0, 0, 0]);
+    expect(dp.doubles).toEqual([0, 0, 0, 0, 0, 0, 0, 0]);
     expect(dp.indexes).toEqual(["unknown"]);
   });
 });
