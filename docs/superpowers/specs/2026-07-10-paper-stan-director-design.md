@@ -151,7 +151,11 @@ instructions that can replace the system role.
 ## Cloudflare boundary
 
 `functions/api/paper-stan/reply.js` uses the native Pages `AI` binding and
-`@cf/meta/llama-3.2-1b-instruct`. The endpoint returns `403 disabled` unless
+`@cf/meta/llama-3.1-8b-instruct-fast`. Requests use Workers AI JSON Mode with a
+closed schema for `reply`, `tone`, `gesture`, and `followUp`; the server still
+applies its own first-person, ASCII, length, URL, markdown, emoji, and installed-
+gesture validation before anything reaches the browser. The endpoint returns
+`403 disabled` unless
 `PAPER_STAN_AI_ENABLED` is exactly `"true"`. That variable remains absent from
 `wrangler.toml`, so a deployment cannot begin inference accidentally.
 

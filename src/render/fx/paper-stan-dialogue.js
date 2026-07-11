@@ -4,7 +4,7 @@ import content from "../../../data/content.json" with { type: "json" };
 
 export const DIALOGUE_CONFIG = {
   route: "/api/paper-stan/reply",
-  model: "@cf/meta/llama-3.2-1b-instruct",
+  model: "@cf/meta/llama-3.1-8b-instruct-fast",
   maxRequestBytes: 3000,
   maxQuestionChars: 420,
   minReplyWords: 4,
@@ -26,6 +26,21 @@ export const DIALOGUE_CONFIG = {
   allowedVisitIntents: ["projects", "recruiting", "curious"],
   allowedConversationStages: ["new", "invited", "intent_shared", "engaged"],
 };
+
+export const DIALOGUE_RESPONSE_FORMAT = Object.freeze({
+  type: "json_schema",
+  json_schema: Object.freeze({
+    type: "object",
+    properties: Object.freeze({
+      reply: Object.freeze({ type: "string" }),
+      tone: Object.freeze({ type: "string", enum: DIALOGUE_CONFIG.allowedTones }),
+      gesture: Object.freeze({ type: "string", enum: DIALOGUE_CONFIG.allowedGestures }),
+      followUp: Object.freeze({ anyOf: [{ type: "string" }, { type: "null" }] }),
+    }),
+    required: Object.freeze(["reply", "tone", "gesture", "followUp"]),
+    additionalProperties: false,
+  }),
+});
 
 function projectKnowledge(item) {
   return {
@@ -280,11 +295,27 @@ export function createFallbackDialogueTurn(context, history, question, config = 
   return validateDialogueTurn(fallback, config);
 }
 
+function completeDialogueFollowUp(value, config) {
+  const valid = validateDialogueFollowUp(value, config);
+  if (valid || typeof value !== "string" || !value.endsWith("?")) return valid;
+
+  const firstPerson = `I'm curious: ${value.charAt(0).toLowerCase()}${value.slice(1)}`;
+  return validateDialogueFollowUp(firstPerson, config);
+}
+
 // Small instruction models sometimes return a plain sentence instead of the
 // requested JSON. A semantic local completion keeps that answer useful without
 // letting the model invent an unsupported animation or timing plan.
 export function completeDialogueTurn(candidate, context, config = DIALOGUE_CONFIG) {
-  const turn = validateDialogueTurn(candidate, config);
+  const normalizedCandidate = candidate && typeof candidate === "object" && !Array.isArray(candidate)
+    ? { ...candidate }
+    : candidate;
+  if (typeof normalizedCandidate?.followUp === "string") {
+    const completedFollowUp = completeDialogueFollowUp(normalizedCandidate.followUp, config);
+    if (completedFollowUp) normalizedCandidate.followUp = completedFollowUp;
+  }
+
+  const turn = validateDialogueTurn(normalizedCandidate, config);
   if (!turn) return null;
 
   const safeContext = sanitizeDialogueContext(context, config);

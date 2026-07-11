@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { onRequestPost } from "../functions/api/paper-stan/reply.js";
 import {
   DIALOGUE_CONFIG,
+  DIALOGUE_RESPONSE_FORMAT,
   buildDialogueMessages,
   completeDialogueTurn,
   sanitizeDialogueContext,
@@ -212,6 +213,31 @@ describe("Paper Stan dialogue contract", () => {
     });
   });
 
+  it("keeps a grounded turn when the model omits first person from its follow-up", () => {
+    const reply = "I built Course Checker to make graduation rules easier to inspect.";
+    const candidate = {
+      reply,
+      tone: "bright",
+      gesture: "point_project",
+      followUp: "What problem does it solve for students?",
+    };
+    const context = {
+      visitIntent: "projects",
+      conversationStage: "intent_shared",
+    };
+
+    expect(completeDialogueTurn(candidate, context)).toEqual({
+      reply,
+      tone: "bright",
+      gesture: "point_project",
+      followUp: "I'm curious: what problem does it solve for students?",
+    });
+    expect(completeDialogueTurn({
+      ...candidate,
+      followUp: "See my notes at https://example.com?",
+    }, context)).toBeNull();
+  });
+
   it("keeps all automatic motion local while exposing a user-triggered dialogue path", () => {
     expect(spriteJS).not.toContain("requestRemotePlan");
     expect(spriteJS).not.toContain("remotePlanCache");
@@ -221,6 +247,22 @@ describe("Paper Stan dialogue contract", () => {
 });
 
 describe("Paper Stan dialogue endpoint", () => {
+  it("uses a JSON-mode model and a closed response vocabulary", () => {
+    expect(DIALOGUE_CONFIG.model).toBe("@cf/meta/llama-3.1-8b-instruct-fast");
+    expect(DIALOGUE_RESPONSE_FORMAT).toMatchObject({
+      type: "json_schema",
+      json_schema: {
+        type: "object",
+        required: ["reply", "tone", "gesture", "followUp"],
+        additionalProperties: false,
+        properties: {
+          tone: { enum: DIALOGUE_CONFIG.allowedTones },
+          gesture: { enum: DIALOGUE_CONFIG.allowedGestures },
+        },
+      },
+    });
+  });
+
   it("stays disabled until the Pages environment explicitly opts in", async () => {
     const run = vi.fn();
     const response = await post({ question: "What did you build?" }, { AI: { run } });
@@ -232,12 +274,12 @@ describe("Paper Stan dialogue endpoint", () => {
 
   it("returns one validated reply from public project knowledge", async () => {
     const run = vi.fn().mockResolvedValue({
-      response: JSON.stringify({
+      response: {
         reply: "I built Course Checker to make graduation rules easier to inspect.",
         tone: "curious",
         gesture: "point_project",
         followUp: "I'm curious: what would you like to inspect next?",
-      }),
+      },
     });
     const response = await post({
       question: "What is Course Checker?",
@@ -266,6 +308,7 @@ describe("Paper Stan dialogue endpoint", () => {
     expect(run).toHaveBeenCalledWith(DIALOGUE_CONFIG.model, expect.objectContaining({
       messages: expect.any(Array),
       max_tokens: DIALOGUE_CONFIG.maxReplyTokens,
+      response_format: DIALOGUE_RESPONSE_FORMAT,
     }));
     const system = run.mock.calls[0][1].messages[0].content;
     const history = run.mock.calls[0][1].messages[1].content;

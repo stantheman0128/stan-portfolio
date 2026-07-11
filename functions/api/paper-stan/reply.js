@@ -4,6 +4,7 @@ import {
   createFallbackDialogueTurn,
   createProjectContinuationTurn,
   DIALOGUE_CONFIG,
+  DIALOGUE_RESPONSE_FORMAT,
   sanitizeDialogueRequest,
 } from "../../../src/render/fx/paper-stan-dialogue.js";
 
@@ -92,6 +93,7 @@ export async function onRequestPost({ request, env }) {
       messages: buildDialogueMessages(input.question, input.context, input.history),
       temperature: DIALOGUE_CONFIG.temperature,
       max_tokens: DIALOGUE_CONFIG.maxReplyTokens,
+      response_format: DIALOGUE_RESPONSE_FORMAT,
     });
     const rawModelResponse = result && result.response;
     const turn = completeDialogueTurn(parseModelResponse(rawModelResponse), input.context);
