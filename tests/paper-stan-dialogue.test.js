@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { onRequestPost } from "../functions/api/paper-stan/reply.js";
 import {
@@ -6,6 +7,7 @@ import {
   buildDialogueMessages,
   completeDialogueTurn,
   createFallbackDialogueTurn,
+  initPaperStanKnowledge,
   sanitizeDialogueContext,
   sanitizeDialogueHistory,
   sanitizeDialogueRequest,
@@ -13,6 +15,11 @@ import {
   validateDialogueTurn,
 } from "../src/render/fx/paper-stan-dialogue.js";
 import { spriteJS } from "../src/render/fx/sprite.js";
+
+// Same readFileSync convention as the other suites: the dialogue module takes
+// injected content instead of importing the JSON itself (Node needs an import
+// attribute the cloud build's esbuild rejects).
+initPaperStanKnowledge(JSON.parse(readFileSync(new URL("../data/content.json", import.meta.url))));
 
 function post(body, env) {
   return onRequestPost({

@@ -1,3 +1,7 @@
+// Plain JSON import (no `with { type: "json" }` attribute): this file is only
+// ever bundled by esbuild (wrangler), which supports JSON natively; the cloud
+// build's wrangler 3.x esbuild rejects import attributes.
+import content from "../../../data/content.json";
 import {
   buildDialogueMessages,
   completeDialogueTurn,
@@ -5,8 +9,11 @@ import {
   createProjectContinuationTurn,
   DIALOGUE_CONFIG,
   DIALOGUE_RESPONSE_FORMAT,
+  initPaperStanKnowledge,
   sanitizeDialogueRequest,
 } from "../../../src/render/fx/paper-stan-dialogue.js";
+
+initPaperStanKnowledge(content);
 
 const JSON_HEADERS = {
   "content-type": "application/json",

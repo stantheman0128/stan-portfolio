@@ -1,8 +1,11 @@
 // Paper Stan's conversational contract is intentionally separate from the
 // local motion director. The model can write an answer, never schedule motion.
-// No `with { type: "json" }` here: the Pages cloud build bundles Functions
-// with wrangler 3.x, whose esbuild rejects import attributes.
-import content from "../../../data/content.json";
+// This module deliberately does NOT import data/content.json: the ESM JSON
+// import needs `with { type: "json" }` under plain Node (postbuild reaches
+// this file through sprite.js), but the Pages cloud build bundles Functions
+// with wrangler 3.x whose esbuild rejects import attributes. Callers that
+// own a content document (reply.js, tests) inject it via
+// initPaperStanKnowledge(content), matching the renderSite(content) pattern.
 
 export const DIALOGUE_CONFIG = {
   route: "/api/paper-stan/reply",
@@ -62,28 +65,40 @@ function projectKnowledge(item) {
   };
 }
 
-// This mirrors public portfolio facts at build time. URLs, contact details,
-// images, and the raw content document are never included in model context.
-export const PAPER_STAN_KNOWLEDGE = Object.freeze({
-  profile: Object.freeze({
-    name: content.profile.name,
-    latinName: content.profile.latinName,
-    location: content.profile.location,
-    role: content.profile.role,
-    tagline: content.profile.tagline,
-    subtagline: content.profile.subtagline,
-    availability: content.profile.available,
-  }),
-  projects: Object.freeze(content.items.map(projectKnowledge)),
-  patent: Object.freeze({
-    title: content.patent.title,
-    ids: content.patent.ids,
-    year: content.patent.year,
-    role: content.patent.role,
-    blurb: content.patent.blurb,
-    highlights: content.patent.highlights,
-  }),
-});
+// This mirrors public portfolio facts. URLs, contact details, images, and the
+// raw content document are never included in model context.
+let PAPER_STAN_KNOWLEDGE = null;
+
+export function initPaperStanKnowledge(content) {
+  PAPER_STAN_KNOWLEDGE = Object.freeze({
+    profile: Object.freeze({
+      name: content.profile.name,
+      latinName: content.profile.latinName,
+      location: content.profile.location,
+      role: content.profile.role,
+      tagline: content.profile.tagline,
+      subtagline: content.profile.subtagline,
+      availability: content.profile.available,
+    }),
+    projects: Object.freeze(content.items.map(projectKnowledge)),
+    patent: Object.freeze({
+      title: content.patent.title,
+      ids: content.patent.ids,
+      year: content.patent.year,
+      role: content.patent.role,
+      blurb: content.patent.blurb,
+      highlights: content.patent.highlights,
+    }),
+  });
+  return PAPER_STAN_KNOWLEDGE;
+}
+
+function requireKnowledge() {
+  if (!PAPER_STAN_KNOWLEDGE) {
+    throw new Error("Paper Stan knowledge not initialised: call initPaperStanKnowledge(content) first");
+  }
+  return PAPER_STAN_KNOWLEDGE;
+}
 
 const GENERIC_QUERY_TERMS = new Set([
   "about", "and", "are", "background", "build", "builds", "built", "can", "did", "does", "for",
@@ -104,18 +119,19 @@ function projectRelevance(project, terms) {
 }
 
 function publicPortfolioFacts(question) {
+  const knowledge = requireKnowledge();
   const terms = queryTerms(question);
-  const ranked = PAPER_STAN_KNOWLEDGE.projects
+  const ranked = knowledge.projects
     .map((project) => ({ project, score: projectRelevance(project, terms) }))
     .filter(({ score }) => score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 3)
     .map(({ project }) => project);
-  const projects = ranked.length ? ranked : PAPER_STAN_KNOWLEDGE.projects;
+  const projects = ranked.length ? ranked : knowledge.projects;
   const includeDetail = ranked.length > 0;
   const patentTerms = ["patent", "collision", "vehicle", "travel", "us10699576b1", "twm578665u"];
   const mentionPatent = terms.some((term) => patentTerms.includes(term));
-  const profile = PAPER_STAN_KNOWLEDGE.profile;
+  const profile = knowledge.profile;
   const lines = [
     "Public portfolio facts:",
     "Identity:",
@@ -134,7 +150,7 @@ function publicPortfolioFacts(question) {
   ];
 
   if (mentionPatent) {
-    const patent = PAPER_STAN_KNOWLEDGE.patent;
+    const patent = knowledge.patent;
     lines.push(`Patent: ${patent.title} (${patent.year}, ${patent.role}): ${patent.blurb} Highlights: ${patent.highlights.join("; ")}.`);
   }
   return lines.join("\n");
@@ -277,7 +293,7 @@ export function createProjectContinuationTurn(context, history, question, config
   if (!safeHistory || !safeQuestion || !isVagueFollowUp(safeQuestion)) return null;
 
   const terms = queryTerms(`${safeQuestion} ${safeHistory.paperStanReply}`);
-  const match = PAPER_STAN_KNOWLEDGE.projects
+  const match = requireKnowledge().projects
     .map((project) => ({ project, score: projectRelevance(project, terms) }))
     .filter(({ score }) => score > 0)
     .sort((a, b) => b.score - a.score)[0];
