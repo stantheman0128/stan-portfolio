@@ -1,6 +1,8 @@
 // Paper Stan's conversational contract is intentionally separate from the
 // local motion director. The model can write an answer, never schedule motion.
-import content from "../../../data/content.json" with { type: "json" };
+// No `with { type: "json" }` here: the Pages cloud build bundles Functions
+// with wrangler 3.x, whose esbuild rejects import attributes.
+import content from "../../../data/content.json";
 
 export const DIALOGUE_CONFIG = {
   route: "/api/paper-stan/reply",
