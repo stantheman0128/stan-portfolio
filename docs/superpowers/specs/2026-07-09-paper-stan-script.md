@@ -93,8 +93,10 @@ When the reward photo is being chased (40s cooldown, ~60% chance) -> action look
 - Return after clicking an external link (within 30 min) -> action happy -> "You went to look at my stuff. And?"
 - Return otherwise -> action look -> "You're back. Kept your spot warm."
 
-## L. Dismiss (the x on the bubble)
-- "Got it, I'll hush. Tap me if you change your mind." Then he walks home and sleeps, and stays quiet for the rest of the session (remembered).
+## L. Close (the x on the bubble)
+- Close the current bubble only. Paper Stan remains visible and interactive, and the `?` button can reopen the conversation immediately.
+- Closing while an AI request is pending invalidates that browser request token, so a late response cannot reopen the bubble.
+- Legacy `quest-v2.spriteDismissed` state is cleared on startup. The x must never persistently fade, sleep, hide, or disable Paper Stan again.
 
 ## M. Alive behavior layer
 - **Expression axis**: `smile` and `frown` are independent of the puppet action.

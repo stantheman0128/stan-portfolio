@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { spriteJS } from "../src/render/fx/sprite.js";
+import { spriteHTML, spriteJS } from "../src/render/fx/sprite.js";
 import { LINES, MOODS, PERFORMANCES } from "../src/render/fx/sprite-data.js";
 import {
   DIRECTOR_CONFIG,
@@ -89,6 +89,41 @@ describe("Paper Stan local director", () => {
     expect(spriteJS).toContain('if (bubble.classList.contains("on")) return;');
     expect(spriteJS).toContain('bubble.classList.contains("asking") && !opts.dialogueReply');
     expect(spriteJS).toContain('!bubble.classList.contains("on") || bubble.classList.contains("asking")');
+  });
+
+  it("closes only the conversation and revives legacy dismissed visitors", () => {
+    expect(spriteHTML).toContain('aria-label="Close Paper Stan conversation"');
+    expect(spriteHTML).not.toContain("Stop guiding me");
+    expect(spriteJS).toContain("if (q.spriteDismissed) window.QUEST.dismissSprite(false);");
+    expect(spriteJS).toContain("var dismissed = false;");
+    expect(spriteJS).not.toContain("window.QUEST.dismissSprite(true)");
+
+    const closeHandler = spriteJS.slice(
+      spriteJS.indexOf('bX.addEventListener("click"'),
+      spriteJS.indexOf("function nextTarget"),
+    );
+    expect(closeHandler).toContain("dialogueRequestToken++");
+    expect(closeHandler).toContain("hide();");
+    expect(closeHandler).not.toContain("askButton.hidden");
+    expect(closeHandler).not.toContain("travel(");
+    expect(closeHandler).not.toContain('setMode("sleep")');
+  });
+
+  it("keeps local dialogue status copy in Paper Stan's paper-aware voice", () => {
+    for (const line of [
+      "My paper brain is unfolding this one.",
+      "I need one tiny paper beat before my next answer.",
+      "I dropped the thread to my project notes.",
+    ]) {
+      expect(spriteJS).toContain(line);
+    }
+    for (const stale of [
+      "I'm thinking.",
+      "I need one small moment before the next answer.",
+      "I could not reach my public project notes just now.",
+    ]) {
+      expect(spriteJS).not.toContain(stale);
+    }
   });
 
   it("keeps invitations local and queues only bounded conversational gestures", () => {

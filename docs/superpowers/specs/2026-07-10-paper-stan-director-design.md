@@ -1,6 +1,6 @@
-# Paper Stan Conversation v5
+# Paper Stan Conversation v6
 
-Date: 2026-07-10
+Date: 2026-07-12
 Branch: `feat/paper-stan-alive`
 Status: implemented locally, not deployed
 
@@ -35,6 +35,10 @@ personalization, or a production deployment.
 8. A returned semantic gesture is queued until the puppet is idle. It cannot
    cut through drag, travel, tour, an active performance, or reduced-motion
    policy. Timing, frames, orientations, and cancellation stay local.
+9. The bubble x closes only the current conversation. It invalidates any
+   pending browser request token, leaves the mascot interactive, and allows the
+   `?` button to reopen immediately. Startup clears the obsolete persisted
+   `spriteDismissed` flag from older builds.
 
 The browser runtime is a standalone copy of the small director and dialogue
 validators. It does not serialize module function source, because production
@@ -90,7 +94,7 @@ The model is asked for exactly one object:
   "reply": "I built Course Checker to make graduation rules easier to inspect.",
   "tone": "curious",
   "gesture": "point_project",
-  "followUp": "I'm curious: which project caught your eye first?"
+  "followUp": "I've got to ask: which project caught your eye first?"
 }
 ```
 
@@ -113,6 +117,11 @@ follow-up, `completeDialogueTurn()` supplies only the matching installed
 defaults. An explicit model choice such as `gesture: "none"` or
 `followUp: null` is preserved.
 
+If the model puts a safe first-person declarative voice beat in `followUp`
+instead of a question, the server validates that sentence independently and
+folds it into `reply`. Unsafe, oversized, URL-bearing, or otherwise invalid
+content still rejects the model turn.
+
 If a model reply is malformed or Workers AI throws, the server never exposes
 that output. It returns a safe, public-fact-based local turn for the visitor's
 intent instead. This keeps the conversation and local motion system usable
@@ -134,6 +143,10 @@ slightly quirky, and curious about why people make things. It requires:
 - direct answers about public identity, work style, availability, projects, and
   patents;
 - concise warmth or wit when public facts support it;
+- the same compact, observant, upbeat, lightly mischievous cadence as the baked
+  local reactions;
+- a direct factual answer plus one fresh first-person voice beat based on paper,
+  curiosity, or a noun already present in the answer;
 - a semantic tone, gesture, and optional next question that each serve the
   current conversational turn;
 - no invented clients, collaborators, private motivation, metrics, hidden
@@ -185,7 +198,9 @@ npx wrangler pages dev dist --port 5190 --compatibility-date 2026-06-10 --show-i
 Open `http://127.0.0.1:5190/interactive`, wait for the local invitation, select
 an intent, and ask a project question. Verify that the input remains available
 when a reply or follow-up asks for a response, returned gestures wait for an
-idle moment, and browser console output is clean.
+idle moment, and browser console output is clean. Close the bubble while a
+request is pending and verify that the late result does not reopen it, the `?`
+button remains enabled, and tapping Paper Stan still produces a full reaction.
 
 To invoke the real model locally, create the ignored `.dev.vars` file:
 
@@ -205,4 +220,5 @@ enable the variable without the owner's approval.
 - Known-project vague follow-ups return public facts without inference.
 - The browser helpers remain valid after production minification.
 - Invalid model output and inference errors resolve to validated local turns.
+- Closing a conversation never persists a disabled or sleeping mascot state.
 - `public/moana-puppet-kit/` remains untouched.

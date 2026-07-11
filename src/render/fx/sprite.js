@@ -155,7 +155,7 @@ export const spriteHTML = `
   <button id="sprite-ask" type="button" aria-label="Ask Paper Stan" title="Ask Paper Stan">?</button>
 </div>
 <div id="bubble" role="dialog" aria-label="Paper Stan">
-  <button class="b-x" type="button" aria-label="Stop guiding me">&times;</button>
+  <button class="b-x" type="button" aria-label="Close Paper Stan conversation" title="Close conversation">&times;</button>
   <span class="b-text"></span>
   <div class="b-chips"></div>
   <form class="b-ask-form" hidden>
@@ -249,8 +249,8 @@ ${spriteDialogueRuntime}
     dialogueHistory = { paperStanReply: turn.reply };
     if (turn.followUp) dialogueHistory.paperStanFollowUp = turn.followUp;
   }
-  var dismissed = q.spriteDismissed;
-  if (dismissed) askButton.hidden = true;
+  var dismissed = false;
+  if (q.spriteDismissed) window.QUEST.dismissSprite(false);
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var lastBubble = 0, suggests = 0, lastScroll = 0, bubbleTimer = 0;
   var mode = "idle", moving = false, touring = false, dragging = false, x = 0, y = 0, faceLeft = false;
@@ -720,7 +720,7 @@ ${spriteDialogueRuntime}
     })();
   }
   var DEFAULT_ASK_PLACEHOLDER = "Ask about Stan or a project";
-  var dialogueBusy = false, lastDialogueAt = 0, invitationAttempts = 0;
+  var dialogueBusy = false, lastDialogueAt = 0, invitationAttempts = 0, dialogueRequestToken = 0;
   function setDialogueFormOpen(open) {
     bubble.classList.toggle("asking", !!open);
     bAskForm.hidden = !open;
@@ -737,7 +737,7 @@ ${spriteDialogueRuntime}
   function openDialogue(prompt, placeholder) {
     if (dismissed || dialogueBusy) return;
     clearTimeout(bubbleTimer);
-    bText.textContent = prompt || "Ask me about my work or how I build.";
+    bText.textContent = prompt || "I know my projects suspiciously well. Ask me what I've been building.";
     bChips.replaceChildren();
     setDialogueFormOpen(true);
     bAskInput.value = "";
@@ -757,7 +757,7 @@ ${spriteDialogueRuntime}
     conversation.visitIntent = intent;
     conversation.conversationStage = "intent_shared";
     saveDialogueMemory();
-    openDialogue("I'm glad you told me. Let me meet you there.");
+    openDialogue("I like that answer. Let me pull the right thread.");
     submitDialogueQuestion(choice.question);
   }
   function startConversationInvitation() {
@@ -788,7 +788,7 @@ ${spriteDialogueRuntime}
     bAskInput.setCustomValidity("");
     var now = Date.now();
     if (now - lastDialogueAt < DIALOGUE_CONFIG.clientCooldownMs) {
-      bText.textContent = "I need one small moment before the next answer.";
+      bText.textContent = "I need one tiny paper beat before my next answer.";
       return;
     }
     lastDialogueAt = now;
@@ -798,15 +798,18 @@ ${spriteDialogueRuntime}
       saveDialogueMemory();
     }
     setDialogueBusy(true);
-    bText.textContent = "I'm thinking.";
+    bText.textContent = "My paper brain is unfolding this one.";
+    var requestToken = ++dialogueRequestToken;
     window.fetch(DIALOGUE_CONFIG.route, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(dialogueRequestPayload(question)),
       credentials: "same-origin",
     }).then(function (response) {
+      if (dialogueRequestToken !== requestToken) return null;
       return response.ok ? response.json() : null;
     }).then(function (payload) {
+      if (dialogueRequestToken !== requestToken) return;
       var turn = payload && validateDialogueTurn(payload);
       if (!turn) throw new Error("invalid_reply");
       conversation.conversationStage = "engaged";
@@ -823,11 +826,12 @@ ${spriteDialogueRuntime}
       });
       if (expectsReply) bAskInput.placeholder = "Reply to Paper Stan";
     }).catch(function () {
-      bText.textContent = "I could not reach my public project notes just now. Try again in a moment.";
+      if (dialogueRequestToken !== requestToken) return;
+      bText.textContent = "I dropped the thread to my project notes. Give me one paper beat, then try again.";
       setDialogueFormOpen(true);
       placeBubble();
     }).then(function () {
-      setDialogueBusy(false);
+      if (dialogueRequestToken === requestToken) setDialogueBusy(false);
     });
   }
   function say(text, chips, opts) {
@@ -861,6 +865,8 @@ ${spriteDialogueRuntime}
     dialogueGestureToken++;
     clearTimeout(dialogueGestureTimer);
     dialogueGestureTimer = 0;
+    clearTimeout(bubbleTimer);
+    bubbleTimer = 0;
     setDialogueFormOpen(false);
     bubble.classList.remove("on");
   }
@@ -878,16 +884,11 @@ ${spriteDialogueRuntime}
     submitDialogueQuestion();
   });
   bX.addEventListener("click", function () {
-    askButton.disabled = true;
-    setDialogueFormOpen(false);
-    say("Got it, I'll hush. Tap me if you change your mind.", null, { force: true, hold: 3000 });
-    setTimeout(function () {
-      dismissed = true;
-      askButton.hidden = true;
-      window.QUEST.dismissSprite(true);
-      var h = home();
-      travel(h.x, h.y, function () { setMode("sleep"); });
-    }, 1400);
+    dialogueRequestToken++;
+    setDialogueBusy(false);
+    hide();
+    lastBubble = Date.now();
+    noteVisitorActivity(lastBubble);
   });
 
   function nextTarget() {
