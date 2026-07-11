@@ -126,7 +126,8 @@ function publicPortfolioFacts(question) {
     "Projects:",
     ...projects.map((project) => {
       const summary = includeDetail ? project.detail : project.description;
-      return `- ${project.title} (${project.status}, ${project.year}): ${summary} Technologies and themes: ${(project.tags || []).join(", ")}.`;
+      const tags = (project.tags || []).join(", ");
+      return `- ${project.title} (${project.status}, ${project.year}): ${summary}${tags ? ` Technologies and themes: ${tags}.` : ""}`;
     }),
   ];
 

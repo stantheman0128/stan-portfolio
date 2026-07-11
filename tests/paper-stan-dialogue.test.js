@@ -132,7 +132,9 @@ describe("Paper Stan dialogue contract", () => {
     expect(identityFacts).toContain("include my role, personal approach, and relevant build scope");
     expect(identityFacts).not.toContain("stan@stan-shih.com");
     expect(courseFacts).toContain("Course Checker");
-    expect(courseFacts).toContain("Technologies and themes: PWA, React, TypeScript, Credit rules.");
+    // content.json items carry no tags since the 2026-07-09 layout redesign
+    // removed them; the dossier must not emit an empty "Technologies" stub.
+    expect(courseFacts).not.toContain("Technologies and themes:");
     expect(courseFacts).not.toContain("ETF Tracker");
   });
 
