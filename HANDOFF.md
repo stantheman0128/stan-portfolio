@@ -4,7 +4,14 @@
 
 ---
 
-## Latest Session: 2026-07-12 — Paper Stan 審查通過、已 merge 上 production（Claude）
+## Latest Session: 2026-07-12（續）— AI 問答已啟用＋rate limit 上線；發現 CREATOR_IP 過期（Claude）
+
+- **Paper Stan AI 問答已在 production 啟用**：`PAPER_STAN_AI_ENABLED` 已設為 Pages secret（wrangler 設定）；啟用前先落地 server-side rate limit（`be65ef9`，TDD 7 測）：per-IP 6 次/5 分鐘（SHA-256 雜湊 IP 當 key、不存原始 IP）＋全站每日 200 次 inference 保險絲（只計真正走到 `env.AI.run` 的路徑；本地 continuation 捷徑不吃額度）；KV 故障 fail-open（低流量站可用性優先，帳號級 Workers AI 上限當最終後盾）。**線上實證**：真問題回 200 grounded 回覆；同 IP 連發第 7 次回 429 `{"error":"rate_limited"}`。全套 31 檔 169 tests 綠。
+- **CF Purge Everything 已做（Stan）**：/interactive MISS＋新 bundle、kit JS 正常服務——中毒快取災難模式解除。
+- **⚠️ 發現：前門編輯器的 Publish 現在 403**——`CREATOR_IP` 白名單裡是舊 IP（HiNet 動態 IP 已重撥，現為 114.43.147.57）。UI 整條（Edit 鈕→editor.js→contenteditable→Publish POST）實測是通的，只卡 server IP gate。修法＝Stan 重設 secret＋等下一次部署生效。長期痛點：動態 IP 每次重撥都要重做這套——之後可考慮改用 EDIT_SECRET header 驗證取代純 IP gate。
+- 順帶觀察（非急）：`/api/publish` 對 `images[].path` 直接信任（無 `public/assets/` 前綴白名單）；在 IP gate 之後所以只有 creator 自己能打，但收緊更穩。
+
+## Previous Session: 2026-07-12 — Paper Stan 審查通過、已 merge 上 production（Claude）
 
 - **對抗式審查（3 路並行）通過**：安全審＝MERGE SAFE（fail-closed gate 密不透風、XSS 走 textContent+validator 封死、model context 只含公開 content.json 欄位）；正確性審＝零 blocker（minify 雷結構性根除、他線地盤零觸碰、事件協定完整）；宣稱複驗 7/7 屬實（two-dot diff 假象已排除）。
 - **Merge 過程抓到 3 隻雷、全修**：① 語義衝突——main 在 07-09 刪了 item tags，dossier builder 會吐空的 "Technologies and themes: ." 殘句（`5845fdd` 修）。② `with { type: "json" }` import attribute 在 Pages 雲端建置炸掉——**雲端 bundler 是 wrangler 3.114 的舊 esbuild，不吃 import attributes**（本地 wrangler 4.x 會過，所以本地全綠、雲端紅）。③ 拿掉 attribute 後換 postbuild 炸——**純 Node 直跑 ESM 又強制要求 attribute，兩個世界互斥**。正解＝dialogue 模組不再 import content.json，改 `initPaperStanKnowledge(content)` 注入（reply.js 與測試各自注入，與 renderSite(content) 慣例一致，`d8e24eb`）。
