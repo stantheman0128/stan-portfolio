@@ -4,7 +4,18 @@
 
 ---
 
-## Latest Session: 2026-07-10 — Paper Stan「活化」升級（交接給 Codex 實作）
+## Latest Session: 2026-07-12 — Paper Stan 審查通過、已 merge 上 production（Claude）
+
+- **對抗式審查（3 路並行）通過**：安全審＝MERGE SAFE（fail-closed gate 密不透風、XSS 走 textContent+validator 封死、model context 只含公開 content.json 欄位）；正確性審＝零 blocker（minify 雷結構性根除、他線地盤零觸碰、事件協定完整）；宣稱複驗 7/7 屬實（two-dot diff 假象已排除）。
+- **Merge 過程抓到 3 隻雷、全修**：① 語義衝突——main 在 07-09 刪了 item tags，dossier builder 會吐空的 "Technologies and themes: ." 殘句（`5845fdd` 修）。② `with { type: "json" }` import attribute 在 Pages 雲端建置炸掉——**雲端 bundler 是 wrangler 3.114 的舊 esbuild，不吃 import attributes**（本地 wrangler 4.x 會過，所以本地全綠、雲端紅）。③ 拿掉 attribute 後換 postbuild 炸——**純 Node 直跑 ESM 又強制要求 attribute，兩個世界互斥**。正解＝dialogue 模組不再 import content.json，改 `initPaperStanKnowledge(content)` 注入（reply.js 與測試各自注入，與 renderSite(content) 慣例一致，`d8e24eb`）。
+- **狀態**：main=`d8e24eb` 已部署成功（30 檔 162 tests 綠、Functions bundling 綠、線上 `/api/paper-stan/reply` 回 403 fail-closed、新 bundle 已服務）。production AI 仍預設關閉。
+- **⚠️ 啟用 AI 前的硬前提（安全審結論）**：`PAPER_STAN_AI_ENABLED="true"` 設下去之前，必須先加 server-side rate limit / Turnstile——目前唯一節流是瀏覽器端 4.5s cooldown，直接 POST 可繞過燒 Workers AI 用量。
+- **⚠️ 待 Stan**：Cloudflare dashboard Purge Everything——edge 上有舊 HTML 與「fallback HTML 卡在 kit JS URL」的中毒快取，purge 前部分訪客的 /interactive 看不到 Paper Stan。
+- 審查留下的非阻塞 minor（下輪可收）：tests/sprite-director.test.js 的 minification-simulation replace 是 no-op（真保護來自 new Function 執行，但註解誤導）；spriteJS 內 SECTION_LINES/AMBIENT/AMBIENT_O 三個死變數宣告；tap-during-travel 化妝品級 race。
+
+---
+
+## Previous Session: 2026-07-10 — Paper Stan「活化」升級（交接給 Codex 實作）
 
 > **這段是寫給接手實作的 Codex**：任務、脈絡、鐵律、驗證方式都在這裡。開工前先讀完本段＋兩份文件：
 > ① spec（已由 Stan 核可）：`docs/superpowers/specs/2026-07-10-paper-stan-alive-design.md`
