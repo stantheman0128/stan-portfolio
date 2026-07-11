@@ -1,0 +1,313 @@
+{
+  "name": "Moana paper puppet kit",
+  "version": "1.0.0",
+  "coordinateSpace": {
+    "width": 860,
+    "height": 1120,
+    "description": "All piece positions use this internal coordinate space. The widget scales this space to the requested CSS size."
+  },
+  "pieces": {
+    "head": {
+      "file": "head.png",
+      "label": "頭",
+      "width": 619,
+      "height": 611,
+      "origin": "46% 97%",
+      "assembled": { "x": 128, "y": 20, "r": 0 },
+      "exploded": { "x": 128, "y": -18, "r": 0 }
+    },
+    "body": {
+      "file": "body.png",
+      "label": "身體",
+      "width": 425,
+      "height": 461,
+      "origin": "50% 14%",
+      "assembled": { "x": 200, "y": 583, "r": 0 },
+      "exploded": { "x": 200, "y": 668, "r": 0 }
+    },
+    "leftArm": {
+      "file": "left-arm.png",
+      "label": "左手",
+      "width": 259,
+      "height": 434,
+      "origin": "92% 9%",
+      "assembled": { "x": 0, "y": 618, "r": 0 },
+      "exploded": { "x": -88, "y": 700, "r": -18 }
+    },
+    "rightArm": {
+      "file": "right-arm.png",
+      "label": "右手",
+      "width": 256,
+      "height": 437,
+      "origin": "11% 10%",
+      "assembled": { "x": 561, "y": 620, "r": 0 },
+      "exploded": { "x": 714, "y": 704, "r": 18 }
+    }
+  },
+  "effectAssets": {
+    "faceFrown": {
+      "file": "face-frown.png",
+      "label": "哭臉覆蓋層",
+      "description": "從原始笑臉筆畫垂直翻轉成皺眉嘴型，並用原膚色 patch 覆蓋原笑臉。"
+    },
+    "leftArmIn": {
+      "file": "left-arm-in.png",
+      "label": "左側鏡射內收手臂",
+      "description": "由原手臂鏡射而成；v3 起不再作為 handsIn 預設，避免肩膀接點漂移。"
+    },
+    "rightArmIn": {
+      "file": "right-arm-in.png",
+      "label": "右側鏡射內收手臂",
+      "description": "由原手臂鏡射而成；v3 起不再作為 handsIn 預設，避免肩膀接點漂移。"
+    },
+    "nose": {
+      "file": "nose.png",
+      "label": "鼻子局部",
+      "description": "從頭部拆出，用於局部放大縮小。"
+    }
+  },
+  "orientations": {
+    "front": {
+      "label": "正面",
+      "meaning": "最接近原圖的正面站姿，適合大部分網站區塊。"
+    },
+    "lookLeft": {
+      "label": "看左邊",
+      "meaning": "頭與身體略往左轉，適合指向左側內容。"
+    },
+    "lookRight": {
+      "label": "看右邊",
+      "meaning": "頭與身體略往右轉，適合指向右側內容。"
+    },
+    "tiltLeft": {
+      "label": "左歪頭",
+      "meaning": "頭往左歪，感覺比較柔和、可愛。"
+    },
+    "tiltRight": {
+      "label": "右歪頭",
+      "meaning": "頭往右歪，適合搭配俏皮或好奇動作。"
+    },
+    "paperLeft": {
+      "label": "紙片左轉",
+      "meaning": "整個角色像紙片一樣朝左側旋轉，強化 2.5D 感。"
+    },
+    "paperRight": {
+      "label": "紙片右轉",
+      "meaning": "整個角色像紙片一樣朝右側旋轉，強化 2.5D 感。"
+    },
+    "shyDown": {
+      "label": "低頭",
+      "meaning": "頭明確往下沉，主要靠位置與壓扁感呈現，不做後仰旋轉。"
+    },
+    "heroUp": {
+      "label": "抬頭",
+      "meaning": "頭明確往上抬起，避免看起來像單純放大。"
+    }
+  },
+  "actions": {
+    "idle": {
+      "label": "待機",
+      "meaning": "很小幅度呼吸和手部擺動，讓網站角落的小人物不會死板。",
+      "websiteUse": "預設常駐狀態。",
+      "duration": 3.6,
+      "playback": "loop"
+    },
+    "greeting": {
+      "label": "打招呼",
+      "meaning": "使用角色本人的右手打招呼。角色面對訪客時，這會出現在畫面左側，符合面對面鏡像邏輯。",
+      "websiteUse": "首頁載入、滑到自我介紹區塊、訪客回到頁面時。",
+      "duration": 1.8,
+      "playback": "loop"
+    },
+    "waveRight": {
+      "label": "右手大揮手",
+      "meaning": "角色本人的右手從肩膀抬高後大幅揮動，幅度比打招呼更大。",
+      "websiteUse": "強烈問候、重要 CTA、使用者點擊小人物後。",
+      "duration": 1.5,
+      "playback": "loop"
+    },
+    "waveLeft": {
+      "label": "左手大揮手",
+      "meaning": "角色本人的左手從肩膀抬高後大幅揮動。角色面對訪客時，這會出現在畫面右側。",
+      "websiteUse": "小人物位於畫面左側、需要往右邊招呼時。",
+      "duration": 1.5,
+      "playback": "loop"
+    },
+    "bothWave": {
+      "label": "雙手搖手",
+      "meaning": "左右手交錯晃動，情緒比單手揮手更活潑。",
+      "websiteUse": "頁面彩蛋、歡迎區塊、成功訊息。",
+      "duration": 1.7,
+      "playback": "loop"
+    },
+    "bothBigWave": {
+      "label": "雙手大揮手",
+      "meaning": "兩隻手都從肩膀抬高後大幅揮動，比雙手搖手更像正式大招呼。",
+      "websiteUse": "首頁強烈歡迎、完成任務後的慶祝、使用者點擊小人物。",
+      "duration": 1.55,
+      "playback": "loop"
+    },
+    "beckon": {
+      "label": "右手招手",
+      "meaning": "角色本人的右手往內招，帶有上下變動，像邀請使用者點擊或往下看。",
+      "websiteUse": "引導互動、提示使用者看下一段內容。",
+      "duration": 1.35,
+      "playback": "loop"
+    },
+    "beckonLeft": {
+      "label": "左手招手",
+      "meaning": "角色本人的左手往內招，適合小人物站在畫面左側時引導視線。",
+      "websiteUse": "引導使用者看右側內容、作品卡片或下一段說明。",
+      "duration": 1.35,
+      "playback": "loop"
+    },
+    "beckonBoth": {
+      "label": "雙手招手",
+      "meaning": "左右手一起往內招，像把使用者叫近一點看內容。",
+      "websiteUse": "CTA、互動提示、空白狀態引導。",
+      "duration": 1.45,
+      "playback": "loop"
+    },
+    "nod": {
+      "label": "點頭",
+      "meaning": "頭上下點，表示理解或確認。",
+      "websiteUse": "表單送出成功、設定完成、回覆使用者操作。",
+      "duration": 1.4,
+      "playback": "loop"
+    },
+    "leanBack": {
+      "label": "往後仰",
+      "meaning": "保留原本較像頭往後仰的 2.5D 反應，和低頭、抬頭分開使用。",
+      "websiteUse": "驚訝、收到通知、hover 彩蛋。",
+      "duration": 1.7,
+      "playback": "loop"
+    },
+    "shakeHead": {
+      "label": "搖頭",
+      "meaning": "頭左右搖，表示不行、錯誤、否定。",
+      "websiteUse": "錯誤狀態、無效操作、404 小互動。",
+      "duration": 1.2,
+      "playback": "loop"
+    },
+    "headRoll": {
+      "label": "轉頭",
+      "meaning": "頭部左右轉動和微旋，讓紙片人更有 3D 感。",
+      "websiteUse": "等待、讀取、展示小人物質感。",
+      "duration": 2.2,
+      "playback": "loop"
+    },
+    "twist": {
+      "label": "扭身",
+      "meaning": "身體和頭反向小幅轉動，像紙片人在扭腰。",
+      "websiteUse": "段落切換、hover、輕量展示。",
+      "duration": 2.2,
+      "playback": "loop"
+    },
+    "playful": {
+      "label": "俏皮",
+      "meaning": "頭左右晃、身體輕扭、雙手小晃，語氣偏可愛活潑。",
+      "websiteUse": "首頁自我介紹、關於我、作品集空白狀態。",
+      "duration": 2.4,
+      "playback": "loop"
+    },
+    "thinking": {
+      "label": "思考",
+      "meaning": "一隻手托住下巴，頭偏一邊慢慢思考。",
+      "websiteUse": "文章旁、搜尋中、AI 回答生成中。",
+      "duration": 2.8,
+      "playback": "loop"
+    },
+    "happy": {
+      "label": "開心",
+      "meaning": "身體微彈、雙手跟著上揚，情緒正向。",
+      "websiteUse": "成功頁、感謝訊息、完成下載或訂閱。",
+      "duration": 1.6,
+      "playback": "loop"
+    },
+    "shy": {
+      "label": "害羞",
+      "meaning": "肩膀維持原位，只旋轉原本手臂，讓手掌端靠近嘴巴。",
+      "websiteUse": "個人介紹、趣味彩蛋、較溫柔的段落。",
+      "duration": 2.6,
+      "playback": "loop"
+    },
+    "curious": {
+      "label": "好奇",
+      "meaning": "頭左右看，左右手交替指向兩邊，像東看看西指指。",
+      "websiteUse": "使用者滑到新 section、等待互動時。",
+      "duration": 2.4,
+      "playback": "loop"
+    },
+    "sad": {
+      "label": "哭臉",
+      "meaning": "用原本笑臉筆畫垂直翻轉成皺眉嘴型，頭和手會稍微下垂。",
+      "websiteUse": "錯誤、失敗、404、沒有資料時。",
+      "duration": 2.4,
+      "playback": "loop"
+    },
+    "handsIn": {
+      "label": "手往內收",
+      "meaning": "雙手以肩膀接點為固定點往內旋轉，避免手臂與肩膀接縫漂移。",
+      "websiteUse": "思考、等待、比較靜態的站姿變化。",
+      "duration": 2.6,
+      "playback": "loop"
+    },
+    "nosePulse": {
+      "label": "鼻子放大",
+      "meaning": "把鼻子單獨 isolate 出來做輕微放大縮小。",
+      "websiteUse": "小彩蛋、hover、滑鼠靠近時的局部反應。",
+      "duration": 1.6,
+      "playback": "loop"
+    },
+    "weird": {
+      "label": "怪奇狀態",
+      "meaning": "頭先跳離身體再落回，左右手交替向外分離，手收回時頭再彈一下。",
+      "websiteUse": "隱藏彩蛋、錯誤頁、玩味互動。",
+      "duration": 2.25,
+      "playback": "loop"
+    },
+    "bow": {
+      "label": "鞠躬",
+      "meaning": "頭和身體用透視前傾，像真的向前鞠躬，而不是單純紙片內凹。",
+      "websiteUse": "頁尾、感謝、送出完成後。",
+      "duration": 1.8,
+      "playback": "loop"
+    },
+    "paperBendIn": {
+      "label": "紙片內凹",
+      "meaning": "身體分段後向內彎，模擬硬紙片或壓克力片被頭尾兩端往內捏。",
+      "websiteUse": "展示 2.5D 紙片效果，不建議長時間常駐。",
+      "duration": 2.1,
+      "playback": "loop"
+    },
+    "paperBendOut": {
+      "label": "紙片外凸",
+      "meaning": "身體分段後向外凸，模擬硬紙片或壓克力片被頭尾兩端往外拱。",
+      "websiteUse": "展示 2.5D 紙片效果，不建議長時間常駐。",
+      "duration": 2.1,
+      "playback": "loop"
+    },
+    "frontFlip": {
+      "label": "前空翻",
+      "meaning": "整個紙片人往前翻一圈，是展示型大動作。",
+      "websiteUse": "點擊彩蛋、完成某個任務後播放一次。",
+      "duration": 1.65,
+      "playback": "once"
+    },
+    "backFlip": {
+      "label": "後空翻",
+      "meaning": "整個紙片人往後翻一圈，作為前空翻的反向彩蛋。",
+      "websiteUse": "隱藏彩蛋、作品集互動、第二次點擊小人物。",
+      "duration": 1.65,
+      "playback": "once"
+    }
+  },
+  "recommendedDefaults": {
+    "ambient": { "orientation": "front", "action": "idle" },
+    "homepage": { "orientation": "heroUp", "action": "greeting" },
+    "aboutSection": { "orientation": "tiltRight", "action": "playful" },
+    "loading": { "orientation": "lookRight", "action": "thinking" },
+    "success": { "orientation": "heroUp", "action": "happy" },
+    "easterEgg": { "orientation": "paperRight", "action": "frontFlip" }
+  }
+}

@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moana Paper Puppet Kit Demo</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./moana-puppet.css" />
+    <link rel="stylesheet" href="./demo.css" />
+  </head>
+  <body>
+    <main class="demo-shell">
+      <section class="stage-panel" aria-label="小人物預覽">
+        <div class="demo-topbar">
+          <div>
+            <h1>Moana 紙片小人物動作套件</h1>
+            <p>忠實拆圖版本，模擬 2.5D 紙片人動作。</p>
+          </div>
+          <button id="flipButton" class="control-button primary-button" type="button">播放前空翻</button>
+        </div>
+
+        <div class="preview-stage">
+          <div id="demoPuppet"></div>
+        </div>
+
+        <div class="status-row" aria-label="目前狀態">
+          <div class="status-item">
+            <span>Layout</span>
+            <strong id="layoutStatus">合體</strong>
+          </div>
+          <div class="status-item">
+            <span>Orientation</span>
+            <strong id="orientationStatus">正面</strong>
+          </div>
+          <div class="status-item">
+            <span>Action</span>
+            <strong id="actionStatus">待機</strong>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side-stack" aria-label="控制面板">
+        <section class="controls-panel">
+          <div class="control-group">
+            <h2 class="control-title">拆合狀態</h2>
+            <div class="button-grid" id="layoutControls">
+              <button class="control-button active" type="button" data-layout="assembled">合體</button>
+              <button class="control-button" type="button" data-layout="exploded">拆解</button>
+            </div>
+          </div>
+
+          <div class="control-group">
+            <h2 class="control-title">Orientation</h2>
+            <div class="button-grid three" id="orientationControls"></div>
+          </div>
+
+          <div class="control-group">
+            <h2 class="control-title">網站常用情緒</h2>
+            <div class="button-grid" id="personalityControls"></div>
+          </div>
+
+          <div class="control-group">
+            <h2 class="control-title">手勢與頭部</h2>
+            <div class="button-grid" id="gestureControls"></div>
+          </div>
+
+          <div class="control-group">
+            <h2 class="control-title">表情與局部特效</h2>
+            <div class="button-grid" id="effectControls"></div>
+          </div>
+
+          <div class="control-group">
+            <h2 class="control-title">2.5D 紙片展示</h2>
+            <div class="button-grid" id="paperControls"></div>
+          </div>
+
+          <div class="control-group">
+            <label class="field-row">
+              <span>尺寸</span>
+              <select id="sizeSelect">
+                <option value="180">180px</option>
+                <option value="240">240px</option>
+                <option value="320">320px</option>
+                <option value="360" selected>360px</option>
+                <option value="430">430px</option>
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section class="info-panel" aria-label="動作說明">
+          <h2 id="actionTitle">待機</h2>
+          <p id="actionMeaning">很小幅度呼吸和手部擺動，讓網站角落的小人物不會死板。</p>
+          <ul class="info-list">
+            <li>
+              <strong>適合</strong>
+              <span id="actionUse">預設常駐狀態。</span>
+            </li>
+            <li>
+              <strong>播放</strong>
+              <span id="actionPlayback">loop</span>
+            </li>
+            <li>
+              <strong>呼叫</strong>
+              <span id="actionCall">puppet.setAction("idle")</span>
+            </li>
+          </ul>
+          <pre class="code-block"><code id="codeSample"></code></pre>
+        </section>
+      </aside>
+    </main>
+
+    <script src="./moana-puppet.js"></script>
+    <script>
+      const puppet = MoanaPuppet.mount("#demoPuppet", {
+        assetBase: "./assets/",
+        size: 360,
+        action: "idle",
+        orientation: "front",
+      });
+
+      const labels = {
+        assembled: "合體",
+        exploded: "拆解",
+      };
+
+      const orientationOrder = [
+        "front",
+        "lookLeft",
+        "lookRight",
+        "tiltLeft",
+        "tiltRight",
+        "paperLeft",
+        "paperRight",
+        "shyDown",
+        "heroUp",
+      ];
+
+      const personalityActions = ["idle", "greeting", "playful", "thinking", "happy", "shy", "curious", "weird"];
+      const gestureActions = [
+        "waveRight",
+        "waveLeft",
+        "bothWave",
+        "bothBigWave",
+        "beckon",
+        "beckonLeft",
+        "beckonBoth",
+        "nod",
+        "leanBack",
+        "shakeHead",
+        "headRoll",
+        "twist",
+      ];
+      const effectActions = ["sad", "handsIn", "nosePulse"];
+      const paperActions = ["frontFlip", "backFlip"];
+
+      let currentAction = "idle";
+      let currentOrientation = "front";
+      let currentLayout = "assembled";
+
+      function button(label, attrs) {
+        const node = document.createElement("button");
+        node.className = "control-button";
+        node.type = "button";
+        node.textContent = label;
+        Object.entries(attrs).forEach(([key, value]) => {
+          node.dataset[key] = value;
+        });
+        return node;
+      }
+
+      function fillButtons(containerId, ids, source, dataName) {
+        const container = document.querySelector(containerId);
+        ids.forEach((id) => {
+          container.appendChild(button(source[id].label, { [dataName]: id }));
+        });
+      }
+
+      fillButtons("#orientationControls", orientationOrder, MoanaPuppet.orientations, "orientation");
+      fillButtons("#personalityControls", personalityActions, MoanaPuppet.actions, "action");
+      fillButtons("#gestureControls", gestureActions, MoanaPuppet.actions, "action");
+      fillButtons("#effectControls", effectActions, MoanaPuppet.actions, "action");
+      fillButtons("#paperControls", paperActions, MoanaPuppet.actions, "action");
+
+      function updateActive(selector, key, value) {
+        document.querySelectorAll(selector).forEach((node) => {
+          node.classList.toggle("active", node.dataset[key] === value);
+        });
+      }
+
+      function updateInfo() {
+        const action = MoanaPuppet.actions[currentAction];
+        const orientation = MoanaPuppet.orientations[currentOrientation];
+        document.querySelector("#layoutStatus").textContent = labels[currentLayout];
+        document.querySelector("#orientationStatus").textContent = orientation.label;
+        document.querySelector("#actionStatus").textContent = action.label;
+        document.querySelector("#actionTitle").textContent = `${action.label} / ${currentAction}`;
+        document.querySelector("#actionMeaning").textContent = action.meaning;
+        document.querySelector("#actionUse").textContent = action.websiteUse;
+        document.querySelector("#actionPlayback").textContent = action.playback;
+        document.querySelector("#actionCall").textContent =
+          action.playback === "once" ? `puppet.playOnce("${currentAction}")` : `puppet.setAction("${currentAction}")`;
+        document.querySelector("#codeSample").textContent = [
+          "const puppet = MoanaPuppet.mount('#site-puppet', {",
+          "  assetBase: '/moana-puppet-kit/assets/',",
+          "  size: 240,",
+          `  orientation: '${currentOrientation}',`,
+          `  action: '${currentAction}'`,
+          "});",
+          "",
+          action.playback === "once"
+            ? `puppet.playOnce('${currentAction}');`
+            : `puppet.setAction('${currentAction}');`,
+        ].join("\n");
+        updateActive(".control-button[data-layout]", "layout", currentLayout);
+        updateActive(".control-button[data-orientation]", "orientation", currentOrientation);
+        updateActive(".control-button[data-action]", "action", currentAction);
+      }
+
+      document.querySelector("#layoutControls").addEventListener("click", (event) => {
+        const value = event.target.dataset.layout;
+        if (!value) return;
+        currentLayout = value;
+        puppet.setLayout(value);
+        updateInfo();
+      });
+
+      document.querySelector("#orientationControls").addEventListener("click", (event) => {
+        const value = event.target.dataset.orientation;
+        if (!value) return;
+        currentOrientation = value;
+        puppet.setOrientation(value);
+        updateInfo();
+      });
+
+      document.body.addEventListener("click", (event) => {
+        const value = event.target.dataset.action;
+        if (!value) return;
+        currentAction = value;
+        if (MoanaPuppet.actions[value].playback === "once") {
+          puppet.playOnce(value);
+        } else {
+          puppet.setAction(value);
+        }
+        updateInfo();
+      });
+
+      document.querySelector("#flipButton").addEventListener("click", () => {
+        currentAction = "frontFlip";
+        puppet.playOnce("frontFlip");
+        updateInfo();
+      });
+
+      document.querySelector("#sizeSelect").addEventListener("change", (event) => {
+        puppet.setSize(Number(event.target.value));
+      });
+
+      document.querySelector("#demoPuppet").addEventListener("moana-puppet-change", (event) => {
+        currentAction = event.detail.action;
+        currentOrientation = event.detail.orientation;
+        currentLayout = event.detail.layout;
+        updateInfo();
+      });
+
+      updateInfo();
+    </script>
+  </body>
+</html>

@@ -4,7 +4,309 @@
 
 ---
 
-## Latest Session: 2026-07-02 — Live Studio 自助編輯器（HackMD 式）
+## Latest Session: 2026-07-10 — Paper Stan「活化」升級（交接給 Codex 實作）
+
+> **這段是寫給接手實作的 Codex**：任務、脈絡、鐵律、驗證方式都在這裡。開工前先讀完本段＋兩份文件：
+> ① spec（已由 Stan 核可）：`docs/superpowers/specs/2026-07-10-paper-stan-alive-design.md`
+> ② 現況台詞/觸發總表：`docs/superpowers/specs/2026-07-09-paper-stan-script.md`
+
+### 你的任務
+
+在 branch `feat/moana-puppet-guide` 上開新分支 `feat/paper-stan-alive`，實作 spec 的五件事：
+
+1. **表情軸解鎖**：kit 把皺眉臉(face-frown.png)硬綁在 `sad` 動作；掛載後在 puppet **instance** 上 shadow `applyHeadEffects`（prototype 與 kit 檔案都不動），讓 `expression ∈ {smile, frown}` 變獨立狀態（皺眉條件 = expression==="frown" 或 action==="sad"）。
+2. **情緒引擎**：export `MOODS`（cheerful/calm/sleepy/miffed 四情緒；進入條件、閒置池權重、朝向/表情偏好、台詞池 key、節奏倍率；強度會隨時間衰減、miffed ~45s 消氣回 calm）。情緒調變：lifeLoop 池與間隔、台詞選池、視線積極度、反應編排。
+3. **視線系統**：游標相對紙片人位置 → 3×3 視線格（lookLeft/front/lookRight × heroUp/front/shyDown），節流（區域變化＋≥400ms）、僅 idle、優先權低於手勢/演出；miffed 反轉（別過頭）、sleepy 遲鈍；reduced-motion 保留視線但去漫遊。
+4. **演出序列器**：`perform([{action, orientation, expression, ms}...])` 可取消（拖曳/點擊/travel 打斷）；點擊與區塊反應升級成 2-3 步、與當下情緒一致的小劇（spec 有範例）。export `PERFORMANCES` 供測試驗證。
+5. **烘焙台詞池**：`LINES[情境][情緒]` 每格 6-12 句英文變體（第一人稱 Paper Stan 口吻，語氣依情緒），選句避開同情境上一句。**你自己生成台詞**，Stan 會在 commit review 過稿。
+
+外加：資料切檔到新 `src/render/fx/sprite-data.js`（純資料，`sprite.js` 留 runtime 並用 `JSON.stringify` 內插進 spriteJS 字串——這是現有的「單一真相」模式，測試與 runtime 共用同一份物件，必須保留）；更新 `2026-07-09-paper-stan-script.md` 反映新行為。
+
+### 現況脈絡（你接手時的地基）
+
+- **branch `feat/moana-puppet-guide`**：11 commits（未 push，tip `e97a991`）＝ Moana 紙片人 kit 進 `public/moana-puppet-kit/`、刺蝟換成紙片人（PuppetActor adapter）、捲動指向/點擊彩蛋/首訪三站導覽、Paper Stan 第一人稱台詞、嘴巴旁對話框（rAF 跟隨＋左右自動換邊）、拖曳＋滾輪縮放、幾乎用滿 28 動作×9 朝向（有覆蓋率測試）、hover 反應池不重複。
+- **架構**：`src/render/fx/sprite.js` export 資料表＋`spriteCSS`/`spriteHTML`/`spriteJS` 三個字串；`src/render/themes/minimal.js` 把字串內插進渲染出的 HTML（互動版 `/interactive` 專用）。行為引擎（roam/lifeLoop/botherLoop/suggest/sectionDocent/runTour）全在 spriteJS 字串裡。`#sprite`＝定位層（JS translate），`#puppet-host`＝MoanaPuppet 掛載點；host transform 由 CSS 變數 `--flip`（翻面）×`--hscale`（hover 縮放）合成，別直接寫 host 的 transform。
+- **測試**：`tests/sprite-puppet-map.test.js` 9 tests——以 `public/moana-puppet-kit/motions.json` 為唯一權威，驗所有引用動作/朝向存在＋全覆蓋守衛＋無 hedgehog 殘留。全套 `npx vitest run` 目前 18 檔 69 綠。
+
+### 鐵律（違反任一條 = review 打回）
+
+- **TDD**：先擴測試再實作。必加：MOODS/PERFORMANCES/池引用全部對 motions.json 驗真；**台詞衛生測試**——掃 LINES 每一句，出現 em dash（—）、en dash（–）或 emoji 即紅。
+- **美術零更動**：`public/moana-puppet-kit/` 整包（PNG＋js＋css）一個 byte 都不改；表情解鎖只能 instance shadow。
+- **只用 explicit path commit**（工作區有其他 session 的髒檔）：`git add <明確路徑>`，禁 `git add -A`/`-u`。granular commits（schema+tests / 表情 / 情緒 / 視線 / 序列器 / 台詞 / docs 各自成 commit）。
+- **不 push、不 merge、不 rebase**；不碰 `featherweight.js`、`quest.js`/`cta.js`/`rate.js`/`shatter.js`、`freeform.js`/`studio.js`（別條線的地盤）；`minimal.js` 已接好 kit 的 link/script，原則上不用動。
+- 台詞一律英文第一人稱（他就是 Stan 本人的紙片版）、**零破折號零 emoji**；`prefers-reduced-motion` 的既有閘門與降級全部保留。
+- 引擎既有行為（漫遊/戳游標/引導/任務事件/評分反應）只能「換編排」不能刪功能。
+
+### 驗證（收工前全綠才算完）
+
+```bash
+npx vitest run          # 全套綠（現 69，做完應更多）
+npm run build           # vite build + postbuild 綠
+npx vite --port 5189 --strictPort   # 手動看 /interactive（見下面陷阱）
+```
+
+### 陷阱
+
+- **port 5173 是另一個 session 的 worktree（layout 線），跑的還是舊刺蝟**——手動驗證用自己的 port（5189）。port 5188 可能還掛著 Claude session 的舊 vite，別依賴它。
+- 首訪開場泡泡被 localStorage（`quest-v2`）擋——想看 onboarding 用無痕視窗或清 localStorage。
+- `sprite-data.js`/`sprite.js` 是 vitest 直接 import 的模組：**module top-level 不能碰 DOM**（runtime 邏輯都得住在 spriteJS 字串內）。
+- Windows：git 的 LF→CRLF 警告無害；PowerShell 用 `;` 不是 `&&`（bash 環境不受限）。
+
+### 做完之後
+
+把你的 session 摘要（做了什麼/決策/狀態/坑）追加在本段下方，然後停手——Claude 會對這條分支的 diff 做對抗式審查，過了才由 Stan 決定 merge。
+
+### Codex 實作摘要（2026-07-10）
+
+- **分支與提交**：從 `feat/moana-puppet-guide` 的 `6599ff5` 建立
+  `feat/paper-stan-alive`。目前功能提交為 `3e27416`（純資料）與
+  `bdbc013`（runtime 與測試）。未 push、未 merge、未 rebase。
+- **完成內容**：新增 `src/render/fx/sprite-data.js`，作為 `EXPRESSIONS`、
+  `MOODS`、`PERFORMANCES`、`LINES` 的純資料單一真相。runtime 在
+  `sprite.js` 以 JSON 內插這些資料，並只在已掛載的 puppet instance
+  shadow `applyHeadEffects`，使 smile/frown 和 action 解耦。
+- **行為決策**：miffed 在約 45 秒內回 calm；sleepy 由晚間或 90 秒無活動
+  觸發；視線用九個 kit orientation 對應游標九格，miffed 反向、sleepy
+  延遲。點擊與 section docent 走可被 click/drag/travel 取消的短演出。
+  `LINES` 每個情境與情緒各有六句、避開同情境上一句，測試會拒絕非第一人稱、
+  em/en dash 或 emoji。
+- **測試與驗證**：`npx vitest run` 通過 18 檔、75 tests；`npm run build`
+  通過。用 `npx vite --host 127.0.0.1 --port 5189 --strictPort` 實測
+  `/interactive`：紙片人正常掛載、視線會改變頭部 transform、兩次點擊會進
+  miffed 並顯示 frown，tap mini-scene 與第一人稱泡泡正常，console 無 warn/error。
+- **美術與工作區**：`public/moana-puppet-kit/` 零 diff。保留了其他 session
+  的髒檔，沒有加入任何無關路徑。
+- **陷阱**：未指定 host 的 Vite 在此機器只監聽 IPv6 `::1`，內建瀏覽器無法用
+  IPv4 localhost 路徑驗證，因此需加 `--host 127.0.0.1`。Vite 現在仍由本 session
+  在 port 5189 運行；交接後可自行停止或重開。
+
+### Codex follow-up: purposeful action timing（2026-07-10）
+
+- **問題與原因**：快速 hover 會立刻開一個 gesture；舊 gesture 的 timeout 只看
+  `mode === "busy"`，因此可能在新 gesture 尚未結束時把它提早釋放回 idle，接著被
+  gaze 或 ambient 動作接走。
+- **修正**：新增 `INTERACTION_POLICY`（280ms hover dwell、4.8s cooldown），快速
+  移入移出只取消 pending hover。短 gesture 有 token 與 purpose priority，舊 timeout
+  不會影響新 gesture。優先序為 gaze < ambient < hover < section < interaction < travel；
+  低目的動作無法打斷較高目的回應。click、drag、travel 會明確取消現有 gesture。
+- **驗證**：新增 runtime 契約測試，`npx vitest run` 通過 18 檔、76 tests，
+  `npm run build` 通過。Vite 預覽仍在 5189 且 `/interactive` 正常掛載、console 無錯誤。
+  內建自動化可確認快速掠過不改變 mood；fixed overlay 在該自動化 surface 無法命中
+  真實 hover hit area，故最後的手感判斷仍應由 Stan 在一般瀏覽器試一次。
+
+### Codex follow-up: Paper Stan director brain v1.5（2026-07-10）
+
+- **Scope change approved by Stan**：原已核可 spec 把 live LLM director 延後；Stan
+  後續明確要求開始做小模型或演算法的大腦。本次只完成受限的 director，不做 chat、
+  persistent memory、WebLLM、Gemini Nano 或 deployment。完整設計在
+  `docs/superpowers/specs/2026-07-10-paper-stan-director-design.md`。
+- **Implementation**：新增 pure `src/render/fx/sprite-director.js`，把 event 轉成
+  bounded plan。`sprite.js` local-first 接到 hover、tap、section docent、project
+  prompt、cursor boop。既有 gesture token/purpose priority 仍掌管真正的動畫時間，
+  remote result 僅 cache 給下一個 matching event，絕不打斷當前動作。
+- **Cloudflare boundary**：新增 `functions/api/paper-stan/plan.js` 與 Pages AI binding
+  (`AI`)。endpoint 預設回 403，除非 environment 明確設
+  `PAPER_STAN_AI_ENABLED=true`；browser 也必須有 `?paperStanAi=1` 才會發 request。
+  送出的 context 只含 event/mood/allowed section/coarse dwell，無座標、DOM、title、
+  input、IP 或 tracking data。模型只能從 server 列出的 plan 選一份，server 會再
+  validate，不可產生任意 action 或 visible copy。
+- **Model decision**：暫用 `@cf/meta/llama-3.2-1b-instruct` 做可選 edge intent
+  selection。沒有假設它支援 JSON Mode；exact allowed-plan prompt + server validation
+  才是安全邊界。AI Gateway、rate caps/observability 和更大模型 fallback 留給啟用前的
+  deployment review。
+- **Verification**：新增 `tests/sprite-director.test.js`、
+  `tests/paper-stan-plan.test.js`；`npx vitest run` 已通過 20 files / 88 tests，
+  `npm run build` 已通過。`public/moana-puppet-kit/` 未改。沒有跑
+  `wrangler pages dev`、沒有呼叫 inference、沒有 deploy，因本地 Workers AI 也可能
+  連到帳戶並產生用量。
+
+### Codex follow-up: Paper Stan director v2 generated dialogue（2026-07-10）
+
+- **做了什麼**：optional remote director 現在會回傳一個既有、驗證過的動畫 plan，加上一句
+  生成的 Paper Stan 台詞。`functions/api/paper-stan/plan.js` 的 System Prompt 將角色定義為
+  簡短、有用、英文第一人稱的導覽者，不是 chat bot，並禁止 em/en dash、emoji、數字、URL、
+  markdown、動作名稱、私密資料、tracking 宣稱與無根據事實。
+- **硬邊界**：`validateDirectorLine()` 只接受 4 到 22 個英文單字、最長 160 字元、含第一人稱
+  代名詞的一句 ASCII 台詞。`validateDirectorPlan()` 現在要求每一個非 line 欄位，包含 expiry，
+  都完全等於允許的 plan。錯誤的模型輸出回 `422 invalid_plan`；browser 保留 local motion 和
+  baked `LINES` fallback。模型不能打斷進行中的動作。
+- **如何測真模型**：deterministic tests mock `env.AI.run`，會驗證 prompt 與錯誤輸出拒絕。
+  要做會計費的本機 inference，使用被忽略的 `.dev.vars` 加上 `PAPER_STAN_AI_ENABLED="true"`，
+  跑 `npm run build`，再跑 `npx wrangler pages dev dist --port 5190`，並開
+  `/interactive?paperStanAi=1`。進入 Works、等 `POST /api/paper-stan/plan`，離開後超過 4.5 秒
+  cooldown 再回來，就能看到 cache 的 remote plan。Vite 5189 沒有 Pages Function，只會測 fallback。
+- **驗證**：`npx vitest run` 通過 20 files / 92 tests；`npm run build` 通過；
+  `git diff --check` 通過；`public/moana-puppet-kit/` 相對 `6599ff5` 沒有 tracked 或 untracked diff。
+- **刻意沒做**：沒有真實 Workers AI request、Pages deploy、在 `wrangler.toml` 啟用變數、push、
+  merge 或 rebase。真實 inference 會產生帳戶用量，需由擁有者明確 opt in。其他 session 的未追蹤
+  worktree 檔案均未動。
+
+### Codex follow-up: Paper Stan conversation v3（2026-07-10）
+
+- **Scope change**：Stan 明確不要模型決定角色何時說話或動作。已移除
+  `functions/api/paper-stan/plan.js` 與舊的 event-triggered remote-plan 路徑；所有 hover、tap、
+  section、project-dwell、cursor 反應皆由 local director 和既有 gesture token/cooldown 管理。
+- **Explicit project questions**：新增 `src/render/fx/paper-stan-dialogue.js`、
+  `functions/api/paper-stan/reply.js` 和 Paper Stan 的 `?` 提問控制。訪客主動送出問題時，browser
+  僅傳 `{ question }` 到 `/api/paper-stan/reply`；server 從 `data/content.json` 建立有限的公開
+  profile/project/patent facts，再要求模型回一個短的第一人稱英文 `reply`。不傳 DOM、滑鼠座標、
+  scroll history、其他 input、IP、fingerprint 或 visitor identity。
+- **Safety and UX**：System Prompt 將模型限定為 public-portfolio 問答，不可決定動畫時間或揭露
+  prompt/private data。server/client 都驗證一到三句、ASCII、first-person、無 URL/markdown/emoji/
+  em-en dash 的 reply。提問表單開著時，延遲 greeting 和 project nudge 不得覆蓋它；失敗時表單
+  保持可重試，本機動作不中斷。`PAPER_STAN_AI_ENABLED` 預設未設，endpoint 回 403，不會誤觸 inference。
+- **Regression fix**：Vite 壓縮會改掉 serialized helper 預設參數的 module binding 名稱，曾造成
+  `w/j is not defined`。runtime 現在用 wrapper 明確傳入 config，並有模擬壓縮名稱的 regression test。
+- **Verification**：`npx vitest run` 通過 20 files / 89 tests；`npm run build` 通過；
+  `git diff --check` 通過；`public/moana-puppet-kit/` 相對 `6599ff5` 無變更。已用
+  `wrangler pages dev dist --port 5190 --compatibility-date 2026-06-10` 開啟
+  `http://127.0.0.1:5190/interactive` 實測 `?`、表單送出與 disabled fallback。沒有啟用 `.dev.vars`、
+  沒有真實 AI inference、Pages deploy、push、merge 或 rebase。
+- **Handoff status**：本地 server 目前保留在 port 5190。若 owner 明確要測真模型，才建立 ignored
+  `.dev.vars` 的 `PAPER_STAN_AI_ENABLED="true"` 並用同一個 Pages dev command 重啟；先看
+  `docs/superpowers/specs/2026-07-10-paper-stan-director-design.md` 的限制與測試流程。
+
+### Codex follow-up: Paper Stan real Workers AI smoke test（2026-07-10）
+
+- **Owner-approved local inference**：Stan 後續明確要求實作並測試 AI。已將 `.dev.vars` 加入
+  `.gitignore`，在該 ignored local file 設 `PAPER_STAN_AI_ENABLED="true"`，並以
+  `wrangler pages dev dist --port 5190 --compatibility-date 2026-06-10 --ai=AI` 重啟。此設定只留在
+  本機，不在 `wrangler.toml`、不 deploy、也不會進 Git。
+- **Small-model adaptation**：實測 `@cf/meta/llama-3.2-1b-instruct` 會把大型 user JSON 當成續寫內容。
+  `buildDialogueMessages()` 因此改為 system 中的短 public facts，user message 只留
+  `Visitor question: ...`，並只對命中的專案提供 detail。模型仍被要求 JSON；若它回安全的純文字或
+  JSON code fence，server 只在同一個 strict first-person/ASCII/no-URL validator 通過後才正規化為
+  `{ reply }`，不會把 raw model output 直接交給 browser。
+- **Real result**：實際 `POST /api/paper-stan/reply` 已回 `200`，Course Checker 問題得到
+  「I built Course Checker ... reporting remaining required credits by category」的有效回覆。已移除
+  用來診斷 raw response 的暫時 debug gate。
+- **Current status**：server 仍在 `http://127.0.0.1:5190/interactive`，可點 Paper Stan 的 `?`
+  直接測試。這會使用 Cloudflare Workers AI 帳戶用量；測完可停止 server 或刪除 ignored `.dev.vars`
+  回到 403 disabled。尚未 push、merge、rebase 或 deploy。
+
+### Codex follow-up: Paper Stan public persona context（2026-07-10）
+
+- **Why**：Stan 詢問 System Prompt 是否應更理解本人和 projects。已把 `data/content.json` 中公開的
+  `latinName`、`location`、role、tagline、subtagline、availability 納入 server-only identity block；
+  命中特定 project 時同時帶入 detail 和 tags。`?` 的文案現在可問 Stan 本人或 project。
+- **Prompt behavior**：Paper Stan 明確以 Stan 第一人稱說話。identity/work-style 的多段問題必須回答
+  role、personal approach、relevant build scope；同時禁止模型自行補編動機、個人經歷、clients、
+  collaborators、tradeoffs、metrics 或技術細節。通用問句不會因 `work`、`project` 等 stopwords 誤把
+  不相關 project 當成 context。
+- **Verification**：TDD 新增 public-dossier assertions，targeted tests 通過。真實 Workers AI 問
+  「Who are you, and what kind of work do you build?」得到有效 200 與兩句第一人稱回答，含 product
+  builder/AI-first identity 與 end-to-end build approach。更深的個人故事或未公開 motivation 不應由
+  模型猜測，需 Stan 另行審核後寫入 public source data。
+
+### Codex follow-up: Paper Stan conversation v4（2026-07-10）
+
+- **做了什麼**：升級 `?` 對話為有目的的 Paper Stan 互動。角色會在本機 idle 後以
+  「I'm curious what brought you here.」提出邀請，提供 `Looking at projects`、`Recruiting`、
+  `Just curious` 和 local tour；僅當訪客點選意圖或主動送出文字時才呼叫
+  `/api/paper-stan/reply`。對話回合固定為 `{ reply, tone, gesture, followUp }`，而模型給的手勢
+  只會等角色 idle 後排隊播放，不能搶走 travel、drag、tour、active performance 或 reduced-motion
+  的控制權。
+- **Persona / data boundary**：System Prompt 現在明確要求 Paper Stan 是 Stan 本人的 fun、energetic、
+  creative、slightly quirky、curious paper self，說第一人稱英文、可回答公開 project／identity 問題，
+  可自然追問但不可編造公開資料以外細節或排程動畫。browser 只送 allowlisted 的
+  `section`、`visitIntent`、`conversationStage`；不讀、不存、不傳 DOM、pointer、scroll history、
+  user agent、IP、fingerprint 或其他輸入。`sessionStorage` 只留本 tab 的 invited/intent/stage，不留
+  question 或 reply。完整規格已更新為
+  `docs/superpowers/specs/2026-07-10-paper-stan-director-design.md` v4。
+- **可靠性**：1B model 偶爾會回 plain text、code fence、過長或不合 contract 的內容。server 會接受
+  通過 strict first-person/ASCII/no-URL/no-markdown/no-emoji/no-em/en-dash 驗證的內容；若輸出不合法或
+  inference throw，絕不將 raw response 交給 browser，而是以對應 intent 的 public-fact local turn
+  安全降級。剛選完 intent 而模型漏掉 tone/gesture/followUp 時，`completeDialogueTurn()` 才補已安裝的
+  defaults；模型明確選 `none` 或 `null` 時不覆寫。
+- **重要陷阱 / 修復**：舊版以 `function.toString()` 注入 browser helper。Vite 壓縮後 helper 內部會抓到
+  module alias，造成實際頁面 `F/T is not defined`，導致 server 200 仍被 UI 當作 failure，也讓 local
+  director console error。`sprite-dialogue-runtime` 和 `sprite-director-runtime` 現在均為 standalone
+  browser strings，並新增 regression test 禁止再引入 `raw*` captured helpers。不要回退成 source
+  serialization。
+- **驗證**：`npx vitest run` 通過 **20 files / 99 tests**；`npm run build`、`git diff --check` 皆通過；
+  `public/moana-puppet-kit/` 相對 `6599ff5` 無 diff。實測 remote Workers AI 的 Course Checker 問題取得
+  第一人稱有效回覆；以 `/interactive` 實測本機邀請、intent chip、reply、follow-up textbox 與 browser
+  console，console 無 error。Pages dev 保留在 `http://127.0.0.1:5190/interactive`，它使用 ignored
+  `.dev.vars` 的 owner-approved `PAPER_STAN_AI_ENABLED="true"`，會產生 Workers AI 用量。
+- **狀態**：目前 branch 是 `feat/paper-stan-alive`；沒有 deploy、push、merge 或 rebase。請由 Claude
+  先對本 branch diff 做對抗式審查，再決定是否合併。其他 session 的 untracked `demo-concepts/`、
+  `tasks/mascot-candidates/` 檔案均未碰。
+
+### Codex follow-up: Paper Stan conversation v5（2026-07-11）
+
+- **為何繼續做**：v4 的 follow-up 表單可以送第二輪問題，但 server 原本沒有上一輪 context。現在 page
+  lifetime 的 `dialogueHistory` 只保留一個已驗證的 `paperStanReply` 和可選 `paperStanFollowUp`；下一次
+  explicit submit 才帶入 request。它不保存、也不重傳先前 visitor text，並且不寫入
+  `paper-stan-conversation-v1` 的 `sessionStorage`。reload／關頁即清空。
+- **server boundary**：`sanitizeDialogueHistory()` 只接受和 server 已輸出相同的 strict first-person
+  reply/followUp 欄位，其餘 `visitorMessage`、private field、DOM 等全部丟棄。prompt 以 untrusted
+  reference 對待這個 prior Paper Stan turn，vague follow-up 會用它縮小 public project facts；沒有因此把
+  model 變成 animation director。
+- **事實優先的 continuation**：實測 1B 對 `Can you tell me more about that?` 曾先回
+  `*twitch* *think* *point_project*`，加強 prompt 後又把 Course Checker 幻覺成 browser extension。因為
+  這是已知 project 的確定性問題，`createProjectContinuationTurn()` 現在在 inference 前解析上一輪提到的
+  project，直接從 `data/content.json` 回公開 detail；Course Checker 會正確說明 transcript/catalog rules/
+  remaining credits，並且 **不呼叫 `env.AI.run`**。開放式問題仍走 owner-approved Workers AI。
+- **文件與驗證**：規格升為
+  `docs/superpowers/specs/2026-07-10-paper-stan-director-design.md` v5。新增 sanitization、prompt context、
+  volatile memory、deterministic continuation 和 no-inference regression tests；`npx vitest run` 通過
+  **20 files / 101 tests**，`npm run build`、`git diff --check` 與 kit diff 均通過。正式 local endpoint
+  實測 vague Course Checker follow-up 回 `200` 的 public-fact continuation；暫時 raw debug gate 和
+  `.dev.vars` debug flag 都已移除。
+- **狀態**：仍只在 `feat/paper-stan-alive`，沒有 deploy、push、merge 或 rebase。Pages dev 繼續在
+  `http://127.0.0.1:5190/interactive`；它的 ignored `.dev.vars` 仍是 owner-approved AI opt-in，只有
+  開放式問題才會產生 Workers AI 用量。其他 session 的 untracked 檔案未碰。
+
+### Codex final pre-merge audit: structured AI and release validation（2026-07-12）
+
+- **AI blocker found and fixed**：真實 smoke test 發現 `@cf/meta/llama-3.2-1b-instruct` 會忽略 JSON
+  contract、輸出舞台指示並捏造技術細節，最後只能走 generic fallback。reply endpoint 已改用官方支援
+  JSON Mode 的 `@cf/meta/llama-3.1-8b-instruct-fast`，並傳 closed JSON schema。既有 server validator
+  仍是第二層安全邊界。模型若只漏掉 follow-up 的第一人稱，會把安全問句補成 `I'm curious: ...`；URL、
+  markdown 或其他不合法 follow-up 仍拒絕整個 model turn。
+- **真實 AI 結果**：Pages dev 的 owner-approved AI opt-in 下，Course Checker 問題回傳專案名稱、
+  transcript/catalog rules、remaining required credits 與 PWA/React/TypeScript，沒有走 fallback；
+  `Can you tell me more about that?` 也正確延續 Course Checker。browser 表單實測同樣取得 grounded answer，
+  並依序播放 `idle/tiltLeft -> curious/lookLeft -> idle/front`，console 沒有 warning/error。
+- **動作範圍**：kit 有 28 actions、9 orientations、2 expressions，底層理論疊加為 504 states；另有
+  4 moods、24 個 multi-step performances、49 beats。這不是 504 個逐一手刻腳本，而是由 local director
+  從可用維度組出合理狀態。`bow`、`paperBendIn`、`paperBendOut` 因 segmented shirt bend 不自然只保留
+  compatibility，不在 showcase cycle；其餘 action/orientation 都有 automated reachability test。
+- **瀏覽器驗證**：100 ms 快速 hover 後移開全程保持 idle；停留超過 280 ms 才觸發 purposeful hover
+  reaction，完成後回 idle。原 kit demo 實測 `exploded + lookLeft + sad + backFlip` 可疊加，再切回
+  assembled；demo console 沒有 warning/error。
+- **Final automated gate**：`npx vitest run` 通過 **20 files / 103 tests**；`npm run build`、
+  `git diff --check` 與 kit immutable diff 均通過。暫時的 raw AI diagnostics 已移除。
+- **部署邊界**：feature 可以 commit、push、merge，但 production AI 仍預設關閉，因
+  `PAPER_STAN_AI_ENABLED` 沒有寫進 `wrangler.toml`。正式啟用前仍需 server-side rate limiting、abuse
+  handling、observability 與 spending limit。瀏覽器端 4.5 秒 cooldown 只改善 UX，不是伺服器防濫用。
+- **工作區紀律**：`public/moana-puppet-kit/` 相對 `6599ff5` 仍是 byte-for-byte 無 diff。其他 session 的
+  untracked `demo-concepts/` 與 `tasks/mascot-candidates/` 沒有 stage 或修改。
+
+### Codex follow-up: reversible close and livelier AI voice（2026-07-12）
+
+- **Root cause**：bubble 的 x 原本不是 close，而是延遲寫入 `quest-v2.spriteDismissed=true`、隱藏問號、
+  travel 回右下角，再切到 `sleep -> shy`。因此角色會降低透明度、用手遮臉，而且所有 hover/tap/dialogue
+  handler 都因 `dismissed` 直接 return。這正是 Stan 回報的「變淡、遮臉、完全沒反應」。
+- **Interaction fix**：x 現在只呼叫 `hide()`，保留 ask button 與 puppet interaction。`dialogueRequestToken`
+  會讓關閉後才抵達的 fetch response 失效，避免泡泡自己重開。startup 若讀到舊
+  `spriteDismissed=true`，會立刻呼叫 `QUEST.dismissSprite(false)` 自動修復，不需訪客清 localStorage。
+- **Voice fix**：System Prompt 現在要求 direct public-fact answer 加一個短的 Paper Stan voice beat，語氣需
+  compact、upbeat、observant、lightly mischievous，並明確禁止 resume/support-bot 口吻與用虛構 impact、
+  motivation、user reaction 製造情緒。JSON schema 也描述相同 contract；安全的 declarative follow-up
+  會併回 reply，不安全內容仍拒絕。loading、cooldown、error 與所有 fallback copy 同步改成 paper-aware
+  第一人稱語氣。
+- **Verification**：TDD 先新增 close/migration/stale-request/persona/fallback tests，再實作；完整
+  `npx vitest run` 通過 **20 files / 107 tests**，`npm run build`、`git diff --check`、immutable kit diff
+  全綠。browser 實測 x 可關閉再重開，直接點角色播放 `headRoll -> twist -> idle`；pending AI 時按 x，
+  response 抵達後 bubble 仍關閉、問號仍可用、角色未 sleep，console 無 warning/error。真實 Workers AI
+  identity/project 問答已回第一人稱 bright/playful turn；暫時 raw diagnostics 已移除。
+- **Deployment boundary unchanged**：production AI 仍由 `PAPER_STAN_AI_ENABLED` 明確 opt in，正式啟用前
+  仍需 server-side rate limit、abuse handling、observability 與 spending limit。
+
+---
+
+## Previous Session: 2026-07-02 — Live Studio 自助編輯器（HackMD 式）
 
 ### 做了什麼
 - 從「純作品集」升級為「完整個人網站 + 自助編輯器」。先跑 6 設計方向探索（`demo-concepts/`），Stan 選定 **Featherweight + Minimal** 兩個。

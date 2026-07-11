@@ -15,6 +15,12 @@ pages_build_output_dir = "dist"
 # this the Git build compiled it on an old compat date and the / route 404d.
 compatibility_date = "2024-11-01"
 
+# Paper Stan's explicit project-question reply endpoint uses this native binding
+# only behind the PAPER_STAN_AI_ENABLED === "true" runtime gate. Leave that
+# variable unset until the feature has been reviewed and approved for deployment.
+[ai]
+binding = "AI"
+
 # Production environment bindings.
 [[kv_namespaces]]
 binding = "RATINGS"
@@ -34,3 +40,7 @@ id = "0f18e001510f41faa6c476809cbab224"
 [[env.preview.analytics_engine_datasets]]
 binding = "RUM"
 dataset = "rum_events"
+
+# Named environments do not inherit AI bindings from the production block.
+[env.preview.ai]
+binding = "AI"

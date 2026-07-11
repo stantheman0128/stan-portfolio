@@ -7,4 +7,6 @@ qa-screenshots/
 *.log
 .env
 .env.*
+.dev.vars
+.dev.vars.*
 !.env.example
