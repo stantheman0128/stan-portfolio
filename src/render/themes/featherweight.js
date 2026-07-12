@@ -19,6 +19,11 @@ export function render(content, opts = {}) {
   const edit = !!(opts && opts.edit);
   const p = content.profile || {};
   const about = content.about || {};
+  // Section headings are owner-editable content; fall back to the shipped
+  // defaults so drafts predating the headings block still render.
+  const H = content.headings || {};
+  const heading = (key, dflt) =>
+    `<span${bindAttr("headings." + key, edit)}>${esc(H[key] || dflt)}</span>`;
   const stats = content.stats || [];
   // Cross-theme entries: each theme hides the item that IS itself.
   const items = (content.items || [])
@@ -147,7 +152,7 @@ export function render(content, opts = {}) {
         `width="${patent.imageWidth | 0 || 935}" height="${patent.imageHeight | 0 || 1210}" loading="lazy" decoding="async"></a>`
       : "";
     patentHTML =
-      `<section id="patent"><h2 class="eyebrow">Patent</h2>` +
+      `<section id="patent"><h2 class="eyebrow">${heading("patent", "Patent")}</h2>` +
       `<div class="patent">` +
       `<div class="head"><h3${bindAttr("patent.title", edit)}>${esc(patent.title)}</h3></div>` +
       (stamp ? `<p class="ids">${stamp}</p>` : "") +
@@ -177,7 +182,7 @@ export function render(content, opts = {}) {
   };
 
   const experienceHTML = experience.length
-    ? `<section id="experience"><h2 class="eyebrow">Experience</h2><div class="entries">` +
+    ? `<section id="experience"><h2 class="eyebrow">${heading("experience", "Experience")}</h2><div class="entries">` +
       experience
         .map((e) => entry({ title: e.org, role: e.role, when: e.period, points: e.points }))
         .join("") +
@@ -185,7 +190,7 @@ export function render(content, opts = {}) {
     : "";
 
   const pressHTML = press.length
-    ? `<section id="community"><h2 class="eyebrow">Community &amp; Press</h2><div class="entries">` +
+    ? `<section id="community"><h2 class="eyebrow">${heading("community", "Community & Press")}</h2><div class="entries">` +
       press
         .map((e) =>
           entry({ title: e.org, role: e.role, metric: e.metric, when: e.period, points: e.points })
@@ -195,7 +200,7 @@ export function render(content, opts = {}) {
     : "";
 
   const educationHTML = education.length
-    ? `<section id="education"><h2 class="eyebrow">Education</h2><div class="entries">` +
+    ? `<section id="education"><h2 class="eyebrow">${heading("education", "Education")}</h2><div class="entries">` +
       education
         .map((e) =>
           entry({ title: e.school, role: e.program, when: e.period, note: e.note })
@@ -214,7 +219,7 @@ export function render(content, opts = {}) {
       .map((pr) => `<div><dt>${esc(pr.title)}</dt><dd>${esc(pr.body)}</dd></div>`)
       .join("");
     aboutHTML =
-      `<section id="about"><h2 class="eyebrow">About</h2>` +
+      `<section id="about"><h2 class="eyebrow">${heading("about", "About")}</h2>` +
       paras +
       (principles ? `<dl class="principles">${principles}</dl>` : "") +
       `</section>`;
@@ -222,7 +227,7 @@ export function render(content, opts = {}) {
 
   // SKILLS — native <details>, first group open. ------------------------
   const skillsHTML = skills.length
-    ? `<section id="skills"><h2 class="eyebrow">Skills</h2><div class="skills">` +
+    ? `<section id="skills"><h2 class="eyebrow">${heading("skills", "Skills")}</h2><div class="skills">` +
       skills
         .map((g, i) => {
           const list = (g.items || []).filter(Boolean);
@@ -253,7 +258,7 @@ export function render(content, opts = {}) {
 
   const contactLead = p.contactLead || "Building something?";
   const contactHTML =
-    `<section id="contact" class="contact"><h2 class="eyebrow">Contact</h2>` +
+    `<section id="contact" class="contact"><h2 class="eyebrow">${heading("contact", "Contact")}</h2>` +
     `<p class="big"><span${bindAttr("profile.contactLead", edit)}>${esc(contactLead)}</span> ` +
     (p.email ? emailAnchor(p.email) : "Let's talk.") +
     `</p>` +
@@ -441,7 +446,7 @@ img{max-width:100%;height:auto}
 
     ${
       items.length
-        ? `<section id="work"><h2 class="eyebrow">Selected work · ${shippedCount} shipped</h2><div class="work">${workHTML}</div></section>`
+        ? `<section id="work"><h2 class="eyebrow">${heading("work", "Selected work")} · ${shippedCount} shipped</h2><div class="work">${workHTML}</div></section>`
         : ""
     }
 

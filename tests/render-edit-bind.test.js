@@ -33,6 +33,11 @@ describe("minimal edit-mode data-bind", () => {
   it("binds patent fields", () => {
     expect(edit).toContain('data-bind="patent.title"');
     expect(edit).toContain('data-bind="patent.blurb"');
+    expect(edit).toContain('data-bind="patent.highlights.0"');
+  });
+  it("binds section headings and footer copy", () => {
+    expect(edit).toContain('data-bind="headings.indexTitle"');
+    expect(edit).toContain('data-bind="footer.interactive"');
   });
   it("emits NO data-bind when not editing", () => {
     expect(plain).not.toContain("data-bind");
@@ -53,6 +58,8 @@ describe("featherweight edit-mode data-bind", () => {
     expect(edit).toContain('data-bind="items.0.title"');
     expect(edit).toContain('data-bind="items.0.detail" data-edit="md"');
     expect(edit).toContain('data-bind="patent.title"');
+    expect(edit).toContain('data-bind="headings.work"');
+    expect(edit).toContain('data-bind="footer.featherweight"');
   });
   it("uses the true content index for the cross-theme cards", () => {
     expect(edit).toContain(`data-bind="items.${minIdx}.title"`);

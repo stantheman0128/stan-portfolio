@@ -218,6 +218,11 @@ function skillsBlock(skills) {
 export function render(content, opts = {}) {
   const c = content || {};
   const edit = !!(opts && opts.edit);
+  // Owner-editable section headings with shipped defaults (older drafts may
+  // predate the headings block).
+  const H = c.headings || {};
+  const heading = (key, dflt) =>
+    `<span${bindAttr("headings." + key, edit)}>${esc(H[key] || dflt)}</span>`;
   const p = c.profile || {};
   // Cross-theme entries: each theme hides the item that IS itself.
   const items = (c.items || [])
@@ -447,7 +452,7 @@ ${rateCSS}
 <body>
 <div class="wrap">
   <header class="eyebrow">
-    <span><span${bindAttr("profile.name", edit)}>${esc(p.name || "Portfolio")}</span> — Selected Work</span>
+    <span><span${bindAttr("profile.name", edit)}>${esc(p.name || "Portfolio")}</span> — ${heading("indexBanner", "Selected Work")}</span>
     ${p.location ? `<span class="badge">${esc(p.location)}</span>` : ""}
   </header>
 
@@ -464,7 +469,7 @@ ${rateCSS}
 
   <main>
     <div class="index-head">
-      <span>Index — Selected Work</span>
+      <span>${heading("indexTitle", "Index — Selected Work")}</span>
       <span><button class="count-btn" type="button" data-n="${items.length}" title="Click to re-count">${items.length} works</button>${yearSpan ? ` · ${esc(yearSpan)}` : ""}</span>
     </div>
     <div id="list">

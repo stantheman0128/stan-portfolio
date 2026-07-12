@@ -20,6 +20,18 @@
     "featherweight": "Featherweight · system fonts · nothing blocks first paint",
     "interactive": "Built end-to-end"
   },
+  "headings": {
+    "work": "Selected work",
+    "patent": "Patent",
+    "contact": "Contact",
+    "about": "About",
+    "experience": "Experience",
+    "community": "Community & Press",
+    "education": "Education",
+    "skills": "Skills",
+    "indexBanner": "Selected Work",
+    "indexTitle": "Index — Selected Work"
+  },
   "about": {
     "short": "",
     "paragraphs": [],
