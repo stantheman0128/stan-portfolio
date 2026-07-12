@@ -8,6 +8,16 @@ import { getPath, setPath, md } from "../render/util.js";
 import { makeHistory } from "./history.js";
 
 const CONTENT_KEY = "freeform-content-v1";
+
+// Unlock key for the publish gate, localStorage first (survives a browser restart so
+// this device keeps publishing) then sessionStorage. Same source and precedence as
+// creator-entry.js. Persisting a secret in localStorage is XSS-readable; accepted
+// because the site loads no third-party script and the key only edits this own site.
+function readEditKey() {
+  try { const lk = localStorage.getItem("edit-key"); if (lk) return lk; } catch (e) {}
+  try { return sessionStorage.getItem("edit-key") || ""; } catch (e) {}
+  return "";
+}
 const state = { content: null, theme: (document.documentElement.getAttribute("data-theme") || "featherweight") };
 let editing = true;
 let history = null;      // makeHistory, initialised on boot
@@ -286,7 +296,7 @@ function buildToolbar(initialStatus) {
       const r = await fetch("/api/publish", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ content: c, images }),
+        body: JSON.stringify({ content: c, images, k: readEditKey() }),
       });
       const d = await r.json().catch(() => ({}));
       if (r.ok && d.ok) {

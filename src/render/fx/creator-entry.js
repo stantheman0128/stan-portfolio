@@ -8,6 +8,17 @@ export const creatorEntryJS = `
 (function () {
   var KEY = "can-edit";
   var SESSION_KEY = "edit-key";
+  // Read the unlock key, localStorage first then sessionStorage. localStorage makes
+  // the key survive a browser restart so this device can keep publishing without
+  // re-entering ?unlock= (the owner's explicit "bind this machine" requirement).
+  // Security trade-off: a persisted secret is readable by any XSS on this origin. We
+  // accept it — the site ships zero third-party script, and the key only authorizes
+  // editing the owner's own site content, not anything else.
+  function readEditKey() {
+    try { var lk = localStorage.getItem(SESSION_KEY); if (lk) return lk; } catch (e) {}
+    try { return sessionStorage.getItem(SESSION_KEY) || ""; } catch (e) {}
+    return "";
+  }
   var BTN =
     "position:fixed;left:14px;z-index:99990;background:#17151a;color:#fffdfa;" +
     "border:0;cursor:pointer;font:13px/1.35 ui-monospace,SFMono-Regular,Consolas,monospace;" +
@@ -48,8 +59,7 @@ export const creatorEntryJS = `
       "font:16px/1.6 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif";
     panel.innerHTML = "<p>Loading RUM\\u2026</p>";
     document.body.appendChild(panel);
-    var key = "";
-    try { key = sessionStorage.getItem(SESSION_KEY) || ""; } catch (e) {}
+    var key = readEditKey();
     fetch("/api/rum-stats?days=7", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -141,7 +151,7 @@ export const creatorEntryJS = `
   function ensureDevUrl() {
     try {
       if (localStorage.getItem(KEY) !== "1") return;
-      var k = sessionStorage.getItem(SESSION_KEY);
+      var k = readEditKey();
       if (!k) return;
       var p = new URLSearchParams(location.search);
       if (p.get("unlock") === k) return;
@@ -160,6 +170,7 @@ export const creatorEntryJS = `
           if (d && d.ok) {
             try {
               localStorage.setItem(KEY, "1");
+              localStorage.setItem(SESSION_KEY, k);
               sessionStorage.setItem(SESSION_KEY, k);
             } catch (e) {}
             showButtons();
