@@ -165,8 +165,8 @@
       "status": "Live",
       "year": "2026",
       "themeExclude": "minimal",
-      "description": "The full version of this site, with a resident hedgehog, an exploration quest, and a button that runs away from your cursor.",
-      "detail": "Warm paper and serif display on the surface; underneath, per-project ratings on Cloudflare KV, a server-gated reward, and a guide sprite with opinions. Everything this lite edition deliberately leaves out.",
+      "description": "The full version of this site, with a resident paper-doll guide, an exploration quest, and a button that runs away from your cursor.",
+      "detail": "Warm paper and serif display on the surface; underneath, per-project ratings on Cloudflare KV, a server-gated reward, and a hand-drawn paper guide who answers questions about my work. Everything this lite edition deliberately leaves out.",
       "image": "",
       "imageMode": "",
       "links": [{ "label": "Visit the full version", "href": "/interactive" }]

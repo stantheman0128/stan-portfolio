@@ -1,5 +1,11 @@
-# DEV MODE (active shipping): minimal browser + edge cache so production reflects
+# DEV MODE (active shipping): no browser or edge caching so production reflects
 # each deploy immediately. Restore the perf profile in the comment below when stable.
+#
+# no-store (not max-age=0) at the edge: max-age=0 lets Cloudflare keep an entry
+# and serve it stale; a zone-level Edge TTL cache rule can also override
+# origin max-age. no-store is the only origin directive that means "do not
+# keep a copy at all". NOTE: an "Override origin" Edge TTL cache rule in the
+# dashboard still beats every header here - keep that rule off / respect-origin.
 #
 # Perf profile (restore later):
 #   HTML browser: public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800
@@ -9,18 +15,18 @@
 #   /assets/* browser: max-age=3600; edge: max-age=604800 + edge SWR
 /
   Cache-Control: no-cache
-  Cloudflare-CDN-Cache-Control: max-age=0
+  Cloudflare-CDN-Cache-Control: no-store
 /interactive
   Cache-Control: no-cache
-  Cloudflare-CDN-Cache-Control: max-age=0
+  Cloudflare-CDN-Cache-Control: no-store
 /fast/
   Cache-Control: no-cache
-  Cloudflare-CDN-Cache-Control: max-age=0
+  Cloudflare-CDN-Cache-Control: no-store
 
 /editor.js
   Cache-Control: no-cache
-  Cloudflare-CDN-Cache-Control: max-age=0
+  Cloudflare-CDN-Cache-Control: no-store
 
 /assets/*
   Cache-Control: no-cache
-  Cloudflare-CDN-Cache-Control: max-age=0
+  Cloudflare-CDN-Cache-Control: no-store

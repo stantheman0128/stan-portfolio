@@ -21,7 +21,7 @@ import { HTML } from "./_front-door.js";
 const HEADERS = {
   "content-type": "text/html; charset=utf-8",
   "cache-control": "no-cache",
-  "cloudflare-cdn-cache-control": "max-age=0",
+  "cloudflare-cdn-cache-control": "no-store",
   "x-content-type-options": "nosniff",
 };
 

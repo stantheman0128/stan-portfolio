@@ -7,7 +7,9 @@ const THEMES = { featherweight, minimal };
 
 export const THEMES_META = [
   { key: "featherweight", label: "Featherweight" },
-  { key: "minimal", label: "Minimal" },
+  // Key stays "minimal" (content.json activeTheme / themeExclude use it);
+  // the public-facing name is the /interactive edition.
+  { key: "minimal", label: "Interactive" },
 ];
 
 export function renderSite(content, theme = "featherweight", opts = {}) {
