@@ -1,6 +1,6 @@
-import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import { onRequestPost } from "../functions/api/paper-stan/reply.js";
+import { PAPER_STAN_TEST_CONTENT } from "./fixtures/paper-stan-content.js";
 import {
   DIALOGUE_CONFIG,
   DIALOGUE_RESPONSE_FORMAT,
@@ -16,10 +16,10 @@ import {
 } from "../src/render/fx/paper-stan-dialogue.js";
 import { spriteJS } from "../src/render/fx/sprite.js";
 
-// Same readFileSync convention as the other suites: the dialogue module takes
-// injected content instead of importing the JSON itself (Node needs an import
-// attribute the cloud build's esbuild rejects).
-initPaperStanKnowledge(JSON.parse(readFileSync(new URL("../data/content.json", import.meta.url))));
+// Inject the frozen fixture, NOT the live content.json: the owner edits and
+// deletes items in the site editor, and these tests must not break with him.
+// (This also overrides reply.js's own init of the real document.)
+initPaperStanKnowledge(PAPER_STAN_TEST_CONTENT);
 
 function post(body, env) {
   return onRequestPost({

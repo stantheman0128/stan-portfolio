@@ -3,6 +3,10 @@ import { readFileSync } from "node:fs";
 import { renderSite } from "../src/render/renderSite.js";
 
 const content = JSON.parse(readFileSync(new URL("../data/content.json", import.meta.url)));
+// Indices resolved dynamically: the owner reorders/deletes items in the live
+// editor, so hard-coded positions would break on every content edit.
+const fwIdx = content.items.findIndex((it) => it.id === "site-featherweight");
+const minIdx = content.items.findIndex((it) => it.id === "site-minimal");
 
 describe("minimal edit-mode data-bind", () => {
   const edit = renderSite(content, "minimal", { edit: true });
@@ -20,10 +24,11 @@ describe("minimal edit-mode data-bind", () => {
     expect(edit).toContain('data-bind="items.0.image" data-edit="image"');
   });
   it("uses the true content index, not the filtered index", () => {
-    // content index 8 = site-featherweight, which minimal SHOWS (it excludes only
-    // itself, site-minimal at index 9). So items.8 must appear, items.9 must not.
-    expect(edit).toContain('data-bind="items.8.title"');
-    expect(edit).not.toContain('data-bind="items.9');
+    // minimal SHOWS the featherweight card and excludes only itself, so the
+    // featherweight card must be bound at its TRUE index and the minimal card
+    // must not appear at all.
+    expect(edit).toContain(`data-bind="items.${fwIdx}.title"`);
+    expect(edit).not.toContain(`data-bind="items.${minIdx}.title"`);
   });
   it("binds patent fields", () => {
     expect(edit).toContain('data-bind="patent.title"');
@@ -49,9 +54,9 @@ describe("featherweight edit-mode data-bind", () => {
     expect(edit).toContain('data-bind="items.0.detail" data-edit="md"');
     expect(edit).toContain('data-bind="patent.title"');
   });
-  it("uses the true content index (site-minimal is index 9)", () => {
-    expect(edit).toContain('data-bind="items.9.title"');
-    expect(edit).not.toContain('data-bind="items.8');
+  it("uses the true content index for the cross-theme cards", () => {
+    expect(edit).toContain(`data-bind="items.${minIdx}.title"`);
+    expect(edit).not.toContain(`data-bind="items.${fwIdx}.title"`);
   });
   it("stays clean when not editing", () => {
     expect(plain).not.toContain("data-bind");

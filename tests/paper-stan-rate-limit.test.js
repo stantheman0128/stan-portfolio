@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   onRequestPost,
@@ -7,11 +6,11 @@ import {
   RL_DAY_MAX,
 } from "../functions/api/paper-stan/reply.js";
 import { initPaperStanKnowledge } from "../src/render/fx/paper-stan-dialogue.js";
+import { PAPER_STAN_TEST_CONTENT } from "./fixtures/paper-stan-content.js";
 
-// Same injected-content convention as the sibling dialogue suite: the module
-// takes content instead of importing the JSON itself (Node needs an import
-// attribute the cloud build's esbuild rejects).
-initPaperStanKnowledge(JSON.parse(readFileSync(new URL("../data/content.json", import.meta.url))));
+// Inject the frozen fixture, NOT the live content.json — owner edits to the
+// site content must never break this suite (overrides reply.js's own init).
+initPaperStanKnowledge(PAPER_STAN_TEST_CONTENT);
 
 const VALID_REPLY = "I built Course Checker to make graduation rules easier to inspect.";
 
