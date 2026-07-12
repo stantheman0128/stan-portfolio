@@ -591,11 +591,6 @@ ${edit ? "" : `<script>
     }
   });
 
-  var lite = document.getElementById("lite-link");
-  if(lite) lite.addEventListener("click", function(){
-    try{ localStorage.setItem("site-ver","fast"); }catch(e){}
-  });
-
   if(canHover){
     window.addEventListener("mousemove", function(e){
       var x = Math.min(window.innerWidth - 150, Math.max(150, e.clientX + 150));
