@@ -93,6 +93,32 @@ export const creatorEntryJS = `
     }).join("");
     return "<div style=\\"display:flex;gap:8px;margin-bottom:16px\\">" + btns + "</div>";
   }
+  // Static teaching diagram: the four page-load moments in order, so the owner can
+  // see TTFB / FCP / LCP / Load are four timestamps of one load, not rival metrics.
+  var TIMELINE = [
+    { k: "TTFB", d: "伺服器送回第一個位元組" },
+    { k: "FCP", d: "畫面出現第一個東西" },
+    { k: "LCP", d: "主要內容出現" },
+    { k: "Load", d: "全部載完" }
+  ];
+  function timelineLegend() {
+    var cols = TIMELINE.map(function (node, i) {
+      var left = i === 0 ? "transparent" : "rgba(20,20,30,.2)";
+      var right = i === TIMELINE.length - 1 ? "transparent" : "rgba(20,20,30,.2)";
+      return "<div style=\\"flex:1;text-align:center\\">" +
+        "<div style=\\"font:12px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:700;color:#17151a\\">" + node.k + "</div>" +
+        "<div style=\\"display:flex;align-items:center;margin:7px 0\\">" +
+          "<span style=\\"flex:1;height:1px;background:" + left + "\\"></span>" +
+          "<span style=\\"width:9px;height:9px;border-radius:999px;background:#17151a;flex:0 0 auto\\"></span>" +
+          "<span style=\\"flex:1;height:1px;background:" + right + "\\"></span>" +
+        "</div>" +
+        "<div style=\\"font-size:11px;color:#5e5e66;line-height:1.35;padding:0 4px\\">" + node.d + "</div>" +
+        "</div>";
+    }).join("");
+    return "<section style=\\"margin:0 0 18px;padding:14px 16px 16px;border:1px solid rgba(20,20,30,.1);border-radius:10px;background:#fafafa\\">" +
+      "<div style=\\"font-size:13px;color:#5e5e66;margin-bottom:6px\\">一次載入的四個時刻（由早到晚）</div>" +
+      "<div style=\\"display:flex;align-items:flex-start\\">" + cols + "</div></section>";
+  }
   function renderRum(panel, d) {
     panel.innerHTML =
       "<header style=\\"display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:6px\\">" +
@@ -100,6 +126,7 @@ export const creatorEntryJS = `
       "<button type=\\"button\\" id=\\"cst-rum-close\\" style=\\"cursor:pointer;border:0;background:transparent;font:inherit;font-size:22px;line-height:1;padding:4px\\">\\u2715</button></header>" +
       "<p style=\\"margin:0 0 14px;color:#5e5e66;font-size:13px;line-height:1.5\\">\\u9019些是真實訪客瀏覽器回報的速度。每張卡片的橫條越短越綠代表越快，超過\\u300c良好門檻\\u300d會轉成橘紅。</p>" +
       rangeBar(d.days) +
+      timelineLegend() +
       metricBlock("\\u6574體表現", "\\u6240有送出 RUM 的造訪", d.overall, ["visits", "ttfb_p50", "ttfb_p95", "load_p95"]) +
       metricBlock("\\u6838\\u5fc3 Web \\u6307\\u6a19", "\\u50c5含已記錄 LCP \\u7684較新 beacon", d.vitals, ["visits", "lcp_p50", "lcp_p75", "cls_p75", "bytes_p50", "bytes_p75"]) +
       recentBlock(d.recent) +
@@ -116,15 +143,15 @@ export const creatorEntryJS = `
   }
   var METRIC = {
     visits: { label: "造訪次數", hint: "有成功送出 RUM 信標的頁面載入次數" },
-    ttfb_p50: { label: "服務器回應時間（典型）", hint: "服務器多快開始回應；一半訪客比這快，低於 0.8 秒算好", unit: "ms" },
-    ttfb_p95: { label: "服務器回應時間（最慢 5%）", hint: "最慢那 5% 的造訪等多久才收到回應；低於 0.8 秒算好", unit: "ms" },
-    fcp_p95: { label: "首次繪圖時間（最慢 5%）", hint: "畫面第一次出現東西的時間；低於 1.8 秒算好", unit: "ms" },
-    load_p95: { label: "完整載入時間（最慢 5%）", hint: "整個頁面載入完成；低於 3 秒算好", unit: "ms" },
-    lcp_p50: { label: "最大內容繪製 LCP（典型）", hint: "主內容出現的時間；低於 2.5 秒算好", unit: "ms" },
-    lcp_p75: { label: "最大內容繪製 LCP（僅 75%）", hint: "75% 造訪在這時間內看到主內容；低於 2.5 秒算好", unit: "ms" },
-    cls_p75: { label: "版面位移 CLS（僅 75%）", hint: "版面有沒有亂跳；越接近 0 越好，低於 0.1 算好", unit: "score" },
-    bytes_p50: { label: "傳輸量（典型）", hint: "HTML 加上資源的首訪傳輸量", unit: "bytes" },
-    bytes_p75: { label: "傳輸量（僅 75%）", hint: "75% 造訪的傳輸量", unit: "bytes" },
+    ttfb_p50: { label: "伺服器回應時間（TTFB，典型）", hint: "伺服器多快開始回應；一半訪客比這快，低於 0.8 秒算好", unit: "ms" },
+    ttfb_p95: { label: "伺服器回應時間（TTFB，最慢 5%）", hint: "最慢那 5% 的造訪等多久才收到回應；低於 0.8 秒算好", unit: "ms" },
+    fcp_p95: { label: "首次繪製（FCP，最慢 5%）", hint: "畫面第一次出現東西的時間；低於 1.8 秒算好", unit: "ms" },
+    load_p95: { label: "完整載入（Load，最慢 5%）", hint: "整個頁面載入完成；低於 3 秒算好", unit: "ms" },
+    lcp_p50: { label: "主內容出現（LCP，典型）", hint: "主內容出現的時間；低於 2.5 秒算好", unit: "ms" },
+    lcp_p75: { label: "主內容出現（LCP，僅 75%）", hint: "75% 造訪在這時間內看到主內容；低於 2.5 秒算好", unit: "ms" },
+    cls_p75: { label: "版面位移（CLS，僅 75%）", hint: "版面有沒有亂跳；越接近 0 越好，低於 0.1 算好", unit: "score" },
+    bytes_p50: { label: "傳輸量（Bytes，典型）", hint: "HTML 加上資源的首訪傳輸量", unit: "bytes" },
+    bytes_p75: { label: "傳輸量（Bytes，僅 75%）", hint: "75% 造訪的傳輸量", unit: "bytes" },
     country: { label: "國家 / 地區", hint: "Cloudflare 依造訪 IP 判斷" }
   };
   var BAR_MAX = {
@@ -195,9 +222,11 @@ export const creatorEntryJS = `
     }
     function th(v) { return "<th style=\\"padding:7px 10px;text-align:left;white-space:nowrap;font-weight:600\\">" + v + "</th>"; }
     function td(v) { return "<td style=\\"padding:6px 10px;white-space:nowrap;border-top:1px solid rgba(20,20,30,.06)\\">" + v + "</td>"; }
-    var head = "<tr>" + th("時間") + th("國家") + th("路徑") + th("TTFB") + th("完整載入") + th("LCP") + "</tr>";
+    var head = "<tr>" + th("時間（你的時區）") + th("國家") + th("路徑") + th("TTFB") + th("完整載入") + th("LCP") + "</tr>";
     var body = rows.map(function (r, i) {
-      var t = r.timestamp ? new Date(r.timestamp).toLocaleString() : "\\u2014";
+      var t = r.timestamp
+        ? new Date(normTs(r.timestamp)).toLocaleString([], { hour12: false, month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })
+        : "\\u2014";
       var bg = i % 2 ? "#faf9f7" : "#ffffff";
       var country = r.country != null && r.country !== "" ? String(r.country) : "\\u2014";
       var path = r.path != null && r.path !== "" ? String(r.path) : "\\u2014";
@@ -223,6 +252,16 @@ export const creatorEntryJS = `
     }
     if (k === "cls_p75") return Number(v).toFixed(3);
     return String(v);
+  }
+  // Analytics Engine returns UTC timestamps as "2026-07-12 14:03:22" with no zone
+  // marker. A browser parses that space form as LOCAL time, so times land 8h off in
+  // Taiwan. Force UTC (space->T, append Z) so toLocaleString renders the viewer's zone.
+  function normTs(ts) {
+    if (ts == null) return "";
+    var s = String(ts);
+    if (s.indexOf("T") < 0) s = s.replace(" ", "T");
+    if (s.indexOf("Z") < 0) s = s + "Z";
+    return s;
   }
   function esc(v) {
     return String(v == null ? "" : v)
@@ -269,3 +308,15 @@ export const creatorEntryJS = `
   } catch (e) {}
 })();
 `;
+
+// Testable mirror of normTs() inside the runtime string above. Analytics Engine hands
+// back UTC timestamps like "2026-07-12 14:03:22" with no zone marker; a browser reads
+// the space form as local time and lands 8h off in Taiwan. Space->T and a trailing Z
+// force UTC so toLocaleString renders the viewer's own zone. Idempotent when T/Z present.
+export function normalizeRumTimestamp(ts) {
+  if (ts == null) return "";
+  let s = String(ts);
+  if (s.indexOf("T") < 0) s = s.replace(" ", "T");
+  if (s.indexOf("Z") < 0) s = s + "Z";
+  return s;
+}
