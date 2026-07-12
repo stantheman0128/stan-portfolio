@@ -72,7 +72,9 @@ export const ctaJS = `
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   var q = window.QUEST.get();
   var hops = 0, lastJuke = 0, lastChase = 0;
-  var FACE_BOX = { x: 0.30, y: 0.12, w: 0.40, h: 0.38 }; // owner tunes vs the real photo
+  // Measured against the real reward-photo.jpg (night riverside shot): the head
+  // sits center-right, hair top ~29% down, chin ~56%, cheeks ~41%-65% across.
+  var FACE_BOX = { x: 0.41, y: 0.29, w: 0.24, h: 0.27 };
   var shatter = window.Shatter ? window.Shatter.createShatterReveal(img, "/assets/reward-photo.jpg", { steps: Math.max(1, q.total), reduce: reduce, faceBox: FACE_BOX }) : null;
 
   function p() { return Math.min(1, q.pct / 100); }
