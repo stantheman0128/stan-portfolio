@@ -4,7 +4,14 @@
 
 ---
 
-## Latest Session: 2026-07-12（續）— AI 問答已啟用＋rate limit 上線；發現 CREATOR_IP 過期（Claude）
+## Latest Session: 2026-07-12（再續）— Publish 改雙軌驗證，動態 IP 問題根治（Claude）
+
+- **`/api/publish` 改「creator IP OR EDIT_SECRET 解鎖密語」雙軌**（`19609fa`，鏡射 rum-stats 既有模式；TDD 17 新測、全套 33 檔 186 tests 綠）：編輯器在 `?unlock=` 解鎖時把密語存進 localStorage（跨重開瀏覽器持久＝綁定裝置），每次 Publish 自動帶上——HiNet 重撥換 IP 不再 403，CREATOR_IP 也不用再追著改。403 文案改中性 "not authorized"（不洩露哪軌失敗）。**順手堵洞**：`images[].path` 加 `public/assets/` 前綴白名單（拒 `..`/絕對路徑/反斜線）——原本可經原子 commit 寫任意 repo 檔案。
+- **權衡記錄**：密語持久化在 localStorage=同源 XSS 可竊；本站零第三方 script、密語權限僅為改站主自己內容，接受（註解已記）。
+- **⚠️ 待 Stan 一步**：部署生效後用 `https://portfolio.stan-shih.com/?unlock=<你的edit密語>` 開一次網站重新綁定（舊版只存 sessionStorage、重開瀏覽器就丟），之後 Edit→Publish 永久有效。
+- **FACE_BOX 已對真照片校正**（同批 push）：{x:.41,y:.29,w:.24,h:.27}，對照 reward-photo.jpg 實測頭部位置（原值上緣是天空）。最終手感待 Stan 玩一遍確認。
+
+## Previous Session: 2026-07-12（續）— AI 問答已啟用＋rate limit 上線；發現 CREATOR_IP 過期（Claude）
 
 - **Paper Stan AI 問答已在 production 啟用**：`PAPER_STAN_AI_ENABLED` 已設為 Pages secret（wrangler 設定）；啟用前先落地 server-side rate limit（`be65ef9`，TDD 7 測）：per-IP 6 次/5 分鐘（SHA-256 雜湊 IP 當 key、不存原始 IP）＋全站每日 200 次 inference 保險絲（只計真正走到 `env.AI.run` 的路徑；本地 continuation 捷徑不吃額度）；KV 故障 fail-open（低流量站可用性優先，帳號級 Workers AI 上限當最終後盾）。**線上實證**：真問題回 200 grounded 回覆；同 IP 連發第 7 次回 429 `{"error":"rate_limited"}`。全套 31 檔 169 tests 綠。
 - **CF Purge Everything 已做（Stan）**：/interactive MISS＋新 bundle、kit JS 正常服務——中毒快取災難模式解除。
