@@ -3,7 +3,7 @@
 // Extended beyond the demo with About, Patent, Experience, Press, Education, Skills, and stats.
 import { esc, md, realLinks, bindAttr, editLinksHTML } from "../util.js";
 import { questCSS, questBadgeHTML, questJS } from "../fx/quest.js";
-import { ctaCSS, ctaTopHTML, ctaLabHTML, ctaJS } from "../fx/cta.js";
+import { ctaCSS, ctaTopHTML, ctaJS } from "../fx/cta.js";
 import { shatterJS } from "../fx/shatter.js";
 import { creatorEntryJS } from "../fx/creator-entry.js";
 import { spriteCSS, spriteHTML, spriteJS } from "../fx/sprite.js";
@@ -298,6 +298,7 @@ img{max-width:100%;display:block}
 .hero h1 em{font-style:italic;color:var(--accent)}
 .hero .sub{font-size:clamp(16px,2.1vw,19px);color:var(--muted);max-width:54ch;margin:0 0 30px}
 .contacts{display:flex;flex-wrap:wrap;gap:10px 26px;font-family:var(--mono);font-size:13px;letter-spacing:.02em}
+.contacts-foot{margin-top:70px}
 .contacts a{color:var(--ink);padding-bottom:3px;border-bottom:1px solid var(--line-strong);
   transition:border-color .2s,color .2s}
 .contacts a:hover,.contacts a:focus-visible{color:var(--accent);border-color:var(--accent)}
@@ -451,7 +452,6 @@ ${rateCSS}
   <section class="hero">
     <h1${bindAttr("profile.tagline", edit)}>${accentTagline(p.tagline)}</h1>
     ${p.subtagline ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline)}</p>` : ""}
-    ${contacts ? `<nav class="contacts" aria-label="Contact">${contacts}</nav>` : ""}
     ${p.available ? `<p class="avail">${esc(p.available)}</p>` : ""}
   </section>
 
@@ -476,7 +476,7 @@ ${rateCSS}
   ${educationBlock(c.education)}
   ${skillsBlock(c.skills)}
 
-  ${ctaLabHTML}
+  ${contacts ? `<nav class="contacts contacts-foot" aria-label="Contact">${contacts}</nav>` : ""}
 
   <footer>
     <span>© ${new Date().getFullYear()} ${esc(p.name || "")}</span>

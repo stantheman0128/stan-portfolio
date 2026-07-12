@@ -25,12 +25,6 @@ export const ctaCSS = `
 @media (max-width:640px){#photo-img{width:104px}#photo-cap{max-width:104px}#cta-zone{min-height:180px}}
 #cta-note{margin-top:10px;font-size:12.5px;color:#8b877f;min-height:1.4em;transition:opacity .25s}
 #cta-note.flash{color:#c2522d}
-#lab{margin-top:44px}
-#reward{display:none;margin:10px auto 0;max-width:30rem;border:1.5px solid #426c53;border-radius:12px;padding:1.3rem 1.4rem;background:#fbfdf9}
-#reward.on{display:block}
-#reward h3{margin:0 0 8px;font-size:17px;color:#2c4a38}
-#reward p{margin:.4rem 0;font-size:14px;color:#3a3833;line-height:1.65}
-#reward code{font-family:ui-monospace,monospace;font-size:15px;font-weight:700;letter-spacing:.06em;background:#e9f1ea;border-radius:6px;padding:.15rem .5rem;color:#2c4a38}
 `;
 
 export const ctaTopHTML = `
@@ -47,17 +41,6 @@ export const ctaTopHTML = `
 </div>
 `;
 
-export const ctaLabHTML = `
-<section id="lab" aria-label="Reward">
-  <div id="reward" role="region" aria-label="Reward unlocked">
-    <h3>You actually explored everything.</h3>
-    <p>That earns you a priority channel. Mention the code word</p>
-    <p><code>EXPLORER-100</code></p>
-    <p>in an email and I will reply within 24 hours. Promise.</p>
-    <p><a href="mailto:stan@stan-shih.com?subject=EXPLORER-100">Use it now &rarr;</a></p>
-  </div>
-</section>
-`;
 
 export const ctaJS = `
 (function () {
@@ -66,7 +49,6 @@ export const ctaJS = `
   var img = document.getElementById("photo-img");
   var cap = document.getElementById("photo-cap");
   var note = document.getElementById("cta-note");
-  var reward = document.getElementById("reward");
   if (!photo || !window.QUEST) return;
 
   var reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -196,7 +178,6 @@ export const ctaJS = `
       var firstCatch = !q.ctaUnlocked;
       window.QUEST.markUnlocked();
       q = window.QUEST.get();
-      reward.classList.add("on");
       paint();
       note.textContent = statusNote();
       if (firstCatch) document.dispatchEvent(new CustomEvent("cta:opened"));
@@ -227,7 +208,6 @@ export const ctaJS = `
     q = window.QUEST.get();
     paint();
     if (q.ctaUnlocked) {
-      reward.classList.add("on");
       settleHome();
     } else if (unlocked()) {
       settleHome();

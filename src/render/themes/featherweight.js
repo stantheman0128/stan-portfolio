@@ -41,14 +41,6 @@ export function render(content, opts = {}) {
       ? `<!--email_off--><a href="${emailHref}">${esc(label)}</a><!--/email_off-->`
       : "";
 
-  const metaHTML = [
-    p.email ? emailAnchor(p.email) : "",
-    p.githubUrl ? `<a href="${esc(p.githubUrl)}">GitHub</a>` : "",
-    p.linkedinUrl ? `<a href="${esc(p.linkedinUrl)}">LinkedIn</a>` : "",
-  ]
-    .filter(Boolean)
-    .join('<span class="dot">·</span>');
-
   // Quick-nav only lists sections that actually have content.
   const nav = [
     ["work", "Work", items.length],
@@ -431,7 +423,6 @@ img{max-width:100%;height:auto}
     ${lede}
     ${p.subtagline ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline)}</p>` : ""}
     ${nav ? `<nav class="quicknav" aria-label="Sections">${nav}</nav>` : ""}
-    ${metaHTML ? `<p class="meta-row">${metaHTML}</p>` : ""}
     <p class="fw-speed" id="fw-speed" role="status" aria-live="polite"></p>
   </header>
 
