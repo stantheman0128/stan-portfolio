@@ -72,56 +72,12 @@
       ]
     },
     {
-      "id": "antnest-chatbot",
-      "title": "Antnest Chatbot",
-      "status": "Production",
-      "year": "2025",
-      "description": "A LINE AI Bot + admin dashboard for a dessert shop (won Zeabur hackathon  silver place with it yay",
-      "detail": "",
-      "image": "/assets/antnest-logo.png",
-      "imageMode": "contain",
-      "imageWidth": 820,
-      "imageHeight": 261,
-      "links": [
-        {
-          "label": "Live",
-          "href": "https://antnest-chatbot-0410.zeabur.app"
-        },
-        {
-          "label": "GitHub",
-          "href": "https://github.com/stantheman0128/antnest-chatbot"
-        }
-      ]
-    },
-    {
-      "id": "etf-tracker",
-      "title": "ETF Tracker",
-      "status": "Live",
-      "year": "2025",
-      "description": "A personal dashboard that tracks Taiwan ETFs, US stocks, and BTC in one place - basically to keep track of my personal ETF combination",
-      "detail": "",
-      "image": "/assets/etf-tracker-screenshot.png",
-      "imageMode": "contain",
-      "imageWidth": 1280,
-      "imageHeight": 720,
-      "links": [
-        {
-          "label": "Live",
-          "href": "https://etf-tracker-seven.vercel.app"
-        },
-        {
-          "label": "GitHub",
-          "href": "https://github.com/stantheman0128/etf-tracker"
-        }
-      ]
-    },
-    {
       "id": "line-notify-plus",
       "title": "LINE Notify+",
       "status": "In progress",
       "year": "2025",
-      "description": "An Android app that reshapes LINE notifications for Android users.",
-      "detail": "Groups chat notifications, adds per-source settings, and ships with full Play Store assets. Built in Kotlin with Jetpack Compose.",
+      "description": "An Android app that provides better and more customizable LINE notifications for Android users (as compared with native notifications",
+      "detail": "",
       "image": "/assets/line-notify-screenshot.png",
       "imageMode": "",
       "imageWidth": 1080,
@@ -134,24 +90,6 @@
         {
           "label": "GitHub",
           "href": "https://github.com/stantheman0128/line-notify-plus"
-        }
-      ]
-    },
-    {
-      "id": "claudepulse",
-      "title": "ClaudePulse",
-      "status": "Local tool",
-      "year": "2026",
-      "description": "A Windows monitor for multiple Claude Code sessions. Shows a notification when a session is finished or needs further handling",
-      "detail": "",
-      "image": "/assets/claudepulse-screenshot.png",
-      "imageMode": "contain",
-      "imageWidth": 355,
-      "imageHeight": 307,
-      "links": [
-        {
-          "label": "GitHub",
-          "href": "https://github.com/stantheman0128/claudepulse-win"
         }
       ]
     },
@@ -195,6 +133,91 @@
       ]
     },
     {
+      "id": "site-minimal",
+      "title": "This Site — Interactive Edition",
+      "status": "Live",
+      "year": "2026",
+      "themeExclude": "minimal",
+      "description": "The full version of this site, with a resident paper-doll guide, an exploration quest, and MY PICTURE that runs away from your cursor",
+      "detail": "",
+      "image": "/assets/paper-stan.png",
+      "imageMode": "icon",
+      "links": [
+        {
+          "label": "Visit the full version",
+          "href": "/interactive"
+        },
+        {
+          "label": "GitHub",
+          "href": "https:https://github.com/stantheman0128/stan-portfolio//"
+        }
+      ],
+      "imageWidth": 874,
+      "imageHeight": 1051
+    },
+    {
+      "id": "antnest-chatbot",
+      "title": "Antnest Chatbot",
+      "status": "Production",
+      "year": "2025",
+      "description": "A LINE AI Bot + admin dashboard for a dessert shop (won Zeabur hackathon  silver medal with it yay",
+      "detail": "",
+      "image": "/assets/antnest-logo.png",
+      "imageMode": "contain",
+      "imageWidth": 820,
+      "imageHeight": 261,
+      "links": [
+        {
+          "label": "Live",
+          "href": "https://antnest-chatbot-0410.zeabur.app"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/stantheman0128/antnest-chatbot"
+        }
+      ]
+    },
+    {
+      "id": "etf-tracker",
+      "title": "ETF Tracker",
+      "status": "Live",
+      "year": "2025",
+      "description": "A personal dashboard that tracks Taiwan ETFs, US stocks, and BTC in one place - basically to keep track of my personal ETF ",
+      "detail": "",
+      "image": "/assets/etf-tracker-screenshot.png",
+      "imageMode": "contain",
+      "imageWidth": 1280,
+      "imageHeight": 720,
+      "links": [
+        {
+          "label": "Live",
+          "href": "https://etf-tracker-seven.vercel.app"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/stantheman0128/etf-tracker"
+        }
+      ]
+    },
+    {
+      "id": "claudepulse",
+      "title": "ClaudePulse",
+      "status": "Local tool",
+      "year": "2026",
+      "description": "A Windows monitor for multiple Claude Code sessions. Shows a notification when a session is finished or needs further handling",
+      "detail": "",
+      "image": "/assets/claudepulse-screenshot.png",
+      "imageMode": "contain",
+      "imageWidth": 355,
+      "imageHeight": 307,
+      "links": [
+        {
+          "label": "GitHub",
+          "href": "https://github.com/stantheman0128/claudepulse-win"
+        }
+      ]
+    },
+    {
       "id": "youtube-precise-time",
       "title": "YouTube Precise Time",
       "status": "Local tool",
@@ -215,29 +238,6 @@
           "href": "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/youtube-video-upload-time"
         }
       ]
-    },
-    {
-      "id": "site-minimal",
-      "title": "This Site — Interactive Edition",
-      "status": "Live",
-      "year": "2026",
-      "themeExclude": "minimal",
-      "description": "The full version of this site, with a resident paper-doll guide, an exploration quest, and a button that runs away from your cursor.",
-      "detail": "Warm paper and serif display on the surface; underneath, per-project ratings on Cloudflare KV, a server-gated reward, and a hand-drawn paper guide who answers questions about my work. Everything this lite edition deliberately leaves out.",
-      "image": "/assets/paper-stan.png",
-      "imageMode": "icon",
-      "links": [
-        {
-          "label": "Visit the full version",
-          "href": "/interactive"
-        },
-        {
-          "label": "GitHub",
-          "href": "https:https://github.com/stantheman0128/stan-portfolio//"
-        }
-      ],
-      "imageWidth": 874,
-      "imageHeight": 1051
     },
     {
       "id": "course-checker",
