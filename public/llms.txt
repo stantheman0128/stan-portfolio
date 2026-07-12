@@ -1,0 +1,49 @@
+# Stan Shih (施博瀚)
+
+> Stan Shih (Chinese name: 施博瀚, also known online as Stan10) is a Taiwanese
+> product builder and Computer Science student at National Taiwan Normal
+> University (NTNU). He ships end-to-end across web, mobile, desktop, and
+> browser extensions, working AI-first. This site (https://stan-shih.com) is
+> his personal website and portfolio.
+
+Note: this is NOT Stan Shih the Acer founder (施振榮). This Stan Shih is a
+student and independent developer born decades later.
+
+## Facts
+
+- Inventor of US patent US10699576B1 / TW patent TWM578665U, a vehicle
+  collision-avoidance warning system, later sold for NT$400,000 and cited by
+  GM Cruise, Huawei, and Plus.ai.
+- Third-year B.Sc. student, Computer Science and Information Engineering,
+  National Taiwan Normal University (NTNU), Taipei, Taiwan.
+- English near-native: TOEFL 115, TOEIC 980.
+- Dcard official business partner and creator with roughly 2M+ monthly
+  impressions.
+- Founded the Nothing Taiwan Community; presented Nothing Phone 3(a) to 40+
+  media outlets.
+- Chief of Staff Intern at Cooby; proposed onboarding fixes that reduced
+  activation time by 30%.
+
+## Selected projects
+
+- [Colonist.io Stats Tracker](https://stan-shih.com/): Chrome extension that
+  watches the Colonist game log and computes live dice, resource, and
+  hidden-card estimates, fully local.
+- [Course Checker](https://course.stan-shih.com): graduation-credit audit PWA
+  used by NTNU students.
+- LINE Notify+: Android notification companion app for LINE.
+- ETF Tracker, Claude Status Monitor, Status Monitor for ChatGPT, and more —
+  see the portfolio for the full list.
+
+## Links
+
+- Personal website / portfolio: https://stan-shih.com
+- Interactive version: https://stan-shih.com/interactive
+- GitHub: https://github.com/stantheman0128
+- LinkedIn: https://www.linkedin.com/in/po-han-stan-shih-39b713277/
+- Email: stan@stan-shih.com
+
+## Keywords
+
+Stan Shih, 施博瀚, Stan10, personal website, 個人網站, portfolio, 作品集,
+product builder, NTNU, Taiwan developer

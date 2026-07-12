@@ -33,6 +33,17 @@ writeFileSync(join(dist, "fast", "index.html"), fw);
 const { frontDoorModuleSource } = await import(new URL("./front-door-bake.mjs", import.meta.url));
 writeFileSync(join(root, "functions", "_front-door.js"), frontDoorModuleSource(fw));
 
+// Sitemap for search engines and AI crawlers. Only canonical pages: "/" and
+// "/interactive" ("/fast/" is a duplicate of "/" and stays out on purpose).
+const today = new Date().toISOString().slice(0, 10);
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url><loc>https://stan-shih.com/</loc><lastmod>${today}</lastmod></url>
+<url><loc>https://stan-shih.com/interactive</loc><lastmod>${today}</lastmod></url>
+</urlset>
+`;
+writeFileSync(join(dist, "sitemap.xml"), sitemap);
+
 // Bundle the on-page editor to a stable, unhashed URL so the Edit button can inject
 // it on demand from any live page (esbuild ships with vite).
 const { build: esbuild } = await import("esbuild");

@@ -16,6 +16,7 @@
 /
   Cache-Control: no-cache
   Cloudflare-CDN-Cache-Control: no-store
+  Link: </llms.txt>; rel="alternate"; type="text/markdown"
 /interactive
   Cache-Control: no-cache
   Cloudflare-CDN-Cache-Control: no-store

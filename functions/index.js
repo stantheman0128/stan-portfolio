@@ -23,6 +23,8 @@ const HEADERS = {
   "cache-control": "no-cache",
   "cloudflare-cdn-cache-control": "no-store",
   "x-content-type-options": "nosniff",
+  // Agent discovery (RFC 8288): points AI crawlers at the markdown profile.
+  link: '</llms.txt>; rel="alternate"; type="text/markdown"',
 };
 
 export function onRequest() {
