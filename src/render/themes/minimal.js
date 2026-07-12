@@ -128,7 +128,11 @@ function patentBlock(pt, edit) {
   const meta = edit
     ? `<span${bindAttr("patent.role", edit)}>${esc(pt.role || "")}</span> · <span${bindAttr("patent.year", edit)}>${esc(pt.year || "")}</span>`
     : [pt.role, pt.year].filter(Boolean).map(esc).join(" · ");
-  const hi = (pt.highlights || []).map((h, i) => `<li${bindAttr("patent.highlights." + i, edit)}>${esc(h)}</li>`).join("");
+  // Edit mode keeps empty highlight rows editable; visitors never see a bare
+  // bullet from a cleared line.
+  const hi = (pt.highlights || [])
+    .map((h, i) => (edit || String(h).trim() ? `<li${bindAttr("patent.highlights." + i, edit)}>${esc(h)}</li>` : ""))
+    .join("");
   const fig = pt.image
     ? `<figure class="pt-fig">
         <a href="${edit ? esc(pt.image) : "#lb-patent"}"${edit ? ` target="_blank" rel="noopener"` : ""}>
@@ -252,8 +256,9 @@ export function render(content, opts = {}) {
   const contacts = edit
     ? editLinksHTML(contactList, "profile.contacts")
     : contactList
-        .filter((l) => l && l.href)
-        .map((l) => `<a href="${esc(l.href)}"${String(l.href).startsWith("mailto:") ? "" : ` target="_blank" rel="noopener"`}>${esc(l.label)}</a>`)
+        // The contact block's big line already carries the email address.
+        .filter((l) => l && l.href && !String(l.href).startsWith("mailto:"))
+        .map((l) => `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`)
         .join("");
 
   const title = `${esc(p.name || "Portfolio")}${p.role ? " — " + esc(p.role) : ""}`;
@@ -317,8 +322,12 @@ img{max-width:100%;display:block}
 .eyebrow .badge{border:1px solid var(--line-strong);border-radius:999px;padding:3px 10px;
   color:var(--ink);font-size:11px;letter-spacing:.18em}
 
+/* Text column gets priority; the photo column is capped so the name and role
+   never get squeezed into a second line by the polaroid. */
 .hero{padding:clamp(40px,9vw,96px) 0 clamp(30px,6vw,56px);display:grid;
-  grid-template-columns:minmax(0,1fr) auto;gap:24px clamp(28px,5vw,64px);align-items:center}
+  grid-template-columns:minmax(min(34rem,62%),1fr) minmax(0,max-content);
+  gap:24px clamp(28px,5vw,64px);align-items:center}
+@media (max-width:1040px){.hero{grid-template-columns:1fr;}.hero-side{justify-self:start}}
 .hero-name{font-family:var(--serif);font-weight:400;font-size:clamp(38px,6.8vw,64px);
   line-height:1.04;letter-spacing:-.01em;margin:0 0 10px}
 /* The name sits on a terracotta highlighter stroke so it reads first. */
@@ -331,10 +340,12 @@ img{max-width:100%;display:block}
   line-height:1.16;letter-spacing:-.008em;margin:0 0 22px;max-width:22ch}
 .hero-tag em{font-style:italic;color:var(--accent)}
 .hero-side #cta-top{margin:0}
-@media (max-width:760px){.hero{grid-template-columns:1fr}.hero-side{justify-self:start}}
 .hero .sub{font-size:clamp(16px,2.1vw,19px);color:var(--muted);max-width:54ch;margin:0 0 30px}
 .contacts{display:flex;flex-wrap:wrap;gap:10px 26px;font-family:var(--mono);font-size:13px;letter-spacing:.02em}
-.contacts-foot{margin-top:70px}
+.contacts-foot{margin-top:26px}
+.contact-big{font-family:var(--serif);font-size:clamp(22px,3vw,32px);line-height:1.3;margin:0;max-width:24ch}
+.contact-big a{color:var(--ink);border-bottom:2px solid var(--accent);transition:color .2s}
+.contact-big a:hover,.contact-big a:focus-visible{color:var(--accent)}
 .lb{display:none;position:fixed;inset:0;z-index:120;background:rgba(20,18,15,.85);padding:4vmin}
 .lb:target{display:flex;align-items:center;justify-content:center}
 .lb a{display:flex;align-items:center;justify-content:center;width:100%;height:100%;cursor:zoom-out}
@@ -498,7 +509,7 @@ ${rateCSS}
       ${p.role || edit ? `<p class="hero-role"${bindAttr("profile.role", edit)}>${esc(p.role || "")}</p>` : ""}
       <p class="hero-tag"${bindAttr("profile.tagline", edit)}>${accentTagline(p.tagline)}</p>
       ${p.subtagline || edit ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline || "")}</p>` : ""}
-      <p class="avail"${bindAttr("profile.available", edit)}>${esc(p.available || "")}</p>
+      ${p.available || edit ? `<p class="avail"${bindAttr("profile.available", edit)}>${esc(p.available || "")}</p>` : ""}
     </div>
     <div class="hero-side">${ctaTopHTML}</div>
   </section>
@@ -539,7 +550,11 @@ ${rateCSS}
           : "")
   }
 
-  ${contacts ? `<nav class="contacts contacts-foot${edit ? " ff-links" : ""}" aria-label="Contact"${edit ? ` data-links-path="profile.contacts"` : ""}>${contacts}</nav>` : ""}
+  <section class="block" id="contact">
+    <div class="block-eyebrow">${heading("contact", "Contact")}</div>
+    <p class="contact-big"><span${bindAttr("profile.contactLead", edit)}>${esc(p.contactLead != null ? p.contactLead : "Building something?")}</span>${p.email ? ` <a href="mailto:${esc(p.email)}">${esc(p.email)}</a>` : ""}</p>
+    ${contacts ? `<nav class="contacts contacts-foot${edit ? " ff-links" : ""}" aria-label="Contact"${edit ? ` data-links-path="profile.contacts"` : ""}>${contacts}</nav>` : ""}
+  </section>
 
   <footer>
     <span>© ${new Date().getFullYear()} <span${bindAttr("profile.name", edit)}>${esc(p.name || "")}</span></span>

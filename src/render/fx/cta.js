@@ -18,11 +18,11 @@ export const ctaCSS = `
 #photo.ph-free{border-color:#c2522d;box-shadow:0 0 0 4px rgba(194,82,45,.14),0 10px 34px rgba(194,82,45,.2)}
 #photo-btn{all:unset;display:block;cursor:pointer}
 #photo-btn:focus-visible{outline:2px solid #c2522d;outline-offset:4px}
-#photo-img{width:120px;height:auto;display:block;border-radius:2px;background:#efe7da}
-#photo-cap{margin:6px 0 0;max-width:120px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;line-height:1.5;color:#6f6b62;font-variant-numeric:tabular-nums}
+#photo-img{width:200px;height:auto;display:block;border-radius:2px;background:#efe7da}
+#photo-cap{margin:6px 0 0;max-width:200px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;line-height:1.5;color:#6f6b62;font-variant-numeric:tabular-nums}
 #photo.ph-free #photo-cap{color:#c2522d}
 @media (prefers-reduced-motion:reduce){#photo{transform:rotate(-2deg) !important}#photo-img{transition:none}}
-@media (max-width:640px){#photo-img{width:104px}#photo-cap{max-width:104px}#cta-zone{min-height:180px}}
+@media (max-width:640px){#photo-img{width:150px}#photo-cap{max-width:150px}#cta-zone{min-height:180px}}
 #cta-note{margin-top:10px;font-size:12.5px;color:#8b877f;min-height:1.4em;transition:opacity .25s}
 #cta-note.flash{color:#c2522d}
 `;
