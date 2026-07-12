@@ -224,8 +224,8 @@
       "themeExclude": "minimal",
       "description": "The full version of this site, with a resident paper-doll guide, an exploration quest, and a button that runs away from your cursor.",
       "detail": "Warm paper and serif display on the surface; underneath, per-project ratings on Cloudflare KV, a server-gated reward, and a hand-drawn paper guide who answers questions about my work. Everything this lite edition deliberately leaves out.",
-      "image": "",
-      "imageMode": "",
+      "image": "/assets/paper-stan.png",
+      "imageMode": "icon",
       "links": [
         {
           "label": "Visit the full version",
@@ -235,7 +235,9 @@
           "label": "GitHub",
           "href": "https:https://github.com/stantheman0128/stan-portfolio//"
         }
-      ]
+      ],
+      "imageWidth": 874,
+      "imageHeight": 1051
     },
     {
       "id": "course-checker",

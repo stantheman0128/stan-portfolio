@@ -1,0 +1,13 @@
+{
+  "name": "Stan Shih — Portfolio",
+  "short_name": "Stan Shih",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fbfbfa",
+  "theme_color": "#16161a",
+  "description": "Product builder portfolio — projects, patent, and an interactive paper-doll guide.",
+  "icons": [
+    { "src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
