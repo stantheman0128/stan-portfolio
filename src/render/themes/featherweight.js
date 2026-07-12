@@ -435,7 +435,9 @@ section{margin-top:calc(var(--space)*2.1)}
 .contact{margin-top:calc(var(--space)*2.1)}
 .contact .big{font-size:var(--s2);letter-spacing:-.026em;font-weight:600;line-height:1.18;max-width:24ch;margin-bottom:.85rem}
 .contact .big a{border-bottom-width:2px}
-.contact .links{font-size:var(--s0);color:var(--ink-2);line-height:2}
+/* flex+wrap: the anchors and dot separators form one unbroken inline run, so
+   without this the last channel walks off narrow screens. */
+.contact .links{font-size:var(--s0);color:var(--ink-2);line-height:2;display:flex;flex-wrap:wrap;align-items:baseline;column-gap:0}
 .contact .links a{color:var(--ink)}
 .contact .links .sep{padding:0 .55rem;color:var(--line-2);border:0}
 .contact .avail{margin-top:.7rem;font-size:var(--s-1);color:var(--ink-3);display:inline-flex;align-items:center;gap:.5rem}
