@@ -29,7 +29,25 @@ async function mountEditor() {
   if (draft) {
     try { state.content = JSON.parse(draft); } catch { state.content = null; }
   }
-  if (!state.content) {
+  if (state.content) {
+    // A saved draft can predate the live site: every deploy bakes a fresh
+    // _build stamp into /data/content.json, so a smaller stamp means edits
+    // were published (or shipped in code) after this draft was taken.
+    // Editing a stale draft silently reverts those newer changes on Publish,
+    // so ask before continuing with it.
+    try {
+      const live = await (await fetch("/data/content.json")).json();
+      const stale = live._build && state.content._build && +live._build > +state.content._build;
+      if (stale && confirm(
+        "Your local draft is OLDER than the published site.\n\n" +
+        "OK: discard the draft and load the live version (recommended)\n" +
+        "Cancel: keep editing the old draft"
+      )) {
+        state.content = live;
+        localStorage.removeItem(CONTENT_KEY);
+      }
+    } catch (e) { /* offline or fetch hiccup: keep the draft */ }
+  } else {
     state.content = await (await fetch("/data/content.json")).json();
   }
   history = makeHistory(snapshot());
@@ -281,6 +299,7 @@ function buildToolbar(initialStatus) {
       // URL; ship the raw base64 alongside for the endpoint to commit atomically.
       const images = [];
       const c = JSON.parse(JSON.stringify(state.content));
+      delete c._build; // deploy stamp from /data/content.json, not source data
       (c.items || []).forEach((it, i) => {
         delete it._imageFile; // editor-only scratch state, never publish it
         if (it.image && String(it.image).startsWith("data:")) {
@@ -364,7 +383,25 @@ function buildHoverControls() {
     render("Duplicated item");
   });
 
-  hoverBtns.append(del, dup);
+  const moveItem = (delta, msg) => (e) => {
+    e.preventDefault(); e.stopPropagation();
+    const idx = itemIndexOf(hoverTarget);
+    const to = idx + delta;
+    if (idx < 0 || to < 0 || to >= state.content.items.length) return;
+    const [moved] = state.content.items.splice(idx, 1);
+    state.content.items.splice(to, 0, moved);
+    commitNow();
+    hideHover();
+    render(msg);
+  };
+  const up = document.createElement("button");
+  up.textContent = "↑"; up.title = "Move this item up";
+  up.addEventListener("mousedown", moveItem(-1, "Moved item up"));
+  const down = document.createElement("button");
+  down.textContent = "↓"; down.title = "Move this item down";
+  down.addEventListener("mousedown", moveItem(1, "Moved item down"));
+
+  hoverBtns.append(up, down, del, dup);
   document.body.append(hoverBox, hoverBtns);
 }
 
