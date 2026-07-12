@@ -26,7 +26,12 @@ function itemThumb(it, ci, edit) {
     // matches the .thumb card so an item without baked dims still reserves space.
     const w = it.imageWidth | 0 || 800;
     const h = it.imageHeight | 0 || 600;
-    return `<div class="${cls}"><img src="${esc(it.image)}" alt="${esc(it.title)} preview" width="${w}" height="${h}" loading="lazy" decoding="async"${bindAttr("items." + ci + ".image", edit, "image")}></div>`;
+    const img = `<img src="${esc(it.image)}" alt="${esc(it.title)} preview" width="${w}" height="${h}" loading="lazy" decoding="async"${bindAttr("items." + ci + ".image", edit, "image")}>`;
+    // Visitors click through to a CSS-only :target lightbox; edit mode keeps
+    // the plain div so double-click-to-replace still owns the image.
+    return edit
+      ? `<div class="${cls}">${img}</div>`
+      : `<a class="${cls} thumb-zoom" href="#lb-${ci}" aria-label="View ${esc(it.title)} image full size">${img}</a>`;
   }
   // No image: a typographic card built from the initials, never a broken <img>.
   const initials = esc(
@@ -125,7 +130,7 @@ function patentBlock(pt, edit) {
   const hi = (pt.highlights || []).map((h, i) => `<li${bindAttr("patent.highlights." + i, edit)}>${esc(h)}</li>`).join("");
   const fig = pt.image
     ? `<figure class="pt-fig">
-        <a href="${esc(pt.image)}" target="_blank" rel="noopener">
+        <a href="${edit ? esc(pt.image) : "#lb-patent"}"${edit ? ` target="_blank" rel="noopener"` : ""}>
           <img src="${esc(pt.image)}" alt="${esc(pt.imageAlt || "Patent document, first page")}"
             width="${pt.imageWidth | 0 || 935}" height="${pt.imageHeight | 0 || 1210}" loading="lazy" decoding="async">
         </a>
@@ -274,6 +279,8 @@ export function render(content, opts = {}) {
 }catch(e){}})();
 </script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f6f5f1'/%3E%3Cpolygon points='8,22 3,18 8,15' fill='%23efe7da'/%3E%3Cpolygon points='8,22 20,22 15,12' fill='%23c2522d'/%3E%3Cpolygon points='11,20 17,20 13,13' fill='%238f351f'/%3E%3Cpolygon points='20,22 26,18 21,15' fill='%23efe7da'/%3E%3Cpolygon points='26,18 29,19 26,21' fill='%2317151a'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#f6f5f1">
+<link rel="manifest" href="/site.webmanifest">
 <style>
 :root{
   --bg:#f6f5f1; --ink:#17161a; --muted:#8b877f; --faint:#b7b2a8;
@@ -306,6 +313,11 @@ img{max-width:100%;display:block}
 .hero .sub{font-size:clamp(16px,2.1vw,19px);color:var(--muted);max-width:54ch;margin:0 0 30px}
 .contacts{display:flex;flex-wrap:wrap;gap:10px 26px;font-family:var(--mono);font-size:13px;letter-spacing:.02em}
 .contacts-foot{margin-top:70px}
+.lb{display:none;position:fixed;inset:0;z-index:120;background:rgba(20,18,15,.85);padding:4vmin}
+.lb:target{display:flex;align-items:center;justify-content:center}
+.lb a{display:flex;align-items:center;justify-content:center;width:100%;height:100%;cursor:zoom-out}
+.lb img{max-width:min(92vw,60rem);max-height:92vh;width:auto;height:auto;border-radius:8px;box-shadow:0 24px 80px rgba(0,0,0,.5);background:#fff}
+a.thumb-zoom{cursor:zoom-in;display:block;text-decoration:none}
 .contacts a{color:var(--ink);padding-bottom:3px;border-bottom:1px solid var(--line-strong);
   transition:border-color .2s,color .2s}
 .contacts a:hover,.contacts a:focus-visible{color:var(--accent);border-color:var(--accent)}
@@ -482,6 +494,23 @@ ${rateCSS}
   ${pressBlock(c.press)}
   ${educationBlock(c.education)}
   ${skillsBlock(c.skills)}
+
+  ${
+    edit
+      ? ""
+      : items
+          .filter(({ it }) => it.image)
+          .map(
+            ({ it, ci }) =>
+              `<div class="lb" id="lb-${ci}" role="dialog" aria-label="${esc(it.title)} full size">` +
+              `<a href="#!" aria-label="Close"><img src="${esc(it.image)}" alt="${esc(it.title)} preview" loading="lazy" decoding="async"></a></div>`
+          )
+          .join("") +
+        (c.patent && c.patent.image
+          ? `<div class="lb" id="lb-patent" role="dialog" aria-label="Patent document full size">` +
+            `<a href="#!" aria-label="Close"><img src="${esc(c.patent.image)}" alt="Patent document, first page" loading="lazy" decoding="async"></a></div>`
+          : "")
+  }
 
   ${contacts ? `<nav class="contacts contacts-foot" aria-label="Contact">${contacts}</nav>` : ""}
 

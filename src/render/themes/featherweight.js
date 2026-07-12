@@ -88,10 +88,14 @@ export function render(content, opts = {}) {
             `srcset="${esc(thumbBase + "-88.webp")} 88w, ${esc(thumbBase + "-132.webp")} 132w" ` +
             `sizes="(max-width: 30rem) 38px, 44px"`
           : `src="${esc(it.image)}"`;
-        thumb =
-          `<span class="thumb${mode}">` +
+        // Visitors click the thumb to open a CSS-only :target lightbox; edit
+        // mode keeps the plain span so double-click-to-replace still works.
+        const img =
           `<img ${imageAttrs} alt="${esc(it.title)} thumbnail" ` +
-          `width="44" height="44" loading="lazy" decoding="async"></span>`;
+          `width="44" height="44" loading="lazy" decoding="async">`;
+        thumb = edit
+          ? `<span class="thumb${mode}">${img}</span>`
+          : `<a class="thumb${mode}" href="#lb-${ci}" aria-label="View ${esc(it.title)} image full size">${img}</a>`;
       } else {
         // Owner-set glyph (usually an emoji) wins; otherwise derive a short
         // glyph from the title so the card never reads "undefined".
@@ -153,7 +157,7 @@ export function render(content, opts = {}) {
       .map((h, i) => `<li${bindAttr("patent.highlights." + i, edit)}>${esc(h)}</li>`)
       .join("");
     const fig = patent.image
-      ? `<a class="pt-img" href="${esc(patent.image)}">` +
+      ? `<a class="pt-img" href="${edit ? esc(patent.image) : "#lb-patent"}">` +
         `<img src="${esc(patent.image)}" alt="${esc(patent.imageAlt || "Patent document, first page")}" ` +
         `width="${patent.imageWidth | 0 || 935}" height="${patent.imageHeight | 0 || 1210}" loading="lazy" decoding="async"></a>`
       : "";
@@ -263,6 +267,24 @@ export function render(content, opts = {}) {
     .join('<span class="sep">·</span>');
 
   const contactLead = p.contactLead || "Building something?";
+  // CSS-only :target lightboxes, one per imaged item plus the patent scan.
+  // display:none until targeted, so the full-size images never load up front;
+  // "#!" matches nothing, clearing :target without scrolling anywhere.
+  const lightboxHTML = edit
+    ? ""
+    : items
+        .filter(({ it }) => it.image)
+        .map(
+          ({ it, ci }) =>
+            `<div class="lb" id="lb-${ci}" role="dialog" aria-label="${esc(it.title)} full size">` +
+            `<a href="#!" aria-label="Close"><img src="${esc(it.image)}" alt="${esc(it.title)} preview" loading="lazy" decoding="async"></a></div>`
+        )
+        .join("") +
+      (patent && patent.image
+        ? `<div class="lb" id="lb-patent" role="dialog" aria-label="Patent document full size">` +
+          `<a href="#!" aria-label="Close"><img src="${esc(patent.image)}" alt="${esc(patent.imageAlt || "Patent document, first page")}" loading="lazy" decoding="async"></a></div>`
+        : "");
+
   const contactHTML =
     `<section id="contact" class="contact"><h2 class="eyebrow">${heading("contact", "Contact")}</h2>` +
     `<p class="big"><span${bindAttr("profile.contactLead", edit)}>${esc(contactLead)}</span> ` +
@@ -291,6 +313,8 @@ export function render(content, opts = {}) {
 <title>${title}</title>
 <meta name="description" content="${desc}">
 <meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#fbfbfa">
+<link rel="manifest" href="/site.webmanifest">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2316161a'/%3E%3Ctext x='16' y='22' font-family='-apple-system,Segoe UI,Roboto,sans-serif' font-size='18' font-weight='600' fill='%23fbfbfa' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E">
 <style>
 :root{--root:1.0625rem;--r:1.333;--s-1:calc(var(--root) / var(--r));--s0:var(--root);--s1:calc(var(--root) * var(--r));--s2:calc(var(--s1) * var(--r));--s3:calc(var(--s2) * var(--r));--lh:1.62;--measure:64ch;--prose:42rem;--proof-w:52rem;--rule:1px;--ink:#16161a;--ink-2:#4a4a52;--ink-3:#5e5e66;--line:#e3e3e6;--line-2:#cfcfd4;--bg:#fbfbfa;--accent:#16161a;--focus:#1a55ff;--live:#1f8a3b;--space:1.62rem}
@@ -419,6 +443,11 @@ footer .grow{flex:1}
 .entry .top{flex-direction:column;gap:.1rem}
 }
 img{max-width:100%;height:auto}
+.lb{display:none;position:fixed;inset:0;z-index:120;background:rgba(18,18,22,.85);padding:4vmin}
+.lb:target{display:flex;align-items:center;justify-content:center}
+.lb a{display:flex;align-items:center;justify-content:center;width:100%;height:100%;cursor:zoom-out}
+.lb img{max-width:min(92vw,60rem);max-height:92vh;width:auto;height:auto;border-radius:8px;box-shadow:0 24px 80px rgba(0,0,0,.5);background:#fff}
+a.thumb{cursor:zoom-in}
 .hero{position:relative}
 .hero-cta{position:absolute;top:.35rem;right:0;font-size:var(--s-1);color:var(--ink-2);border-bottom:1px solid var(--line-2);padding-bottom:2px}
 .hero-cta:hover,.hero-cta:focus-visible{color:var(--ink);border-color:var(--ink)}
@@ -487,6 +516,7 @@ img{max-width:100%;height:auto}
     <span${bindAttr("footer.featherweight", edit)}>${esc((content.footer && content.footer.featherweight) || "Featherweight · system fonts · nothing blocks first paint")}</span>
     <a href="/interactive">Full interactive version &rarr;</a>
   </footer>
+${lightboxHTML}
 
 </div>
 <script>
