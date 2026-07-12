@@ -30,7 +30,16 @@
     "education": "Education",
     "skills": "Skills",
     "indexBanner": "Selected Work",
-    "indexTitle": "Index — Selected Work"
+    "indexTitle": "Index — Selected Work",
+    "nav": {
+      "work": "Work",
+      "patent": "Patent",
+      "about": "About",
+      "experience": "Experience",
+      "community": "Community",
+      "skills": "Skills",
+      "contact": "Contact"
+    }
   },
   "about": {
     "short": "",

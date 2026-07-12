@@ -253,6 +253,10 @@ function injectStyle() {
     body.ff-editing { caret-color: #7c3aed; }
     body.ff-editing [data-bind] { outline: 1px dotted rgba(124,58,237,.35); outline-offset: 2px; }
     body.ff-editing :is(a) { cursor: text; }
+    /* Cleared fields stay clickable in edit mode (visitors never see them);
+       label them so an empty box does not read as a rendering bug. */
+    body.ff-editing [data-bind]:empty::before { content: "(empty — hidden from visitors)";
+      color: #b6b3ad; font-size: 12px; font-style: italic; letter-spacing: 0; }
     .ff-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .ff-links .ff-link { display: inline-flex; align-items: center; gap: 6px;
       border: 1px dashed #d8d0c4; border-radius: 8px; padding: 2px 6px; }

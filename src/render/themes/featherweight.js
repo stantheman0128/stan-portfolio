@@ -46,18 +46,22 @@ export function render(content, opts = {}) {
       ? `<!--email_off--><a href="${emailHref}">${esc(label)}</a><!--/email_off-->`
       : "";
 
-  // Quick-nav only lists sections that actually have content.
+  // Quick-nav lists sections that actually have content. Labels are
+  // owner-editable (headings.nav.*); clearing a label removes that entry for
+  // visitors, while edit mode keeps it visible so it can be typed back.
+  const navLabels = H.nav || {};
+  const navLabel = (id, dflt) => (navLabels[id] != null ? navLabels[id] : dflt);
   const nav = [
-    ["work", "Work", items.length],
-    ["patent", "Patent", patent ? 1 : 0],
-    ["about", "About", about.paragraphs && about.paragraphs.length],
-    ["experience", "Experience", experience.length],
-    ["community", "Community", press.length],
-    ["skills", "Skills", skills.length],
-    ["contact", "Contact", 1],
+    ["work", navLabel("work", "Work"), items.length],
+    ["patent", navLabel("patent", "Patent"), patent ? 1 : 0],
+    ["about", navLabel("about", "About"), about.paragraphs && about.paragraphs.length],
+    ["experience", navLabel("experience", "Experience"), experience.length],
+    ["community", navLabel("community", "Community"), press.length],
+    ["skills", navLabel("skills", "Skills"), skills.length],
+    ["contact", navLabel("contact", "Contact"), 1],
   ]
-    .filter(([, , n]) => n)
-    .map(([id, label]) => `<a href="#${id}">${esc(label)}</a>`)
+    .filter(([, label, n]) => n && (edit || String(label).trim()))
+    .map(([id, label]) => `<a href="#${id}"${bindAttr("headings.nav." + id, edit)}>${esc(label)}</a>`)
     .join('<span class="sep">/</span>');
 
   // PROOF STRIP — a comparable scoreboard of substance.
