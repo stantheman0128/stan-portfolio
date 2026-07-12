@@ -14,7 +14,33 @@
     "dcardUrl": "https://www.dcard.tw/@stantheman",
     "threadsUrl": "https://www.threads.com/@stantheman_0128",
     "available": "",
-    "contactLead": "Want to reach out ?"
+    "contactLead": "Want to reach out ?",
+    "contacts": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/stantheman0128"
+      },
+      {
+        "label": "LinkedIn",
+        "href": "https://www.linkedin.com/in/po-han-stan-shih-39b713277/"
+      },
+      {
+        "label": "Email",
+        "href": "mailto:stan@stan-shih.com"
+      },
+      {
+        "label": "Instagram",
+        "href": "https://www.instagram.com/stantheman_0128/"
+      },
+      {
+        "label": "Dcard",
+        "href": "https://www.dcard.tw/@stantheman"
+      },
+      {
+        "label": "Threads",
+        "href": "https://www.threads.com/@stantheman_0128"
+      }
+    ]
   },
   "footer": {
     "featherweight": "",

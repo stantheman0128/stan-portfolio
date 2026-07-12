@@ -48,7 +48,7 @@ function itemThumb(it, ci, edit) {
 
 function itemLinks(links, ci, edit) {
   if (edit) {
-    return `<div class="links ff-links" data-item="${ci}">${editLinksHTML(links, ci)}</div>`;
+    return `<div class="links ff-links" data-item="${ci}" data-links-path="items.${ci}.links">${editLinksHTML(links, ci)}</div>`;
   }
   const ls = realLinks(links);
   if (!ls.length) return `<div class="links"><span class="nolink">No public link yet</span></div>`;
@@ -224,11 +224,11 @@ function skillsBlock(skills) {
 export function render(content, opts = {}) {
   const c = content || {};
   const edit = !!(opts && opts.edit);
-  // Owner-editable section headings with shipped defaults (older drafts may
-  // predate the headings block).
+  // Owner-editable section headings. Only a MISSING key (old draft) falls
+  // back to the default; an empty string is a deliberate clear and sticks.
   const H = c.headings || {};
   const heading = (key, dflt) =>
-    `<span${bindAttr("headings." + key, edit)}>${esc(H[key] || dflt)}</span>`;
+    `<span${bindAttr("headings." + key, edit)}>${esc(H[key] != null ? H[key] : dflt)}</span>`;
   const p = c.profile || {};
   // Cross-theme entries: each theme hides the item that IS itself.
   const items = (c.items || [])
@@ -237,16 +237,24 @@ export function render(content, opts = {}) {
   const years = items.map((x) => x.it.year).filter(Boolean);
   const yearSpan = years.length ? `${Math.min(...years.map(Number))} — ${Math.max(...years.map(Number))}` : "";
 
-  const contacts = [
-    p.githubUrl ? `<a href="${esc(p.githubUrl)}" target="_blank" rel="noopener">GitHub</a>` : "",
-    p.linkedinUrl ? `<a href="${esc(p.linkedinUrl)}" target="_blank" rel="noopener">LinkedIn</a>` : "",
-    p.email ? `<a href="mailto:${esc(p.email)}">Email</a>` : "",
-    p.instagramUrl ? `<a href="${esc(p.instagramUrl)}" target="_blank" rel="noopener">Instagram</a>` : "",
-    p.dcardUrl ? `<a href="${esc(p.dcardUrl)}" target="_blank" rel="noopener">Dcard</a>` : "",
-    p.threadsUrl ? `<a href="${esc(p.threadsUrl)}" target="_blank" rel="noopener">Threads</a>` : "",
-  ]
-    .filter(Boolean)
-    .join("");
+  // Owner-editable contact channels (same {label, href} array the editor's
+  // link controls understand); older drafts fall back to the fixed fields.
+  const contactList = Array.isArray(p.contacts)
+    ? p.contacts
+    : [
+        p.githubUrl ? { label: "GitHub", href: p.githubUrl } : null,
+        p.linkedinUrl ? { label: "LinkedIn", href: p.linkedinUrl } : null,
+        p.email ? { label: "Email", href: "mailto:" + p.email } : null,
+        p.instagramUrl ? { label: "Instagram", href: p.instagramUrl } : null,
+        p.dcardUrl ? { label: "Dcard", href: p.dcardUrl } : null,
+        p.threadsUrl ? { label: "Threads", href: p.threadsUrl } : null,
+      ].filter(Boolean);
+  const contacts = edit
+    ? editLinksHTML(contactList, "profile.contacts")
+    : contactList
+        .filter((l) => l && l.href)
+        .map((l) => `<a href="${esc(l.href)}"${String(l.href).startsWith("mailto:") ? "" : ` target="_blank" rel="noopener"`}>${esc(l.label)}</a>`)
+        .join("");
 
   const title = `${esc(p.name || "Portfolio")}${p.role ? " — " + esc(p.role) : ""}`;
   const rawMetaDesc = p.subtagline || p.tagline || seoDescription(p);
@@ -320,7 +328,9 @@ img{max-width:100%;display:block}
 .lb:target{display:flex;align-items:center;justify-content:center}
 .lb a{display:flex;align-items:center;justify-content:center;width:100%;height:100%;cursor:zoom-out}
 .lb img{max-width:min(92vw,60rem);max-height:92vh;width:auto;height:auto;border-radius:8px;box-shadow:0 24px 80px rgba(0,0,0,.5);background:#fff}
-a.thumb-zoom{cursor:zoom-in;display:block;text-decoration:none}
+a.thumb-zoom{cursor:zoom-in;display:block;text-decoration:none;transition:transform .22s cubic-bezier(.2,.7,.2,1)}
+@media (hover:hover){a.thumb-zoom:hover{transform:scale(1.035)}}
+@media (prefers-reduced-motion:reduce){a.thumb-zoom{transition:none}a.thumb-zoom:hover{transform:none}}
 .contacts a{color:var(--ink);padding-bottom:3px;border-bottom:1px solid var(--line-strong);
   transition:border-color .2s,color .2s}
 .contacts a:hover,.contacts a:focus-visible{color:var(--accent);border-color:var(--accent)}
@@ -515,11 +525,11 @@ ${rateCSS}
           : "")
   }
 
-  ${contacts ? `<nav class="contacts contacts-foot" aria-label="Contact">${contacts}</nav>` : ""}
+  ${contacts ? `<nav class="contacts contacts-foot${edit ? " ff-links" : ""}" aria-label="Contact"${edit ? ` data-links-path="profile.contacts"` : ""}>${contacts}</nav>` : ""}
 
   <footer>
     <span>© ${new Date().getFullYear()} <span${bindAttr("profile.name", edit)}>${esc(p.name || "")}</span></span>
-    <span><span${bindAttr("footer.interactive", edit)}>${esc((c.footer && c.footer.interactive) || "Built end-to-end")}</span>${p.location || edit ? ` · <span${bindAttr("profile.location", edit)}>${esc(p.location || "")}</span>` : ""} · <a id="lite-link" href="/fast/">Lite version</a></span>
+    <span><span${bindAttr("footer.interactive", edit)}>${esc(c.footer && c.footer.interactive != null ? c.footer.interactive : "Built end-to-end")}</span>${p.location || edit ? ` · <span${bindAttr("profile.location", edit)}>${esc(p.location || "")}</span>` : ""} · <a id="lite-link" href="/fast/">Lite version</a></span>
     <span lang="zh-Hant">${zhFooterLine()}</span>
   </footer>
 </div>

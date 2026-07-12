@@ -7,15 +7,16 @@ const content = JSON.parse(readFileSync(new URL("../data/content.json", import.m
 
 // Contract with the freeform editor (src/studio/freeform.js): its delegated click
 // handler and contenteditable binding reach the links UI only through these hooks —
-//   [data-bind="items.{ci}.links.{li}.label|href"]  editable label / href nodes
-//   .ff-link-del[data-link="{ci}.{li}"]             delete links[li] of items[ci]
-//   .ff-link-add[data-item="{ci}"]                  append a link to items[ci]
-// Renaming a class or reshaping data-link / data-item breaks the editor silently.
+//   a container carrying  .ff-links[data-links-path="<content path to the array>"]
+//   [data-bind="<path>.{li}.label|href"]   editable label / href nodes
+//   .ff-link-del[data-li="{li}"]           delete array[li] of the container's path
+//   .ff-link-add                           append a link to the container's path
+// (items containers also keep data-item="{ci}" as a legacy fallback.)
+// Renaming a class or reshaping these attributes breaks the editor silently.
 
-const delLinks = (html) =>
-  [...html.matchAll(/<button[^>]*class="ff-link-del"[^>]*>/g)].map((m) => /data-link="([^"]*)"/.exec(m[0])?.[1]);
-const addItems = (html) =>
-  [...html.matchAll(/<button[^>]*class="ff-link-add"[^>]*>/g)].map((m) => /data-item="([^"]*)"/.exec(m[0])?.[1]);
+const delLis = (html) =>
+  [...html.matchAll(/<button[^>]*class="ff-link-del"[^>]*>/g)].map((m) => /data-li="([^"]*)"/.exec(m[0])?.[1]);
+const addCount = (html) => [...html.matchAll(/<button[^>]*class="ff-link-add"[^>]*>/g)].length;
 
 describe("editLinksHTML editor contract", () => {
   const html = editLinksHTML(
@@ -26,19 +27,25 @@ describe("editLinksHTML editor contract", () => {
     3
   );
 
-  it("binds each link's label and href by content path", () => {
+  it("binds each link's label and href by content path (numeric base = items)", () => {
     expect(html).toContain('data-bind="items.3.links.0.label"');
     expect(html).toContain('data-bind="items.3.links.0.href"');
     expect(html).toContain('data-bind="items.3.links.1.label"');
     expect(html).toContain('data-bind="items.3.links.1.href"');
   });
 
-  it("emits one delete button per link, data-link = {ci}.{li}", () => {
-    expect(delLinks(html)).toEqual(["3.0", "3.1"]);
+  it("accepts a full content path base (any {label, href} array)", () => {
+    const contactsHtml = editLinksHTML([{ label: "GitHub", href: "https://x" }], "profile.contacts");
+    expect(contactsHtml).toContain('data-bind="profile.contacts.0.label"');
+    expect(contactsHtml).toContain('data-bind="profile.contacts.0.href"');
   });
 
-  it("emits one trailing add button, data-item = {ci}", () => {
-    expect(addItems(html)).toEqual(["3"]);
+  it("emits one delete button per link, data-li = {li}", () => {
+    expect(delLis(html)).toEqual(["0", "1"]);
+  });
+
+  it("emits exactly one trailing add button", () => {
+    expect(addCount(html)).toBe(1);
   });
 });
 
@@ -54,15 +61,20 @@ for (const theme of ["featherweight", "minimal"]) {
       expect(edit).toContain('data-bind="items.0.links.0.href"');
     });
 
-    it("emits well-formed data-link / data-item on the del and add buttons", () => {
-      const dels = delLinks(edit);
-      const adds = addItems(edit);
+    it("wraps item links in a container with the array path", () => {
+      expect(edit).toContain('data-links-path="items.0.links"');
+    });
+
+    it("exposes the contacts array through the same link controls", () => {
+      expect(edit).toContain('data-links-path="profile.contacts"');
+      expect(edit).toContain('data-bind="profile.contacts.0.label"');
+    });
+
+    it("emits well-formed data-li on the del buttons", () => {
+      const dels = delLis(edit);
       expect(dels.length).toBeGreaterThan(0);
-      expect(adds.length).toBeGreaterThan(0);
-      dels.forEach((v) => expect(v).toMatch(/^\d+\.\d+$/));
-      adds.forEach((v) => expect(v).toMatch(/^\d+$/));
-      expect(dels).toContain("0.0");
-      expect(adds).toContain("0");
+      dels.forEach((v) => expect(v).toMatch(/^\d+$/));
+      expect(addCount(edit)).toBeGreaterThan(0);
     });
 
     it("emits none of the editor link chrome when not editing", () => {

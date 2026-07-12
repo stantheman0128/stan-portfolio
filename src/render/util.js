@@ -56,20 +56,21 @@ export function bindAttr(path, edit, kind) {
   return ` data-bind="${esc(path)}"` + (kind ? ` data-edit="${esc(kind)}"` : "");
 }
 
-// Edit-mode inner markup for one item's links: each link is an editable label (<a>)
-// plus its href (<code>), a per-link delete button, and a trailing "+ link" button.
-// Themes wrap this in their own links container. Kept here as the single source of
-// the data-bind paths (items.{ci}.links.{li}.{label|href}) and freeform's hook
-// classes (.ff-link-del / .ff-link-add), so both themes and the editor agree.
-export function editLinksHTML(links, ci) {
+// Edit-mode inner markup for one {label, href} array: each link is an editable
+// label (<a>) plus its href (<code>), a per-link delete button, and a trailing
+// "+ link" button. Themes wrap this in a container carrying data-links-path so
+// the editor knows which content array to splice. `base` is an items index
+// (number, legacy callers) or a full content path string like "profile.contacts".
+export function editLinksHTML(links, base) {
+  const basePath = typeof base === "number" ? "items." + base + ".links" : String(base);
   const rows = (links || [])
     .map(
       (l, li) =>
-        `<span class="ff-link" data-link="${ci}.${li}">` +
-        `<a${bindAttr("items." + ci + ".links." + li + ".label", true)}>${esc((l && l.label) || "link")}</a>` +
-        ` <code${bindAttr("items." + ci + ".links." + li + ".href", true)}>${esc((l && l.href) || "")}</code>` +
-        ` <button type="button" class="ff-link-del" data-link="${ci}.${li}">×</button></span>`
+        `<span class="ff-link" data-li="${li}">` +
+        `<a${bindAttr(basePath + "." + li + ".label", true)}>${esc((l && l.label) || "link")}</a>` +
+        ` <code${bindAttr(basePath + "." + li + ".href", true)}>${esc((l && l.href) || "")}</code>` +
+        ` <button type="button" class="ff-link-del" data-li="${li}">×</button></span>`
     )
     .join("");
-  return rows + `<button type="button" class="ff-link-add" data-item="${ci}">+ link</button>`;
+  return rows + `<button type="button" class="ff-link-add">+ link</button>`;
 }

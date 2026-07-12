@@ -20,11 +20,12 @@ export function render(content, opts = {}) {
   const edit = !!(opts && opts.edit);
   const p = content.profile || {};
   const about = content.about || {};
-  // Section headings are owner-editable content; fall back to the shipped
-  // defaults so drafts predating the headings block still render.
+  // Section headings are owner-editable content. Only a MISSING key (old
+  // draft predating the headings block) falls back to the shipped default;
+  // an empty string is the owner deliberately clearing it and must stick.
   const H = content.headings || {};
   const heading = (key, dflt) =>
-    `<span${bindAttr("headings." + key, edit)}>${esc(H[key] || dflt)}</span>`;
+    `<span${bindAttr("headings." + key, edit)}>${esc(H[key] != null ? H[key] : dflt)}</span>`;
   const stats = content.stats || [];
   // Cross-theme entries: each theme hides the item that IS itself.
   const items = (content.items || [])
@@ -94,9 +95,12 @@ export function render(content, opts = {}) {
         const img =
           `<img ${imageAttrs} alt="${esc(it.title)} thumbnail" ` +
           `width="44" height="44" loading="lazy" decoding="async">`;
+        // Hover pops a larger floating preview (hidden img only fetches on
+        // first hover thanks to lazy loading); click still opens the lightbox.
+        const zoom = `<img class="zoom" src="${esc(it.image)}" alt="" aria-hidden="true" loading="lazy" decoding="async">`;
         thumb = edit
           ? `<span class="thumb${mode}">${img}</span>`
-          : `<a class="thumb${mode}" href="#lb-${ci}" aria-label="View ${esc(it.title)} image full size">${img}</a>`;
+          : `<a class="thumb${mode}" href="#lb-${ci}" aria-label="View ${esc(it.title)} image full size">${img}${zoom}</a>`;
       } else {
         // Owner-set glyph (usually an emoji) wins; otherwise derive a short
         // glyph from the title so the card never reads "undefined".
@@ -114,7 +118,7 @@ export function render(content, opts = {}) {
       const foot =
         `<div class="foot">` +
         (edit
-          ? `<span class="links ff-links" data-item="${ci}">` + editLinksHTML(it.links, ci) + `</span>`
+          ? `<span class="links ff-links" data-item="${ci}" data-links-path="items.${ci}.links">` + editLinksHTML(it.links, ci) + `</span>`
           : (links.length
               ? `<span class="links">` +
                 links
@@ -256,18 +260,28 @@ export function render(content, opts = {}) {
     : "";
 
   // CONTACT ---------------------------------------------------------------
-  const contactLinks = [
-    p.githubUrl ? `<a href="${esc(p.githubUrl)}">GitHub</a>` : "",
-    p.linkedinUrl ? `<a href="${esc(p.linkedinUrl)}">LinkedIn</a>` : "",
-    p.email ? emailAnchor("Email") : "",
-    p.instagramUrl ? `<a href="${esc(p.instagramUrl)}" target="_blank" rel="noopener">Instagram</a>` : "",
-    p.dcardUrl ? `<a href="${esc(p.dcardUrl)}" target="_blank" rel="noopener">Dcard</a>` : "",
-    p.threadsUrl ? `<a href="${esc(p.threadsUrl)}" target="_blank" rel="noopener">Threads</a>` : "",
-  ]
-    .filter(Boolean)
-    .join('<span class="sep">·</span>');
+  // Contact channels: an owner-editable {label, href} array (add/remove in the
+  // editor like project links). Older drafts fall back to the fixed URL fields.
+  const contactList = Array.isArray(p.contacts)
+    ? p.contacts
+    : [
+        p.githubUrl ? { label: "GitHub", href: p.githubUrl } : null,
+        p.linkedinUrl ? { label: "LinkedIn", href: p.linkedinUrl } : null,
+        p.email ? { label: "Email", href: "mailto:" + p.email } : null,
+        p.instagramUrl ? { label: "Instagram", href: p.instagramUrl } : null,
+        p.dcardUrl ? { label: "Dcard", href: p.dcardUrl } : null,
+        p.threadsUrl ? { label: "Threads", href: p.threadsUrl } : null,
+      ].filter(Boolean);
+  const contactLinks = edit
+    ? `<span class="links ff-links" data-links-path="profile.contacts">${editLinksHTML(contactList, "profile.contacts")}</span>`
+    : contactList
+        // The big "Want to reach out?" line already carries the email; per the
+        // owner, don't repeat a mailto link in the channel row.
+        .filter((l) => l && l.href && !String(l.href).startsWith("mailto:"))
+        .map((l) => `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`)
+        .join('<span class="sep">·</span>');
 
-  const contactLead = p.contactLead || "Building something?";
+  const contactLead = p.contactLead != null ? p.contactLead : "Building something?";
   // CSS-only :target lightboxes, one per imaged item plus the patent scan.
   // display:none until targeted, so the full-size images never load up front;
   // "#!" matches nothing, clearing :target without scrolling anywhere.
@@ -345,7 +359,6 @@ a:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:
 .quicknav .sep{padding:0 .55rem;color:var(--line-2);border:0}
 section{margin-top:calc(var(--space)*2.1)}
 .eyebrow{font-size:var(--s-1);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:600;display:flex;align-items:baseline;gap:.85rem;margin-bottom:calc(var(--space)*.9)}
-.eyebrow::after{content:"";flex:1;height:0;border-top:var(--rule) solid var(--line);transform:translateY(-.18em)}
 .lead{max-width:var(--measure);color:var(--ink-2)}
 .lead + .lead{margin-top:.8rem}
 .proof-wrap{margin-bottom:calc(var(--space)*.4)}
@@ -363,8 +376,8 @@ section{margin-top:calc(var(--space)*2.1)}
 .principles div:nth-child(even){padding-left:1.4rem}
 .principles dt{font-weight:600;letter-spacing:-.01em}
 .principles dd{margin:.18rem 0 0;font-size:var(--s-1);color:var(--ink-2);line-height:1.5}
-.work{border-top:var(--rule) solid var(--line)}
 .item{display:grid;grid-template-columns:2.75rem 1fr;gap:0 1.1rem;padding:calc(var(--space)*.95) 0;border-bottom:var(--rule) solid var(--line);align-items:start}
+.item:last-child{border-bottom:0}
 .thumb{grid-row:1 / span 4;width:2.75rem;height:2.75rem;border-radius:7px;border:var(--rule) solid var(--line-2);overflow:hidden;display:flex;align-items:center;justify-content:center;background:var(--bg)}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .thumb.contain img,.thumb.icon img{object-fit:contain;padding:14%}
@@ -450,10 +463,16 @@ img{max-width:100%;height:auto}
 .lb:target{display:flex;align-items:center;justify-content:center}
 .lb a{display:flex;align-items:center;justify-content:center;width:100%;height:100%;cursor:zoom-out}
 .lb img{max-width:min(92vw,60rem);max-height:92vh;width:auto;height:auto;border-radius:8px;box-shadow:0 24px 80px rgba(0,0,0,.5);background:#fff}
-a.thumb{cursor:zoom-in}
+a.thumb{cursor:zoom-in;position:relative}
+.thumb .zoom{display:none;position:absolute;z-index:60;left:3.4rem;top:-.4rem;width:17.5rem;max-height:20rem;
+  height:auto;object-fit:contain;border-radius:10px;border:var(--rule) solid var(--line);
+  box-shadow:0 18px 48px rgba(20,20,30,.22);background:#fff;pointer-events:none}
+@media (hover:hover){.thumb:hover .zoom{display:block}}
 .hero{position:relative}
-.hero-cta{position:absolute;top:.35rem;right:0;font-size:var(--s-1);color:var(--ink-2);border-bottom:1px solid var(--line-2);padding-bottom:2px}
-.hero-cta:hover,.hero-cta:focus-visible{color:var(--ink);border-color:var(--ink)}
+.hero-cta{position:absolute;top:.2rem;right:0;font-size:var(--s-1);color:var(--ink-2);
+  border:var(--rule) solid var(--line-2);border-radius:999px;padding:.42rem .95rem;
+  border-bottom-width:var(--rule);transition:color .15s,border-color .15s}
+.hero-cta:hover,.hero-cta:focus-visible{color:var(--ink);border-color:var(--ink-3)}
 @media (max-width:40rem){.hero-cta{position:static;display:inline-block;margin-top:.4rem}}
 .fw-speed{display:inline-flex;visibility:hidden;min-height:2.3rem;align-items:center;gap:.5rem;margin-top:calc(var(--space)*.8);font-size:var(--s-1);color:var(--ink-3);letter-spacing:.01em}
 .fw-speed.on{visibility:visible}
@@ -517,7 +536,7 @@ a.thumb{cursor:zoom-in}
     <span>© ${year} <span${bindAttr("profile.name", edit)}>${esc(p.name)}</span>${p.latinName || edit ? ` · <span${bindAttr("profile.latinName", edit)}>${esc(p.latinName || "")}</span>` : ""}</span>
     <span lang="zh-Hant">${zhFooterLine()}</span>
     <span class="grow"></span>
-    <span${bindAttr("footer.featherweight", edit)}>${esc((content.footer && content.footer.featherweight) || "Featherweight · system fonts · nothing blocks first paint")}</span>
+    <span${bindAttr("footer.featherweight", edit)}>${esc(content.footer && content.footer.featherweight != null ? content.footer.featherweight : "Featherweight · system fonts · nothing blocks first paint")}</span>
     <a href="/interactive">Full interactive version &rarr;</a>
   </footer>
 ${lightboxHTML}
