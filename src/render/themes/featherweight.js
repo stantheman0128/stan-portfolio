@@ -298,8 +298,6 @@ a:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:
 .quicknav{font-size:var(--s-1);color:var(--ink-3);letter-spacing:.01em;line-height:2}
 .quicknav a{border-bottom-color:var(--line)}
 .quicknav .sep{padding:0 .55rem;color:var(--line-2);border:0}
-.meta-row{margin-top:.6rem;font-size:var(--s-1);color:var(--ink-3)}
-.meta-row .dot{padding:0 .5rem;color:var(--line-2)}
 section{margin-top:calc(var(--space)*2.1)}
 .eyebrow{font-size:var(--s-1);letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);font-weight:600;display:flex;align-items:baseline;gap:.85rem;margin-bottom:calc(var(--space)*.9)}
 .eyebrow::after{content:"";flex:1;height:0;border-top:var(--rule) solid var(--line);transform:translateY(-.18em)}
