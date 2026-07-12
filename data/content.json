@@ -13,15 +13,15 @@
     "instagramUrl": "https://www.instagram.com/stantheman_0128/",
     "dcardUrl": "https://www.dcard.tw/@stantheman",
     "threadsUrl": "https://www.threads.com/@stantheman_0128",
-    "available": "Open to internships and collaborations",
-    "contactLead": "Building something?"
+    "available": "",
+    "contactLead": "Want to reach out ?"
   },
   "footer": {
-    "featherweight": "Featherweight · system fonts · nothing blocks first paint",
+    "featherweight": "",
     "interactive": "Built end-to-end"
   },
   "headings": {
-    "work": "Selected work",
+    "work": "My works",
     "patent": "Patent",
     "contact": "Contact",
     "about": "About",
@@ -32,13 +32,13 @@
     "indexBanner": "Selected Work",
     "indexTitle": "Index — Selected Work",
     "nav": {
-      "work": "Work",
-      "patent": "Patent",
+      "work": "",
+      "patent": "",
       "about": "About",
       "experience": "Experience",
       "community": "Community",
       "skills": "Skills",
-      "contact": "Contact"
+      "contact": ""
     }
   },
   "about": {
@@ -177,6 +177,23 @@
       ]
     },
     {
+      "id": "site-featherweight",
+      "title": "This Site — Featherweight Edition",
+      "status": "Live",
+      "year": "2026",
+      "themeExclude": "featherweight",
+      "description": "The page you're reading has a twin built for pure speed: zero JavaScript, system fonts, nothing blocks first paint.",
+      "detail": "Same content, opposite philosophy — no hedgehog, no quest, just one line that times itself. About 6 KB gzipped, ~0.2 s edge TTFB, Lighthouse 99. On a slow connection this site quietly sends you there instead.",
+      "image": "",
+      "imageMode": "",
+      "links": [
+        {
+          "label": "Visit the lite twin",
+          "href": "/fast/"
+        }
+      ]
+    },
+    {
       "id": "youtube-precise-time",
       "title": "YouTube Precise Time",
       "status": "Local tool",
@@ -195,23 +212,6 @@
         {
           "label": "GitHub",
           "href": "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/youtube-video-upload-time"
-        }
-      ]
-    },
-    {
-      "id": "site-featherweight",
-      "title": "This Site — Featherweight Edition",
-      "status": "Live",
-      "year": "2026",
-      "themeExclude": "featherweight",
-      "description": "The page you're reading has a twin built for pure speed: zero JavaScript, system fonts, nothing blocks first paint.",
-      "detail": "Same content, opposite philosophy — no hedgehog, no quest, just one line that times itself. About 6 KB gzipped, ~0.2 s edge TTFB, Lighthouse 99. On a slow connection this site quietly sends you there instead.",
-      "image": "",
-      "imageMode": "",
-      "links": [
-        {
-          "label": "Visit the lite twin",
-          "href": "/fast/"
         }
       ]
     },
@@ -265,18 +265,18 @@
       "US10699576B1",
       "TWM578665U"
     ],
-    "year": "2020",
-    "role": "Inventor (sole)",
+    "year": "",
+    "role": "",
     "image": "/assets/patent-us10699576-p1.png",
     "imageAlt": "First page of United States patent US 10,699,576 B1",
     "imageWidth": 935,
     "imageHeight": 1210,
-    "blurb": "A vehicle-to-vehicle collision-warning system I invented in high school, inspired by my dad's Tesla. Granted dual patents in the US and Taiwan.",
+    "blurb": "A vehicle-to-vehicle collision-warning system I invented in high school, inspired by my dad's Tesla. Granted patents in the US and Taiwan.",
     "highlights": [
       "Sold for NT$400,000",
-      "Cited by GM Cruise, Huawei, and Plus.ai in autonomous-driving patents",
-      "Gold medal, Ukraine International Invention Expo; Silver, Poland — youngest awardee",
-      "International Outstanding Inventor Award; received by the President of Taiwan"
+      "Cited by GM Cruise, Huawei, and Plus.ai ",
+      "Gold medal, International Salon of Inventions and New Technologies; Silver, International Warsaw Invention Show ",
+      ""
     ]
   },
   "experience": [],
