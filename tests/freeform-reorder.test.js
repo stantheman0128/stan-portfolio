@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { moveInArray } from "../src/studio/freeform.js";
+import { moveInArray, newItemTemplate, dropTargetIndex } from "../src/studio/freeform.js";
 
 describe("moveInArray", () => {
   it("moves an element forward to a later final index", () => {
@@ -29,28 +29,55 @@ describe("moveInArray", () => {
   });
 });
 
-// The drag drop maths in buildOrderPanel converts a "before/after row i" insertion
-// slot into a final index for moveInArray. Reproduce that conversion here to lock in
-// the intended drop behaviour (source of truth: src/studio/freeform.js drop handler).
-function dropToFinalIndex(from, i, after, len) {
-  const insertPos = after ? i + 1 : i;
-  const to = from < insertPos ? insertPos - 1 : insertPos;
-  return Math.max(0, Math.min(len - 1, to));
-}
-
+// dropTargetIndex (exported from freeform.js) converts a "before/after row i"
+// insertion slot into the final index for moveInArray. Test the real function.
 describe("order panel drop conversion", () => {
   const items = ["a", "b", "c", "d"];
   it("drag item 0 to before item 2 lands it just before c", () => {
-    const to = dropToFinalIndex(0, 2, false, items.length);
+    const to = dropTargetIndex(0, 2, false, items.length);
     expect(moveInArray(items, 0, to)).toEqual(["b", "a", "c", "d"]);
   });
   it("drag item 0 to after the last item appends it to the end", () => {
-    const to = dropToFinalIndex(0, 3, true, items.length);
+    const to = dropTargetIndex(0, 3, true, items.length);
     expect(moveInArray(items, 0, to)).toEqual(["b", "c", "d", "a"]);
   });
   it("drag item 3 to before item 1 lands it just before b", () => {
-    const to = dropToFinalIndex(3, 1, false, items.length);
+    const to = dropTargetIndex(3, 1, false, items.length);
     expect(moveInArray(items, 3, to)).toEqual(["a", "d", "b", "c"]);
+  });
+  it("dropping a row onto its own slot is a no-op index", () => {
+    expect(dropTargetIndex(2, 2, false, 4)).toBe(2);
+    expect(dropTargetIndex(2, 2, true, 4)).toBe(2);
+  });
+  it("clamps into range when the slot resolves past the ends", () => {
+    expect(dropTargetIndex(0, 3, true, 4)).toBe(3);
+    expect(dropTargetIndex(3, 0, false, 4)).toBe(0);
+  });
+});
+
+describe("newItemTemplate", () => {
+  it("builds a blank project with every field the renderer reads", () => {
+    const t = newItemTemplate(0);
+    expect(t).toMatchObject({
+      title: "New project", status: "", year: "", description: "",
+      detail: "", image: "", imageMode: "", links: [],
+    });
+    expect(t.links).toEqual([]);
+  });
+  it("derives a base36 id from the timestamp so ids are unique per click", () => {
+    expect(newItemTemplate(0).id).toBe("new-0");
+    const a = newItemTemplate(1000), b = newItemTemplate(1001);
+    expect(a.id).not.toBe(b.id);
+    expect(a.id.startsWith("new-")).toBe(true);
+  });
+});
+
+// Deleting item i from the panel is a plain splice; lock in the resulting order.
+describe("panel delete", () => {
+  it("removes the targeted item and keeps the rest in order", () => {
+    const items = ["a", "b", "c", "d"];
+    const next = items.slice(); next.splice(1, 1);
+    expect(next).toEqual(["a", "c", "d"]);
   });
 });
 
@@ -71,5 +98,31 @@ describe("freeform order panel wiring", () => {
   it("debounces hover retargeting between cards", () => {
     expect(src).toContain("RETARGET_MS");
     expect(src).toContain("pendingTarget = cand");
+  });
+  it("sets drag data + effect on dragstart (Firefox/Chromium won't drag without it)", () => {
+    expect(src).toContain('setData("text/plain"');
+    expect(src).toContain('effectAllowed = "move"');
+  });
+  it("delegates dragover/drop to the panel so the whole area accepts the drop", () => {
+    expect(src).toMatch(/panel\.addEventListener\("dragover"/);
+    expect(src).toMatch(/panel\.addEventListener\("drop"/);
+    expect(src).toContain('dropEffect = "move"');
+  });
+  it("gives each row a drag handle", () => {
+    expect(src).toContain('handle.className = "handle"');
+  });
+  it("has a + Add project button that pushes a template and re-renders", () => {
+    expect(src).toContain("+ Add project");
+    expect(src).toContain("newItemTemplate(Date.now())");
+    expect(src).toMatch(/render\("Added project"\)/);
+  });
+  it("has a per-row delete that splices, commits and re-renders", () => {
+    expect(src).toMatch(/render\("Deleted item"\)/);
+    expect(src).toContain('del.className = "del"');
+  });
+  it("flashes the landing row and respects reduced motion", () => {
+    expect(src).toContain("flashIndex");
+    expect(src).toContain("prefers-reduced-motion: no-preference");
+    expect(src).toContain("@keyframes ffFlash");
   });
 });

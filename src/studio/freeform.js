@@ -34,6 +34,23 @@ export function moveInArray(arr, from, to) {
   return a;
 }
 
+// Blank item for the panel's "+ Add project". Pure so the shape (and the id derived
+// from the caller's timestamp) can be unit-tested; the caller passes Date.now() at
+// click time — never read the clock at module scope (this file runs in the browser).
+export function newItemTemplate(now) {
+  return { id: "new-" + Number(now).toString(36), title: "New project", status: "",
+    year: "", description: "", detail: "", image: "", imageMode: "", links: [] };
+}
+
+// Given a source index and a "before/after row i" insertion slot, the final index
+// moveInArray should land the dragged item at. Exported so the drop maths is covered
+// without a DOM. `len` is the item count before removal.
+export function dropTargetIndex(from, i, after, len) {
+  const insertPos = after ? i + 1 : i;
+  const to = from < insertPos ? insertPos - 1 : insertPos;
+  return Math.max(0, Math.min(len - 1, to));
+}
+
 // ---------- boot ----------
 async function mountEditor() {
   const draft = localStorage.getItem(CONTENT_KEY);
@@ -188,6 +205,10 @@ let eventsWired = false;
 // Order panel open/close survives render() (which rebuilds the whole document) via
 // this module-level flag; mountChrome re-materialises the panel when it's true.
 let orderPanelOpen = false;
+// After a structural op (reorder / add) the panel rebuilds; this is the row index to
+// flash on rebuild as a "here it landed" cue. -1 = nothing to flash. One-shot: read
+// and reset inside buildOrderPanel.
+let flashIndex = -1;
 // Retarget debounce: switching hoverTarget to a *different* card waits this long so a
 // diagonal move toward the floating buttons that clips a neighbour card doesn't yank
 // the controls away mid-reach.
@@ -240,16 +261,34 @@ function injectStyle() {
     #fforder .row { display: flex; align-items: center; gap: 6px; padding: 6px 7px; margin: 4px 0;
       border: 1px solid #e3e3e6; border-radius: 8px; background: #fafafb; cursor: grab; }
     #fforder .row:hover { border-color: #b9b9c2; background: #f4f4f6; }
-    #fforder .row.dragging { opacity: .4; }
-    #fforder .row.drop-before { box-shadow: inset 0 2px 0 #7c3aed; }
-    #fforder .row.drop-after { box-shadow: inset 0 -2px 0 #7c3aed; }
+    #fforder .row.dragging { opacity: .4; cursor: grabbing; }
+    /* Insertion slot: a purple edge line marks the landing side; the slot itself
+       (a 6px translate that opens a gap) is layered on under prefers-reduced-motion:
+       no-preference below, so reduced-motion users still get the static line. */
+    #fforder .row.drop-before { box-shadow: inset 0 3px 0 -1px #7c3aed; }
+    #fforder .row.drop-after { box-shadow: inset 0 -3px 0 -1px #7c3aed; }
+    #fforder .row .handle { color: #b6b3ad; font-size: 13px; line-height: 1; width: 13px;
+      text-align: center; cursor: grab; user-select: none; flex: none; }
+    #fforder .row.dragging .handle { cursor: grabbing; }
     #fforder .row .num { color: #8b877f; font-size: 11px; min-width: 16px; text-align: right; }
     #fforder .row .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
     #fforder .row .mv { all: unset; cursor: pointer; color: #71717a; font-size: 12px; width: 17px; height: 17px;
       text-align: center; border-radius: 4px; }
     #fforder .row .mv:hover { background: #e3e3e6; color: #1b1b1f; }
     #fforder .row .mv:disabled { opacity: .3; cursor: default; }
+    #fforder .row .del { all: unset; cursor: pointer; color: #a8a29a; font-size: 12px; width: 17px; height: 17px;
+      text-align: center; border-radius: 4px; flex: none; }
+    #fforder .row .del:hover { background: #fbe4e4; color: #dc2626; }
     #fforder .empty { color: #71717a; font-size: 12px; padding: 6px; }
+    #fforder .add { margin-top: 8px; color: #4b4b52; }
+    #fforder .add:hover { border-color: #b9b9c2; }
+    @media (prefers-reduced-motion: no-preference) {
+      #fforder .row { transition: transform 150ms ease, background 150ms ease, border-color 150ms ease; }
+      #fforder .row.drop-before { transform: translateY(6px); }
+      #fforder .row.drop-after { transform: translateY(-6px); }
+      @keyframes ffFlash { from { background: #ede9fe; } to { background: #fafafb; } }
+      #fforder .row.flash { animation: ffFlash 240ms ease; }
+    }
     body.ff-editing { caret-color: #7c3aed; }
     body.ff-editing [data-bind] { outline: 1px dotted rgba(124,58,237,.35); outline-offset: 2px; }
     body.ff-editing :is(a) { cursor: text; }
@@ -468,6 +507,7 @@ function applyReorder(from, to) {
   to = Math.max(0, Math.min(items.length - 1, to));
   if (from === to) return;
   state.content.items = moveInArray(items, from, to);
+  flashIndex = to;
   commitNow();
   render("Reordered items");
 }
@@ -501,23 +541,41 @@ function buildOrderPanel() {
   head.append(ttl, x);
   panel.appendChild(head);
 
+  // Shared across this panel's rows for the duration of one drag gesture.
+  let dragFrom = -1;
+  const clearMarks = () => panel.querySelectorAll(".row").forEach((r) => r.classList.remove("drop-before", "drop-after"));
+
+  // Resolve the pointer's Y to an insertion slot. Works over rows, the gaps between
+  // them, and the panel's background/padding — so every pixel of the panel is a valid
+  // drop and the cursor never shows the "no-drop" 🚫. Measures with marks cleared so a
+  // marked row's 6px transform can't shift the geometry we read (self-stabilising).
+  const slotFromEvent = (e) => {
+    clearMarks();
+    const rows = [...panel.querySelectorAll(".row")];
+    if (!rows.length) return null;
+    for (let k = 0; k < rows.length; k++) {
+      const r = rows[k].getBoundingClientRect();
+      if (e.clientY < r.top + r.height / 2) return { i: k, after: false, row: rows[k] };
+      if (e.clientY <= r.bottom) return { i: k, after: true, row: rows[k] };
+    }
+    return { i: rows.length - 1, after: true, row: rows[rows.length - 1] };
+  };
+
   if (!items.length) {
     const e = document.createElement("div");
     e.className = "empty"; e.textContent = "No items yet.";
     panel.appendChild(e);
-    document.body.appendChild(panel);
-    return;
   }
-
-  // Shared across this panel's rows for the duration of one drag gesture.
-  let dragFrom = -1;
-  const clearMarks = () => panel.querySelectorAll(".row").forEach((r) => r.classList.remove("drop-before", "drop-after"));
 
   items.forEach((it, i) => {
     const row = document.createElement("div");
     row.className = "row";
     row.draggable = true;
     row.dataset.oi = String(i);
+    if (i === flashIndex) row.classList.add("flash");
+
+    const handle = document.createElement("span");
+    handle.className = "handle"; handle.textContent = "⠿"; handle.title = "Drag to reorder";
 
     const num = document.createElement("span");
     num.className = "num"; num.textContent = String(i + 1);
@@ -536,37 +594,59 @@ function buildOrderPanel() {
     down.className = "mv"; down.textContent = "↓"; down.title = "Move down"; down.disabled = i === items.length - 1;
     down.addEventListener("click", () => applyReorder(i, i + 1));
 
+    const del = document.createElement("button");
+    del.className = "del"; del.textContent = "✕"; del.title = "Delete this project (undo with Ctrl+Z)";
+    del.addEventListener("click", () => {
+      state.content.items.splice(i, 1);
+      commitNow();
+      render("Deleted item");
+    });
+
+    // dragstart/dragend stay on the row (they carry the source index); dragover/drop
+    // are delegated to the panel below so the whole panel accepts the drop.
     row.addEventListener("dragstart", (e) => {
       dragFrom = i;
       row.classList.add("dragging");
       if (e.dataTransfer) { e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", String(i)); } catch (_) {} }
     });
     row.addEventListener("dragend", () => { row.classList.remove("dragging"); clearMarks(); dragFrom = -1; });
-    row.addEventListener("dragover", (e) => {
-      if (dragFrom < 0) return;
-      e.preventDefault();
-      if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
-      const rect = row.getBoundingClientRect();
-      const after = (e.clientY - rect.top) > rect.height / 2;
-      clearMarks();
-      row.classList.add(after ? "drop-after" : "drop-before");
-    });
-    row.addEventListener("drop", (e) => {
-      if (dragFrom < 0) return;
-      e.preventDefault();
-      const rect = row.getBoundingClientRect();
-      const after = (e.clientY - rect.top) > rect.height / 2;
-      const insertPos = after ? i + 1 : i;         // slot in the pre-removal array
-      const to = dragFrom < insertPos ? insertPos - 1 : insertPos;
-      clearMarks();
-      applyReorder(dragFrom, to);
-    });
 
-    row.append(num, nm, up, down);
+    row.append(handle, num, nm, up, down, del);
     panel.appendChild(row);
   });
 
+  // Delegated drop target: the entire panel. preventDefault on dragover is what tells
+  // the browser this is a valid drop zone (its absence is the classic 🚫 cursor bug).
+  panel.addEventListener("dragover", (e) => {
+    if (dragFrom < 0) return;
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+    const slot = slotFromEvent(e);
+    if (slot) slot.row.classList.add(slot.after ? "drop-after" : "drop-before");
+  });
+  panel.addEventListener("drop", (e) => {
+    if (dragFrom < 0) return;
+    e.preventDefault();
+    const slot = slotFromEvent(e);
+    clearMarks();
+    if (slot) applyReorder(dragFrom, dropTargetIndex(dragFrom, slot.i, slot.after, items.length));
+  });
+
+  const add = document.createElement("button");
+  add.className = "add"; add.textContent = "+ Add project";
+  add.title = "Add a blank project card at the end";
+  add.addEventListener("click", () => {
+    state.content.items = state.content.items || [];
+    state.content.items.push(newItemTemplate(Date.now()));
+    flashIndex = state.content.items.length - 1;
+    commitNow();
+    render("Added project");
+    scrollToItem(state.content.items.length - 1);
+  });
+  panel.appendChild(add);
+
   document.body.appendChild(panel);
+  flashIndex = -1;
 }
 
 // The content.items index owning a node = the numeric prefix of the nearest
