@@ -130,12 +130,16 @@ export function render(content, opts = {}) {
   // PATENT ----------------------------------------------------------------
   let patentHTML = "";
   if (patent) {
-    const ids = (patent.ids || []).map(esc).join(" · ");
-    const stamp = [ids, [patent.year, patent.role].filter(Boolean).map(esc).join(" · ")]
-      .filter(Boolean)
-      .join(" &nbsp;·&nbsp; ");
+    const ids = (patent.ids || [])
+      .map((x, i) => `<span${bindAttr("patent.ids." + i, edit)}>${esc(x)}</span>`)
+      .join(" · ");
+    const stamp = edit
+      ? `${ids} &nbsp;·&nbsp; <span${bindAttr("patent.year", edit)}>${esc(patent.year || "")}</span> · <span${bindAttr("patent.role", edit)}>${esc(patent.role || "")}</span>`
+      : [ids, [patent.year, patent.role].filter(Boolean).map(esc).join(" · ")]
+          .filter(Boolean)
+          .join(" &nbsp;·&nbsp; ");
     const highlights = (patent.highlights || [])
-      .map((h) => `<li>${esc(h)}</li>`)
+      .map((h, i) => `<li${bindAttr("patent.highlights." + i, edit)}>${esc(h)}</li>`)
       .join("");
     const fig = patent.image
       ? `<a class="pt-img" href="${esc(patent.image)}">` +
@@ -247,20 +251,23 @@ export function render(content, opts = {}) {
     .filter(Boolean)
     .join('<span class="sep">·</span>');
 
+  const contactLead = p.contactLead || "Building something?";
   const contactHTML =
     `<section id="contact" class="contact"><h2 class="eyebrow">Contact</h2>` +
-    `<p class="big">Building something? ` +
+    `<p class="big"><span${bindAttr("profile.contactLead", edit)}>${esc(contactLead)}</span> ` +
     (p.email ? emailAnchor(p.email) : "Let's talk.") +
     `</p>` +
     (contactLinks ? `<p class="links">${contactLinks}</p>` : "") +
-    (p.available ? `<span class="avail">${esc(p.available)}</span>` : "") +
+    (p.available || edit ? `<span class="avail"${bindAttr("profile.available", edit)}>${esc(p.available || "")}</span>` : "") +
     `</section>`;
 
   // HERO lede: role + tagline woven into the one human sentence.
-  const lede = p.tagline
-    ? `<p class="lede"${bindAttr("profile.tagline", edit)}>${esc(p.tagline)}</p>`
+  const lede = p.tagline || edit
+    ? `<p class="lede"${bindAttr("profile.tagline", edit)}>${esc(p.tagline || "")}</p>`
     : "";
-  const roleLine = p.role ? `<p class="lede"><b>${esc(p.role)}</b></p>` : "";
+  const roleLine = p.role || edit
+    ? `<p class="lede"><b${bindAttr("profile.role", edit)}>${esc(p.role || "")}</b></p>`
+    : "";
 
   const title = [p.name, p.role].filter(Boolean).map(esc).join(" — ");
   const desc = esc(p.subtagline || about.short || "");
@@ -416,10 +423,10 @@ img{max-width:100%;height:auto}
 
   <header class="hero">
     <h1${bindAttr("profile.name", edit)}>${esc(p.name)}</h1>
-    ${[p.latinName, p.location].filter(Boolean).length ? `<p class="latin">${[p.latinName, p.location].filter(Boolean).map(esc).join(" · ")}</p>` : ""}
+    ${edit ? `<p class="latin"><span${bindAttr("profile.latinName", edit)}>${esc(p.latinName || "")}</span> · <span${bindAttr("profile.location", edit)}>${esc(p.location || "")}</span></p>` : ([p.latinName, p.location].filter(Boolean).length ? `<p class="latin">${[p.latinName, p.location].filter(Boolean).map(esc).join(" · ")}</p>` : "")}
     ${roleLine}
     ${lede}
-    ${p.subtagline ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline)}</p>` : ""}
+    ${p.subtagline || edit ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline || "")}</p>` : ""}
     ${nav ? `<nav class="quicknav" aria-label="Sections">${nav}</nav>` : ""}
     <p class="fw-speed" id="fw-speed" role="status" aria-live="polite"></p>
   </header>
@@ -455,9 +462,9 @@ img{max-width:100%;height:auto}
   </main>
 
   <footer>
-    <span>© ${year} ${esc(p.name)}${p.latinName ? " · " + esc(p.latinName) : ""}</span>
+    <span>© ${year} <span${bindAttr("profile.name", edit)}>${esc(p.name)}</span>${p.latinName || edit ? ` · <span${bindAttr("profile.latinName", edit)}>${esc(p.latinName || "")}</span>` : ""}</span>
     <span class="grow"></span>
-    <span>Featherweight · system fonts · nothing blocks first paint</span>
+    <span${bindAttr("footer.featherweight", edit)}>${esc((content.footer && content.footer.featherweight) || "Featherweight · system fonts · nothing blocks first paint")}</span>
     <a href="/interactive">Full interactive version &rarr;</a>
   </footer>
 

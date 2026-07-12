@@ -118,9 +118,11 @@ function aboutBlock(about, edit) {
 
 function patentBlock(pt, edit) {
   if (!pt || !pt.title) return "";
-  const ids = (pt.ids || []).map((x) => `<span class="pt-id">${esc(x)}</span>`).join("");
-  const meta = [pt.role, pt.year].filter(Boolean).map(esc).join(" · ");
-  const hi = (pt.highlights || []).map((h) => `<li>${esc(h)}</li>`).join("");
+  const ids = (pt.ids || []).map((x, i) => `<span class="pt-id"${bindAttr("patent.ids." + i, edit)}>${esc(x)}</span>`).join("");
+  const meta = edit
+    ? `<span${bindAttr("patent.role", edit)}>${esc(pt.role || "")}</span> · <span${bindAttr("patent.year", edit)}>${esc(pt.year || "")}</span>`
+    : [pt.role, pt.year].filter(Boolean).map(esc).join(" · ");
+  const hi = (pt.highlights || []).map((h, i) => `<li${bindAttr("patent.highlights." + i, edit)}>${esc(h)}</li>`).join("");
   const fig = pt.image
     ? `<figure class="pt-fig">
         <a href="${esc(pt.image)}" target="_blank" rel="noopener">
@@ -137,7 +139,7 @@ function patentBlock(pt, edit) {
         <h3 class="patent-title"${bindAttr("patent.title", edit)}>${esc(pt.title)}</h3>
         ${meta ? `<div class="patent-meta">${meta}</div>` : ""}
         ${ids ? `<div class="pt-ids">${ids}</div>` : ""}
-        ${pt.blurb ? `<p class="patent-blurb"${bindAttr("patent.blurb", edit)}>${esc(pt.blurb)}</p>` : ""}
+        ${pt.blurb || edit ? `<p class="patent-blurb"${bindAttr("patent.blurb", edit)}>${esc(pt.blurb || "")}</p>` : ""}
         ${hi ? `<ul class="patent-hi">${hi}</ul>` : ""}
       </div>
       ${fig}
@@ -451,8 +453,8 @@ ${rateCSS}
 
   <section class="hero">
     <h1${bindAttr("profile.tagline", edit)}>${accentTagline(p.tagline)}</h1>
-    ${p.subtagline ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline)}</p>` : ""}
-    ${p.available ? `<p class="avail">${esc(p.available)}</p>` : ""}
+    ${p.subtagline || edit ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline || "")}</p>` : ""}
+    ${p.available || edit ? `<p class="avail"${bindAttr("profile.available", edit)}>${esc(p.available || "")}</p>` : ""}
   </section>
 
   ${ctaTopHTML}
@@ -479,8 +481,8 @@ ${rateCSS}
   ${contacts ? `<nav class="contacts contacts-foot" aria-label="Contact">${contacts}</nav>` : ""}
 
   <footer>
-    <span>© ${new Date().getFullYear()} ${esc(p.name || "")}</span>
-    <span>Built end-to-end${p.location ? " · " + esc(p.location) : ""} · <a id="lite-link" href="/fast/">Lite version</a></span>
+    <span>© ${new Date().getFullYear()} <span${bindAttr("profile.name", edit)}>${esc(p.name || "")}</span></span>
+    <span><span${bindAttr("footer.interactive", edit)}>${esc((c.footer && c.footer.interactive) || "Built end-to-end")}</span>${p.location || edit ? ` · <span${bindAttr("profile.location", edit)}>${esc(p.location || "")}</span>` : ""} · <a id="lite-link" href="/fast/">Lite version</a></span>
   </footer>
 </div>
 

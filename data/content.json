@@ -13,7 +13,12 @@
     "instagramUrl": "https://www.instagram.com/stantheman_0128/",
     "dcardUrl": "https://www.dcard.tw/@stantheman",
     "threadsUrl": "https://www.threads.com/@stantheman_0128",
-    "available": "Open to internships and collaborations"
+    "available": "Open to internships and collaborations",
+    "contactLead": "Building something?"
+  },
+  "footer": {
+    "featherweight": "Featherweight · system fonts · nothing blocks first paint",
+    "interactive": "Built end-to-end"
   },
   "about": {
     "short": "",
