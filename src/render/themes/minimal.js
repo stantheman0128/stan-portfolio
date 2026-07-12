@@ -317,10 +317,21 @@ img{max-width:100%;display:block}
 .eyebrow .badge{border:1px solid var(--line-strong);border-radius:999px;padding:3px 10px;
   color:var(--ink);font-size:11px;letter-spacing:.18em}
 
-.hero{padding:clamp(40px,9vw,96px) 0 clamp(30px,6vw,56px)}
-.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,6.4vw,62px);
-  line-height:1.06;letter-spacing:-.01em;margin:0 0 26px;max-width:16ch}
-.hero h1 em{font-style:italic;color:var(--accent)}
+.hero{padding:clamp(40px,9vw,96px) 0 clamp(30px,6vw,56px);display:grid;
+  grid-template-columns:minmax(0,1fr) auto;gap:24px clamp(28px,5vw,64px);align-items:center}
+.hero-name{font-family:var(--serif);font-weight:400;font-size:clamp(38px,6.8vw,64px);
+  line-height:1.04;letter-spacing:-.01em;margin:0 0 10px}
+/* The name sits on a terracotta highlighter stroke so it reads first. */
+.hero-name span{position:relative;display:inline-block}
+.hero-name span::after{content:"";position:absolute;left:-.06em;right:-.06em;bottom:.04em;
+  height:.3em;background:var(--accent);opacity:.22;border-radius:2px;z-index:-1}
+.hero-role{font-family:var(--mono);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 26px}
+.hero-tag{font-family:var(--serif);font-weight:400;font-size:clamp(24px,3.6vw,38px);
+  line-height:1.16;letter-spacing:-.008em;margin:0 0 22px;max-width:22ch}
+.hero-tag em{font-style:italic;color:var(--accent)}
+.hero-side #cta-top{margin:0}
+@media (max-width:760px){.hero{grid-template-columns:1fr}.hero-side{justify-self:start}}
 .hero .sub{font-size:clamp(16px,2.1vw,19px);color:var(--muted);max-width:54ch;margin:0 0 30px}
 .contacts{display:flex;flex-wrap:wrap;gap:10px 26px;font-family:var(--mono);font-size:13px;letter-spacing:.02em}
 .contacts-foot{margin-top:70px}
@@ -482,12 +493,15 @@ ${rateCSS}
   </header>
 
   <section class="hero">
-    <h1${bindAttr("profile.tagline", edit)}>${accentTagline(p.tagline)}</h1>
-    ${p.subtagline || edit ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline || "")}</p>` : ""}
-    ${p.available || edit ? `<p class="avail"${bindAttr("profile.available", edit)}>${esc(p.available || "")}</p>` : ""}
+    <div class="hero-text">
+      <h1 class="hero-name"><span${bindAttr("profile.name", edit)}>${esc(p.name || "")}</span></h1>
+      ${p.role || edit ? `<p class="hero-role"${bindAttr("profile.role", edit)}>${esc(p.role || "")}</p>` : ""}
+      <p class="hero-tag"${bindAttr("profile.tagline", edit)}>${accentTagline(p.tagline)}</p>
+      ${p.subtagline || edit ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline || "")}</p>` : ""}
+      <p class="avail"${bindAttr("profile.available", edit)}>${esc(p.available || "")}</p>
+    </div>
+    <div class="hero-side">${ctaTopHTML}</div>
   </section>
-
-  ${ctaTopHTML}
 
   ${statsRow(c.stats)}
   ${aboutBlock(c.about, edit)}
@@ -529,7 +543,7 @@ ${rateCSS}
 
   <footer>
     <span>© ${new Date().getFullYear()} <span${bindAttr("profile.name", edit)}>${esc(p.name || "")}</span></span>
-    <span><span${bindAttr("footer.interactive", edit)}>${esc(c.footer && c.footer.interactive != null ? c.footer.interactive : "Built end-to-end")}</span>${p.location || edit ? ` · <span${bindAttr("profile.location", edit)}>${esc(p.location || "")}</span>` : ""} · <a id="lite-link" href="/fast/">Lite version</a></span>
+    <span><span${bindAttr("footer.interactive", edit)}>${esc(c.footer && c.footer.interactive != null ? c.footer.interactive : "Built end-to-end")}</span>${p.location || edit ? ` · <span${bindAttr("profile.location", edit)}>${esc(p.location || "")}</span>` : ""}</span>
     <span lang="zh-Hant">${zhFooterLine()}</span>
   </footer>
 </div>

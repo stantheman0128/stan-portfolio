@@ -469,12 +469,20 @@ a.thumb{cursor:zoom-in;position:relative}
   box-shadow:0 18px 48px rgba(20,20,30,.22);background:#fff;pointer-events:none}
 @media (hover:hover){.thumb:hover .zoom{display:block}}
 .hero{position:relative}
+/* Version switcher: secondary navigation, so it hangs quietly at the hero's
+   top-right on wide screens and falls in AFTER the quick-nav (its natural
+   reading position) on narrow ones — never above the name. */
 .hero-cta{position:absolute;top:.2rem;right:0;font-size:var(--s-1);color:var(--ink-2);
   border:var(--rule) solid var(--line-2);border-radius:999px;padding:.42rem .95rem;
   border-bottom-width:var(--rule);transition:color .15s,border-color .15s}
 .hero-cta:hover,.hero-cta:focus-visible{color:var(--ink);border-color:var(--ink-3)}
-@media (max-width:40rem){.hero-cta{position:static;display:inline-block;margin-top:.4rem}}
-.fw-speed{display:inline-flex;visibility:hidden;min-height:2.3rem;align-items:center;gap:.5rem;margin-top:calc(var(--space)*.8);font-size:var(--s-1);color:var(--ink-3);letter-spacing:.01em}
+@media (max-width:40rem){.hero-cta{position:static;display:inline-block;margin-top:.9rem}}
+.fw-speed{display:inline-flex;flex-wrap:wrap;visibility:hidden;min-height:2.3rem;align-items:center;gap:.35rem .5rem;margin-top:calc(var(--space)*.8);font-size:var(--s-1);color:var(--ink-3);letter-spacing:.01em}
+.fw-speed .lbl{white-space:nowrap}
+/* On narrow screens the comparison drops to its own tidy second line instead
+   of breaking mid-sentence. */
+.fw-speed .cmp{white-space:nowrap}
+@media (max-width:40rem){.fw-speed .cmp{flex-basis:100%;margin-left:calc(.42rem + .5rem)}}
 .fw-speed.on{visibility:visible}
 .fw-speed .dot{align-self:center;width:.42rem;height:.42rem;border-radius:50%;background:var(--live);flex:0 0 auto;animation:fw-pulse 2.6s ease-out infinite}
 .fw-speed .n{font-weight:700;color:var(--ink);font-size:var(--s1);letter-spacing:-.015em;font-feature-settings:"tnum" 1}
@@ -488,13 +496,13 @@ a.thumb{cursor:zoom-in;position:relative}
 <div class="wrap">
 
   <header class="hero">
-    <a class="hero-cta" href="/interactive">Full interactive version &rarr;</a>
     <h1${bindAttr("profile.name", edit)}>${esc(p.name)}</h1>
     ${edit ? `<p class="latin"><span${bindAttr("profile.latinName", edit)}>${esc(p.latinName || "")}</span> · <span${bindAttr("profile.location", edit)}>${esc(p.location || "")}</span></p>` : ([p.latinName, p.location].filter(Boolean).length ? `<p class="latin">${[p.latinName, p.location].filter(Boolean).map(esc).join(" · ")}</p>` : "")}
     ${roleLine}
     ${lede}
     ${p.subtagline || edit ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline || "")}</p>` : ""}
     ${nav ? `<nav class="quicknav" aria-label="Sections">${nav}</nav>` : ""}
+    <a class="hero-cta" href="/interactive">Full interactive version &rarr;</a>
     <p class="fw-speed" id="fw-speed" role="status" aria-live="polite"></p>
   </header>
 
@@ -586,7 +594,7 @@ ${lightboxHTML}
       var q = d.dcl;
       var pct = n <= q.p10 ? 90 : n <= q.p25 ? 75 : n <= q.p50 ? 50 : n <= q.p75 ? 25 : 0;
       if (!pct) return; // slowest quartile: just show the time, no shaming
-      var cmp = document.createElement("span"); cmp.className = "u";
+      var cmp = document.createElement("span"); cmp.className = "u cmp";
       cmp.textContent = "— faster than ~" + pct + "% of visits";
       el.appendChild(cmp);
     }).catch(function(){});
