@@ -13,20 +13,35 @@
 // /assets/*, /api/*) stays as-is. The existing functions/api/* handlers are untouched
 // because Pages file-based routing keeps them separate. Do NOT convert this to a
 // top-level _worker.js: that would disable the whole functions/ directory (the API).
-import { HTML } from "./_front-door.js";
+import { HTML, MARKDOWN } from "./_front-door.js";
 
 // Pages does not apply public/_headers to Function responses. Match the dev-minimal
 // policy in public/_headers while actively shipping; restore the perf profile in
 // that file's comment block when stable.
-const HEADERS = {
-  "content-type": "text/html; charset=utf-8",
+const COMMON = {
   "cache-control": "no-cache",
   "cloudflare-cdn-cache-control": "no-store",
   "x-content-type-options": "nosniff",
   // Agent discovery (RFC 8288): points AI crawlers at the markdown profile.
   link: '</llms.txt>; rel="alternate"; type="text/markdown"',
+  // Content negotiation below: caches must key on the Accept header.
+  vary: "accept",
 };
 
-export function onRequest() {
-  return new Response(HTML, { headers: HEADERS });
+// Self-built "Markdown for Agents": Accept: text/markdown gets the markdown
+// rendition of the same content.json bake; browsers keep getting HTML.
+export function onRequest(context) {
+  const accept = context?.request?.headers?.get("accept") || "";
+  if (accept.includes("text/markdown")) {
+    return new Response(MARKDOWN, {
+      headers: {
+        ...COMMON,
+        "content-type": "text/markdown; charset=utf-8",
+        "x-markdown-tokens": String(Math.ceil(MARKDOWN.length / 4)),
+      },
+    });
+  }
+  return new Response(HTML, {
+    headers: { ...COMMON, "content-type": "text/html; charset=utf-8" },
+  });
 }

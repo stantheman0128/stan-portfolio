@@ -31,7 +31,8 @@ writeFileSync(join(dist, "fast", "index.html"), fw);
 // resident code (no origin fetch, no cold-POP cache MISS). Single source of truth:
 // the Function's payload is generated here from the very fw string written above.
 const { frontDoorModuleSource } = await import(new URL("./front-door-bake.mjs", import.meta.url));
-writeFileSync(join(root, "functions", "_front-door.js"), frontDoorModuleSource(fw));
+const { renderMarkdown } = await import(new URL("../src/render/markdown.js", import.meta.url));
+writeFileSync(join(root, "functions", "_front-door.js"), frontDoorModuleSource(fw, renderMarkdown(content)));
 
 // Sitemap for search engines and AI crawlers. Only canonical pages: "/" and
 // "/interactive" ("/fast/" is a duplicate of "/" and stays out on purpose).
