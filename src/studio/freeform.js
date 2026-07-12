@@ -106,13 +106,57 @@ function swapDocument(html) {
 }
 
 let saveTimer = null;
+// Deploy watch: after Publish, poll /data/content.json for a newer _build stamp (the
+// fresh deploy landing) and reload into it. Any edit while it runs cancels the
+// auto-reload so we never discard unpublished changes.
+let deployWatchActive = false, deployWatchTimer = null;
 function scheduleSave() {
   clearTimeout(saveTimer);
-  setStatus("Editing…");
+  // A user edit while a deploy watch is running means there is new work to keep;
+  // cancel the pending auto-reload (it shows its own status) instead of "Editing…".
+  if (deployWatchActive) cancelDeployWatch(); else setStatus("Editing…");
   saveTimer = setTimeout(() => {
     localStorage.setItem(CONTENT_KEY, JSON.stringify(state.content));
     setStatus("Saved ✓");
   }, 600);
+}
+
+function cancelDeployWatch() {
+  if (!deployWatchActive) return;
+  deployWatchActive = false;
+  clearTimeout(deployWatchTimer);
+  setStatus("New edits kept — reload skipped");
+}
+
+// Poll the live content.json every 15s (cache-busted) until its _build beats the one
+// that was live at publish time — that stamp jumping up is the new deploy going live.
+// Then drop the local draft and reload to see it. Gives up after ~5 min so the status
+// never spins forever. cancelDeployWatch() (any edit) stops it mid-flight.
+function startDeployWatch(baselineBuild) {
+  deployWatchActive = true;
+  const deadline = Date.now() + 5 * 60 * 1000;
+  const POLL_MS = 15000;
+  setStatus("Deploying…");
+  const tick = async () => {
+    if (!deployWatchActive) return;
+    if (Date.now() > deadline) {
+      deployWatchActive = false;
+      setStatus("Deployed? reload manually");
+      return;
+    }
+    try {
+      const live = await (await fetch("/data/content.json", { cache: "no-store" })).json();
+      if (!deployWatchActive) return; // cancelled while the fetch was in flight
+      if (live && live._build != null && +live._build > baselineBuild) {
+        deployWatchActive = false;
+        localStorage.removeItem(CONTENT_KEY); // reload must show the deployed version, not the draft
+        location.reload();
+        return;
+      }
+    } catch (e) { /* transient network hiccup: keep polling */ }
+    deployWatchTimer = setTimeout(tick, POLL_MS);
+  };
+  deployWatchTimer = setTimeout(tick, POLL_MS);
 }
 
 function snapshot() { return JSON.stringify(state.content); }
@@ -294,8 +338,10 @@ function injectStyle() {
     body.ff-editing :is(a) { cursor: text; }
     /* Cleared fields stay clickable in edit mode (visitors never see them);
        label them so an empty box does not read as a rendering bug. */
-    body.ff-editing [data-bind]:empty::before { content: "(empty — hidden from visitors)";
-      color: #b6b3ad; font-size: 12px; font-style: italic; letter-spacing: 0; }
+    body.ff-editing [data-bind]:empty::before { content: "(empty)";
+      color: #b6b3ad; font-size: 12px; font-style: italic; letter-spacing: 0;
+      white-space: nowrap; display: inline-block; max-width: 100%; overflow: hidden;
+      text-overflow: ellipsis; vertical-align: bottom; }
     .ff-links { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .ff-links .ff-link { display: inline-flex; align-items: center; gap: 6px;
       border: 1px dashed #d8d0c4; border-radius: 8px; padding: 2px 6px; }
@@ -409,8 +455,17 @@ function buildToolbar(initialStatus) {
       });
       const d = await r.json().catch(() => ({}));
       if (r.ok && d.ok) {
-        setStatus("Published ✓");
-        alert("Published. Cloudflare rebuilds and deploys in about a minute.\nCommit " + String(d.commit || "").slice(0, 7));
+        // Baseline = the _build live right now (server-authoritative, so client clock
+        // skew can't skew the comparison). The new deploy bakes a larger Date.now()
+        // stamp roughly a minute out; when the poll sees it we reload into it.
+        let baseline = null;
+        try {
+          const cur = await (await fetch("/data/content.json", { cache: "no-store" })).json();
+          if (cur && cur._build != null) baseline = +cur._build;
+        } catch (e) {}
+        if (baseline == null && state.content && state.content._build != null) baseline = +state.content._build;
+        if (baseline == null) baseline = Date.now();
+        startDeployWatch(baseline);
       } else {
         setStatus("Publish failed");
         alert("Publish failed: " + (d.error || ("HTTP " + r.status)) + "\n\n(Publish only works on the deployed site, from your creator IP.)");
@@ -421,15 +476,15 @@ function buildToolbar(initialStatus) {
     }
   }, "primary");
 
+  // Exit editing. The old handler assigned location.href to a rebuilt
+  // pathname + "?unlock=<key>" + hash URL, but creator-entry's ensureDevUrl has
+  // already put that exact ?unlock=<key> in the address bar, so the rebuilt URL
+  // equalled the one we were already on — and assigning an identical URL (same path,
+  // query and hash) does not reload. That is why Exit silently did nothing. reload()
+  // re-fetches the baked visitor page (fx scripts run, no edit chrome, no data-bind);
+  // the URL still carries ?unlock= so creator-entry re-shows the Edit button to return.
   mkBtn("Exit", "Leave editing (keep owner tools)", function () {
-    try {
-      var k = sessionStorage.getItem("edit-key") || "";
-      var u = location.pathname;
-      if (k) u += "?unlock=" + encodeURIComponent(k);
-      location.href = u + location.hash;
-    } catch (e) {
-      location.reload();
-    }
+    location.reload();
   });
 
   statusEl = document.createElement("span");
@@ -749,17 +804,29 @@ function wireEvents() {
     if (s != null) { state.content = JSON.parse(s); render(e.shiftKey ? "Redo" : "Undo"); }
   });
 
-  // Link add/delete, delegated on document so it survives every re-render.
+  // Link add/delete, delegated on document so it survives every re-render. The links
+  // container (.ff-links) carries data-links-path pointing at the array to mutate —
+  // "items.3.links" for a project's links, "profile.contacts" for the contact row —
+  // so add/del work the same for both. Legacy markup that only has data-item falls
+  // back to the items.{ci}.links path.
+  const linksArrayPath = (hook) => {
+    const box = hook.closest && hook.closest(".ff-links");
+    if (!box) return null;
+    const p = box.getAttribute("data-links-path");
+    if (p) return p;
+    const ci = box.getAttribute("data-item");
+    return ci != null && ci !== "" ? "items." + ci + ".links" : null;
+  };
   document.addEventListener("click", (e) => {
     if (!editing) return;
     const add = e.target.closest && e.target.closest(".ff-link-add");
     if (add) {
       e.preventDefault();
-      const ci = +add.getAttribute("data-item");
-      const it = state.content.items[ci];
-      if (!it) return;
-      it.links = it.links || [];
-      it.links.push({ label: "New link", href: "https://" });
+      const path = linksArrayPath(add);
+      if (!path) return;
+      let arr = getPath(state.content, path);
+      if (!Array.isArray(arr)) { arr = []; setPath(state.content, path, arr); }
+      arr.push({ label: "New link", href: "https://" });
       commitNow();
       render("Added link");
       return;
@@ -767,11 +834,12 @@ function wireEvents() {
     const del = e.target.closest && e.target.closest(".ff-link-del");
     if (del) {
       e.preventDefault();
-      const parts = del.getAttribute("data-link").split(".");
-      const ci = +parts[0], li = +parts[1];
-      const it = state.content.items[ci];
-      if (!it || !it.links) return;
-      it.links.splice(li, 1);
+      const path = linksArrayPath(del);
+      if (!path) return;
+      const arr = getPath(state.content, path);
+      const li = +del.getAttribute("data-li");
+      if (!Array.isArray(arr) || !Number.isInteger(li) || li < 0 || li >= arr.length) return;
+      arr.splice(li, 1);
       commitNow();
       render("Removed link");
     }

@@ -126,3 +126,52 @@ describe("freeform order panel wiring", () => {
     expect(src).toContain("@keyframes ffFlash");
   });
 });
+
+// Site-owner feedback fixes: Exit reload, publish deploy-watch, empty-field hint,
+// and the generalised link add/del delegation. Asserted at source level (they touch
+// location, timers and the DOM, none unit-testable without a browser).
+describe("freeform owner-feedback fixes", () => {
+  const src = readFileSync(new URL("../src/studio/freeform.js", import.meta.url), "utf8");
+
+  it("Exit reloads instead of assigning an identical URL (the no-op bug)", () => {
+    expect(src).toMatch(/mkBtn\("Exit"[\s\S]*?location\.reload\(\)/);
+    // the old rebuilt-URL assignment must be gone
+    expect(src).not.toContain('location.href = u + location.hash');
+  });
+
+  it("Publish starts a deploy watch instead of a static alert", () => {
+    expect(src).toContain("startDeployWatch(baseline)");
+    expect(src).not.toContain("Cloudflare rebuilds and deploys in about a minute");
+  });
+
+  it("deploy watch polls content.json cache-busted for a newer _build", () => {
+    expect(src).toContain('fetch("/data/content.json", { cache: "no-store" })');
+    expect(src).toContain("+live._build > baselineBuild");
+    expect(src).toContain('setStatus("Deploying…")');
+  });
+
+  it("deploy watch reloads after clearing the draft, and times out gracefully", () => {
+    expect(src).toMatch(/removeItem\(CONTENT_KEY\);[\s\S]*?location\.reload\(\)/);
+    expect(src).toContain('setStatus("Deployed? reload manually")');
+  });
+
+  it("an edit during the watch cancels the auto-reload and keeps the edits", () => {
+    expect(src).toContain("if (deployWatchActive) cancelDeployWatch()");
+    expect(src).toContain('setStatus("New edits kept — reload skipped")');
+  });
+
+  it("empty-field hint is short and stays on one line", () => {
+    expect(src).toContain('content: "(empty)"');
+    expect(src).toContain("white-space: nowrap");
+    expect(src).not.toContain("(empty — hidden from visitors)");
+  });
+
+  it("link add/del read data-links-path (with data-item fallback) via getPath/setPath", () => {
+    expect(src).toContain('hook.closest(".ff-links")');
+    expect(src).toContain('box.getAttribute("data-links-path")');
+    expect(src).toContain('"items." + ci + ".links"');
+    expect(src).toContain('del.getAttribute("data-li")');
+    expect(src).toContain('arr.push({ label: "New link", href: "https://" })');
+    expect(src).toContain("arr.splice(li, 1)");
+  });
+});
