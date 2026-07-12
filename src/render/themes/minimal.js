@@ -2,6 +2,7 @@
 // a numbered index of work with click-to-expand panels and a floating desktop hover preview.
 // Extended beyond the demo with About, Patent, Experience, Press, Education, Skills, and stats.
 import { esc, md, realLinks, bindAttr, editLinksHTML } from "../util.js";
+import { seoHead, seoDescription, zhFooterLine } from "../seo.js";
 import { questCSS, questBadgeHTML, questJS } from "../fx/quest.js";
 import { ctaCSS, ctaTopHTML, ctaJS } from "../fx/cta.js";
 import { shatterJS } from "../fx/shatter.js";
@@ -248,7 +249,8 @@ export function render(content, opts = {}) {
     .join("");
 
   const title = `${esc(p.name || "Portfolio")}${p.role ? " — " + esc(p.role) : ""}`;
-  const metaDesc = esc(p.subtagline || p.tagline || "");
+  const rawMetaDesc = p.subtagline || p.tagline || seoDescription(p);
+  const metaDesc = esc(rawMetaDesc);
 
   return `<!doctype html>
 <html lang="en" data-theme="minimal">
@@ -257,6 +259,7 @@ export function render(content, opts = {}) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
 <meta name="description" content="${metaDesc}">
+${seoHead(p, { path: "/interactive", desc: rawMetaDesc })}
 <meta name="build" content="${esc(String(c._build || "dev"))}">
 <link rel="stylesheet" href="/moana-puppet-kit/moana-puppet.css">
 <script>
@@ -517,6 +520,7 @@ ${rateCSS}
   <footer>
     <span>© ${new Date().getFullYear()} <span${bindAttr("profile.name", edit)}>${esc(p.name || "")}</span></span>
     <span><span${bindAttr("footer.interactive", edit)}>${esc((c.footer && c.footer.interactive) || "Built end-to-end")}</span>${p.location || edit ? ` · <span${bindAttr("profile.location", edit)}>${esc(p.location || "")}</span>` : ""} · <a id="lite-link" href="/fast/">Lite version</a></span>
+    <span lang="zh-Hant">${zhFooterLine()}</span>
   </footer>
 </div>
 

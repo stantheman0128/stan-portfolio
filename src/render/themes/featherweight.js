@@ -3,6 +3,7 @@
 // so every value is read from `content`.
 import { esc, md, realLinks, bindAttr, editLinksHTML } from "../util.js";
 import { creatorEntryJS } from "../fx/creator-entry.js";
+import { seoHead, seoDescription, zhFooterLine } from "../seo.js";
 
 function thumbnailBase(image) {
   const match = String(image || "").match(/^\/assets\/(.+)\.[a-z0-9]+$/i);
@@ -303,7 +304,8 @@ export function render(content, opts = {}) {
     : "";
 
   const title = [p.name, p.role].filter(Boolean).map(esc).join(" — ");
-  const desc = esc(p.subtagline || about.short || "");
+  const rawDesc = p.subtagline || about.short || seoDescription(p);
+  const desc = esc(rawDesc);
 
   return `<!doctype html>
 <html lang="en" data-theme="featherweight">
@@ -312,6 +314,7 @@ export function render(content, opts = {}) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
 <meta name="description" content="${desc}">
+${seoHead(p, { path: "/", desc: rawDesc })}
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#fbfbfa">
 <link rel="manifest" href="/site.webmanifest">
@@ -512,6 +515,7 @@ a.thumb{cursor:zoom-in}
 
   <footer>
     <span>© ${year} <span${bindAttr("profile.name", edit)}>${esc(p.name)}</span>${p.latinName || edit ? ` · <span${bindAttr("profile.latinName", edit)}>${esc(p.latinName || "")}</span>` : ""}</span>
+    <span lang="zh-Hant">${zhFooterLine()}</span>
     <span class="grow"></span>
     <span${bindAttr("footer.featherweight", edit)}>${esc((content.footer && content.footer.featherweight) || "Featherweight · system fonts · nothing blocks first paint")}</span>
     <a href="/interactive">Full interactive version &rarr;</a>
