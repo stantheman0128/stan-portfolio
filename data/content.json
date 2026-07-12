@@ -1,15 +1,18 @@
 {
-  "_note": "Single source of truth for the live site and the Studio editor. Website copy is English. Each item has: title, description (one line), detail (markdown, longer), links[], image.",
+  "_note": "Single source of truth for the live site and the Studio editor. Website copy is English. Each item has: title, description (one line), detail (markdown, longer), links[], image (+imageWidth/imageHeight in px, for CLS-free rendering).",
   "profile": {
     "name": "Stan Shih",
     "latinName": "Po-Han Shih",
     "role": "Product builder · Inventor · AI-first engineer",
     "tagline": "I find products I love — then build for them.",
-    "subtagline": "CS student who ships end-to-end across web, mobile, desktop, and browser extensions. Test!!!",
+    "subtagline": "CS student who ships end-to-end across web, mobile, desktop, and browser extensions. AI-first by default.",
     "location": "Taipei, Taiwan",
     "email": "stan@stan-shih.com",
     "githubUrl": "https://github.com/stantheman0128",
     "linkedinUrl": "https://www.linkedin.com/in/po-han-stan-shih-39b713277/",
+    "instagramUrl": "https://www.instagram.com/stantheman_0128/",
+    "dcardUrl": "https://www.dcard.tw/@stantheman",
+    "threadsUrl": "https://www.threads.com/@stantheman_0128",
     "available": "Open to internships and collaborations"
   },
   "about": {
@@ -26,19 +29,13 @@
       "year": "2026",
       "description": "A fan-made Chrome MV3 overlay that reads Colonist's game log locally for live stats.",
       "detail": "Parses the in-page game log with a MutationObserver and reconstructs board state to show live dice distribution, each player's resources, and hidden-card uncertainty. Runs entirely in the browser — no data leaves the machine.",
-      "tags": [
-        "Chrome MV3",
-        "JavaScript",
-        "MutationObserver",
-        "Local-only"
-      ],
       "image": "/assets/colonist-stats-icon.png",
       "imageMode": "icon",
+      "imageWidth": 128,
+      "imageHeight": 128,
       "links": [
-        {
-          "label": "GitHub",
-          "href": "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/colonist-stats-tracker"
-        }
+        { "label": "Chrome Web Store", "href": "https://chromewebstore.google.com/detail/colonistio-stats-tracker/midjajejbacllkidpmngcffkgncmgndm" },
+        { "label": "GitHub", "href": "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/colonist-stats-tracker" }
       ]
     },
     {
@@ -48,19 +45,13 @@
       "year": "2025",
       "description": "A production PWA that checks NTNU CS graduation credits against catalog rules.",
       "detail": "Loads a transcript and the department's catalog rules, then reports remaining required credits by category. Installable as a PWA and used by real students.",
-      "tags": [
-        "PWA",
-        "React",
-        "TypeScript",
-        "Credit rules"
-      ],
       "image": "/assets/course-hero.png",
       "imageMode": "contain",
+      "imageWidth": 343,
+      "imageHeight": 361,
       "links": [
-        {
-          "label": "Live",
-          "href": "https://course.stan-shih.com"
-        }
+        { "label": "Live", "href": "https://course.stan-shih.com" },
+        { "label": "GitHub", "href": "https://github.com/stantheman0128/course" }
       ]
     },
     {
@@ -70,23 +61,13 @@
       "year": "2025",
       "description": "A personal dashboard that tracks Taiwan ETFs, US stocks, and BTC in one place.",
       "detail": "Next.js + Upstash Redis with server-side price caching. Follows a real mixed portfolio — cost basis, live valuation, and per-holding breakdowns — without hammering the quote APIs.",
-      "tags": [
-        "Next.js",
-        "TypeScript",
-        "Upstash Redis",
-        "Vercel"
-      ],
       "image": "/assets/etf-tracker-screenshot.png",
       "imageMode": "contain",
+      "imageWidth": 1280,
+      "imageHeight": 720,
       "links": [
-        {
-          "label": "Live",
-          "href": "https://etf-tracker-seven.vercel.app"
-        },
-        {
-          "label": "GitHub",
-          "href": "https://github.com/stantheman0128/etf-tracker"
-        }
+        { "label": "Live", "href": "https://etf-tracker-seven.vercel.app" },
+        { "label": "GitHub", "href": "https://github.com/stantheman0128/etf-tracker" }
       ]
     },
     {
@@ -96,24 +77,13 @@
       "year": "2025",
       "description": "A production LINE + AI support system for a real dessert shop.",
       "detail": "Next.js + Supabase + Gemini, with admin tools and a reservation flow. Handles customer questions on LINE and hands off to staff when needed.",
-      "tags": [
-        "Next.js",
-        "TypeScript",
-        "Supabase",
-        "Gemini",
-        "LINE"
-      ],
       "image": "/assets/antnest-logo.png",
       "imageMode": "contain",
+      "imageWidth": 820,
+      "imageHeight": 261,
       "links": [
-        {
-          "label": "Live",
-          "href": "https://antnest-chatbot-0410.zeabur.app"
-        },
-        {
-          "label": "GitHub",
-          "href": "https://github.com/stantheman0128/antnest-chatbot"
-        }
+        { "label": "Live", "href": "https://antnest-chatbot-0410.zeabur.app" },
+        { "label": "GitHub", "href": "https://github.com/stantheman0128/antnest-chatbot" }
       ]
     },
     {
@@ -123,19 +93,13 @@
       "year": "2025",
       "description": "An Android app that reshapes LINE notifications for Nothing Phone users.",
       "detail": "Groups chat notifications, adds per-source settings, and ships with full Play Store assets. Built in Kotlin with Jetpack Compose.",
-      "tags": [
-        "Kotlin",
-        "Compose",
-        "Android",
-        "Notifications"
-      ],
       "image": "/assets/line-notify-screenshot.png",
       "imageMode": "",
+      "imageWidth": 1080,
+      "imageHeight": 2412,
       "links": [
-        {
-          "label": "GitHub",
-          "href": "https://github.com/stantheman0128/line-notify-plus"
-        }
+        { "label": "Google Play", "href": "https://play.google.com/store/apps/details?id=com.stanslab.linenotify" },
+        { "label": "GitHub", "href": "https://github.com/stantheman0128/line-notify-plus" }
       ]
     },
     {
@@ -145,20 +109,11 @@
       "year": "2026",
       "description": "A Windows tray monitor for multiple Claude Code sessions.",
       "detail": "Tracks permission waits, idle states, and activity across many concurrent Claude Code sessions via local hooks, surfaced in a lightweight .NET tray app.",
-      "tags": [
-        ".NET",
-        "Windows tray",
-        "HTTP hooks",
-        "AI tooling"
-      ],
       "image": "/assets/claudepulse-screenshot.png",
       "imageMode": "contain",
-      "links": [
-        {
-          "label": "GitHub",
-          "href": "https://github.com/stantheman0128/claudepulse-win"
-        }
-      ]
+      "imageWidth": 355,
+      "imageHeight": 307,
+      "links": [{ "label": "GitHub", "href": "https://github.com/stantheman0128/claudepulse-win" }]
     },
     {
       "id": "claude-status-monitor",
@@ -167,19 +122,13 @@
       "year": "2026",
       "description": "Real-time Claude service status widget on claude.ai — uptime charts, live incidents, and alerts at a glance.",
       "detail": "A Chrome MV3 extension that embeds a live status widget into claude.ai: a 30-day uptime timeline from status.claude.com, hover previews of each day's incidents, pinned incident details, and outage durations.",
-      "tags": [
-        "Chrome MV3",
-        "JavaScript",
-        "Status API",
-        "Widget"
-      ],
       "image": "/assets/claude-status-icon.png",
       "imageMode": "icon",
+      "imageWidth": 128,
+      "imageHeight": 128,
       "links": [
-        {
-          "label": "GitHub",
-          "href": "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/claude-status-monitor"
-        }
+        { "label": "Chrome Web Store", "href": "https://chromewebstore.google.com/detail/claude-status-monitor/ocjhnlhllljkehgcfkicipmognjlamdp" },
+        { "label": "GitHub", "href": "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/claude-status-monitor" }
       ]
     },
     {
@@ -189,19 +138,13 @@
       "year": "2026",
       "description": "Shows precise YouTube upload dates, down to the second, on videos and Shorts.",
       "detail": "Replaces YouTube's fuzzy \"2 weeks ago\" with exact upload timestamps — on watch pages, Shorts, home, subscriptions, history, and playlists.",
-      "tags": [
-        "Chrome MV3",
-        "JavaScript",
-        "YouTube",
-        "i18n"
-      ],
       "image": "/assets/youtube-precise-time-icon.png",
       "imageMode": "icon",
+      "imageWidth": 128,
+      "imageHeight": 128,
       "links": [
-        {
-          "label": "GitHub",
-          "href": "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/youtube-video-upload-time"
-        }
+        { "label": "Chrome Web Store", "href": "https://chromewebstore.google.com/detail/youtube-precise-time/cakbaflkobhcpnmlcbkbmdaioikjighm" },
+        { "label": "GitHub", "href": "https://github.com/stantheman0128/stan-chrome-extensions/tree/master/youtube-video-upload-time" }
       ]
     },
     {
@@ -212,20 +155,9 @@
       "themeExclude": "featherweight",
       "description": "The page you're reading has a twin built for pure speed: zero JavaScript, system fonts, nothing blocks first paint.",
       "detail": "Same content, opposite philosophy — no hedgehog, no quest, just one line that times itself. About 6 KB gzipped, ~0.2 s edge TTFB, Lighthouse 99. On a slow connection this site quietly sends you there instead.",
-      "tags": [
-        "~1 line JS",
-        "System fonts",
-        "6 KB gzip",
-        "Lighthouse 99"
-      ],
       "image": "",
       "imageMode": "",
-      "links": [
-        {
-          "label": "Visit the lite twin",
-          "href": "/fast/"
-        }
-      ]
+      "links": [{ "label": "Visit the lite twin", "href": "/fast/" }]
     },
     {
       "id": "site-minimal",
@@ -233,30 +165,16 @@
       "status": "Live",
       "year": "2026",
       "themeExclude": "minimal",
-      "description": "The full version of this site, with a resident hedgehog, an exploration quest, and a button that runs away from your cursor.",
-      "detail": "Warm paper and serif display on the surface; underneath, per-project ratings on Cloudflare KV, a server-gated reward, and a guide sprite with opinions. Everything this lite edition deliberately leaves out.",
-      "tags": [
-        "Vanilla JS",
-        "Cloudflare Pages",
-        "KV ratings",
-        "One hedgehog"
-      ],
+      "description": "The full version of this site, with a resident paper-doll guide, an exploration quest, and a button that runs away from your cursor.",
+      "detail": "Warm paper and serif display on the surface; underneath, per-project ratings on Cloudflare KV, a server-gated reward, and a hand-drawn paper guide who answers questions about my work. Everything this lite edition deliberately leaves out.",
       "image": "",
       "imageMode": "",
-      "links": [
-        {
-          "label": "Visit the full version",
-          "href": "/site?theme=minimal&v=full"
-        }
-      ]
+      "links": [{ "label": "Visit the full version", "href": "/interactive" }]
     }
   ],
   "patent": {
     "title": "Travel Smart Collision-Avoidance Warning System",
-    "ids": [
-      "US10699576B1",
-      "TWM578665U"
-    ],
+    "ids": ["US10699576B1", "TWM578665U"],
     "year": "2020",
     "role": "Inventor (sole)",
     "image": "/assets/patent-us10699576-p1.png",
@@ -274,6 +192,5 @@
   "experience": [],
   "press": [],
   "education": [],
-  "skills": [],
-  "_build": "1783494346991"
+  "skills": []
 }
