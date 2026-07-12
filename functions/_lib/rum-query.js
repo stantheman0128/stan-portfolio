@@ -39,7 +39,17 @@ SELECT SUM(_sample_interval) AS visits,
 FROM rum_events
 WHERE timestamp > NOW() - INTERVAL '${span}' DAY AND double6 > 0`;
 
-  return { span, overall, vitals, byCountry };
+  // Raw per-visit rows for the owner panel's "recent visits" table. Unlike the
+  // aggregate queries above this is not weighted by _sample_interval — each row is
+  // one sampled beacon. timestamp comes back as a string; latency doubles round.
+  const recent = `
+SELECT timestamp, blob2 AS country, blob3 AS path,
+  double1 AS ttfb, double4 AS load, double6 AS lcp
+FROM rum_events
+WHERE timestamp > NOW() - INTERVAL '${span}' DAY
+ORDER BY timestamp DESC LIMIT 80`;
+
+  return { span, overall, vitals, byCountry, recent };
 }
 
 // DCL (double3) quantile ladder over the last 30 days. Powers the public
@@ -77,10 +87,11 @@ export async function fetchRumStats(token, days, accountId = RUM_ACCOUNT_ID) {
     return JSON.parse(text);
   }
 
-  const [overall, vitals, byCountry] = await Promise.all([
+  const [overall, vitals, byCountry, recent] = await Promise.all([
     sql(queries.overall),
     sql(queries.vitals),
     sql(queries.byCountry),
+    sql(queries.recent),
   ]);
 
   return {
@@ -88,5 +99,6 @@ export async function fetchRumStats(token, days, accountId = RUM_ACCOUNT_ID) {
     overall: (overall.data || []).map(roundRumRow),
     vitals: (vitals.data || []).map(roundRumRow),
     byCountry: (byCountry.data || []).map(roundRumRow),
+    recent: (recent.data || []).map(roundRumRow),
   };
 }
