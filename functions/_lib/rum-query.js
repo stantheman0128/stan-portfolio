@@ -42,6 +42,19 @@ WHERE timestamp > NOW() - INTERVAL '${span}' DAY AND double6 > 0`;
   return { span, overall, vitals, byCountry };
 }
 
+// DCL (double3) quantile ladder over the last 30 days. Powers the public
+// /api/rum-baseline endpoint: the front door compares a visitor's own
+// DOMContentLoaded time against these to say "faster than ~X% of visits".
+export const RUM_BASELINE_QUERY = `
+SELECT SUM(_sample_interval) AS visits,
+  quantileWeighted(0.10, double3, _sample_interval) AS p10,
+  quantileWeighted(0.25, double3, _sample_interval) AS p25,
+  quantileWeighted(0.50, double3, _sample_interval) AS p50,
+  quantileWeighted(0.75, double3, _sample_interval) AS p75,
+  quantileWeighted(0.90, double3, _sample_interval) AS p90
+FROM rum_events
+WHERE timestamp > NOW() - INTERVAL '30' DAY AND double3 > 0`;
+
 export function roundRumRow(row) {
   const out = { ...row };
   for (const key of Object.keys(out)) {
