@@ -18,10 +18,21 @@ function readEditKey() {
   try { return sessionStorage.getItem("edit-key") || ""; } catch (e) {}
   return "";
 }
-const state = { content: null, theme: (document.documentElement.getAttribute("data-theme") || "featherweight") };
+const state = { content: null, theme: ((typeof document !== "undefined" && document.documentElement.getAttribute("data-theme")) || "featherweight") };
 let editing = true;
 let history = null;      // makeHistory, initialised on boot
 let commitTimer = null;
+
+// Immutable array move: return a copy of arr with the element at `from` relocated to
+// final index `to`. Out-of-range or no-op inputs return an unchanged copy. Pure, so
+// the Order panel's reorder maths can be unit-tested without a DOM.
+export function moveInArray(arr, from, to) {
+  const a = arr.slice();
+  if (from < 0 || from >= a.length || to < 0 || to >= a.length || from === to) return a;
+  const [x] = a.splice(from, 1);
+  a.splice(to, 0, x);
+  return a;
+}
 
 // ---------- boot ----------
 async function mountEditor() {
@@ -174,11 +185,20 @@ function bindImage(el, path) {
 // ---------- chrome (toolbar + hover controls), all tagged data-ff-chrome ----------
 let statusEl, hoverBox, hoverBtns, hoverTarget = null;
 let eventsWired = false;
+// Order panel open/close survives render() (which rebuilds the whole document) via
+// this module-level flag; mountChrome re-materialises the panel when it's true.
+let orderPanelOpen = false;
+// Retarget debounce: switching hoverTarget to a *different* card waits this long so a
+// diagonal move toward the floating buttons that clips a neighbour card doesn't yank
+// the controls away mid-reach.
+let pendingTarget = null, retargetTimer = null;
+const RETARGET_MS = 150;
 
 function mountChrome(initialStatus) {
   injectStyle();
   buildToolbar(initialStatus);
   buildHoverControls();
+  if (orderPanelOpen) buildOrderPanel();
   setEditing(true);
   if (!eventsWired) { wireEvents(); eventsWired = true; }
 }
@@ -208,6 +228,28 @@ function injectStyle() {
       box-shadow: 0 3px 10px rgba(20,20,30,.18); }
     #ffbtns button:hover { background: #f4f4f6; }
     #ffbtns .del:hover { color: #dc2626; border-color: #dc2626; }
+    #fforder { position: fixed; top: 12px; right: 212px; z-index: 99990; width: 244px;
+      max-height: calc(100vh - 24px); overflow: auto; background: #ffffff; color: #1b1b1f;
+      border: 1px solid #e3e3e6; border-radius: 12px; padding: 10px;
+      box-shadow: 0 8px 28px rgba(20,20,30,.14);
+      font: 13px/1.4 ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
+    #fforder .oh { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    #fforder .oh .ttl { font-weight: 700; font-size: 12.5px; letter-spacing: .02em; }
+    #fforder .oh .x { all: unset; cursor: pointer; color: #71717a; font-size: 15px; line-height: 1; padding: 0 4px; }
+    #fforder .oh .x:hover { color: #1b1b1f; }
+    #fforder .row { display: flex; align-items: center; gap: 6px; padding: 6px 7px; margin: 4px 0;
+      border: 1px solid #e3e3e6; border-radius: 8px; background: #fafafb; cursor: grab; }
+    #fforder .row:hover { border-color: #b9b9c2; background: #f4f4f6; }
+    #fforder .row.dragging { opacity: .4; }
+    #fforder .row.drop-before { box-shadow: inset 0 2px 0 #7c3aed; }
+    #fforder .row.drop-after { box-shadow: inset 0 -2px 0 #7c3aed; }
+    #fforder .row .num { color: #8b877f; font-size: 11px; min-width: 16px; text-align: right; }
+    #fforder .row .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+    #fforder .row .mv { all: unset; cursor: pointer; color: #71717a; font-size: 12px; width: 17px; height: 17px;
+      text-align: center; border-radius: 4px; }
+    #fforder .row .mv:hover { background: #e3e3e6; color: #1b1b1f; }
+    #fforder .row .mv:disabled { opacity: .3; cursor: default; }
+    #fforder .empty { color: #71717a; font-size: 12px; padding: 6px; }
     body.ff-editing { caret-color: #7c3aed; }
     body.ff-editing [data-bind] { outline: 1px dotted rgba(124,58,237,.35); outline-offset: 2px; }
     body.ff-editing :is(a) { cursor: text; }
@@ -268,6 +310,11 @@ function buildToolbar(initialStatus) {
   bar._redoBtn = redoBtn;
   undoBtn.disabled = !(history && history.canUndo());
   redoBtn.disabled = !(history && history.canRedo());
+
+  mkBtn("↕ Order", "Open the reorder panel (drag items or use ↑↓)", () => {
+    orderPanelOpen = !orderPanelOpen;
+    if (orderPanelOpen) buildOrderPanel(); else removeOrderPanel();
+  });
 
   const toggle = mkBtn("👁 Preview", "Toggle editing off to click around as a visitor", () => {
     setEditing(!editing);
@@ -405,6 +452,119 @@ function buildHoverControls() {
   document.body.append(hoverBox, hoverBtns);
 }
 
+// ---------- order panel: drag / ↑↓ reorder of state.content.items ----------
+function removeOrderPanel() {
+  const p = document.getElementById("fforder");
+  if (p) p.remove();
+}
+
+// Reorder items to `to` (final index), commit, re-render (which rebuilds this panel).
+function applyReorder(from, to) {
+  const items = state.content.items || [];
+  to = Math.max(0, Math.min(items.length - 1, to));
+  if (from === to) return;
+  state.content.items = moveInArray(items, from, to);
+  commitNow();
+  render("Reordered items");
+}
+
+// Smooth-scroll the card owning items.N.* into view. Resolve via the same data-bind
+// selector the hover targeting uses, then climb to the whole .item card.
+function scrollToItem(i) {
+  const bound = document.querySelector('[data-bind^="items.' + i + '."]');
+  const card = (bound && bound.closest && bound.closest(".item")) || bound;
+  if (card && card.scrollIntoView) card.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+// Rebuild the panel from scratch. Called on open and after every render() while open,
+// so it always mirrors the live items order. `data-ff-chrome` keeps it out of the
+// editable surface and out of hover retargeting.
+function buildOrderPanel() {
+  removeOrderPanel();
+  const items = state.content.items || [];
+  const panel = document.createElement("div");
+  panel.id = "fforder";
+  panel.setAttribute("data-ff-chrome", "");
+  panel.setAttribute("contenteditable", "false");
+
+  const head = document.createElement("div");
+  head.className = "oh";
+  const ttl = document.createElement("span");
+  ttl.className = "ttl"; ttl.textContent = "↕ Order items";
+  const x = document.createElement("button");
+  x.className = "x"; x.textContent = "✕"; x.title = "Close";
+  x.addEventListener("click", () => { orderPanelOpen = false; removeOrderPanel(); });
+  head.append(ttl, x);
+  panel.appendChild(head);
+
+  if (!items.length) {
+    const e = document.createElement("div");
+    e.className = "empty"; e.textContent = "No items yet.";
+    panel.appendChild(e);
+    document.body.appendChild(panel);
+    return;
+  }
+
+  // Shared across this panel's rows for the duration of one drag gesture.
+  let dragFrom = -1;
+  const clearMarks = () => panel.querySelectorAll(".row").forEach((r) => r.classList.remove("drop-before", "drop-after"));
+
+  items.forEach((it, i) => {
+    const row = document.createElement("div");
+    row.className = "row";
+    row.draggable = true;
+    row.dataset.oi = String(i);
+
+    const num = document.createElement("span");
+    num.className = "num"; num.textContent = String(i + 1);
+
+    const nm = document.createElement("span");
+    nm.className = "nm";
+    const title = (it && it.title != null ? String(it.title) : "") || "(untitled)";
+    nm.textContent = title.length > 28 ? title.slice(0, 27) + "…" : title;
+    nm.title = "Jump to this card";
+    nm.addEventListener("click", () => scrollToItem(i));
+
+    const up = document.createElement("button");
+    up.className = "mv"; up.textContent = "↑"; up.title = "Move up"; up.disabled = i === 0;
+    up.addEventListener("click", () => applyReorder(i, i - 1));
+    const down = document.createElement("button");
+    down.className = "mv"; down.textContent = "↓"; down.title = "Move down"; down.disabled = i === items.length - 1;
+    down.addEventListener("click", () => applyReorder(i, i + 1));
+
+    row.addEventListener("dragstart", (e) => {
+      dragFrom = i;
+      row.classList.add("dragging");
+      if (e.dataTransfer) { e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", String(i)); } catch (_) {} }
+    });
+    row.addEventListener("dragend", () => { row.classList.remove("dragging"); clearMarks(); dragFrom = -1; });
+    row.addEventListener("dragover", (e) => {
+      if (dragFrom < 0) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+      const rect = row.getBoundingClientRect();
+      const after = (e.clientY - rect.top) > rect.height / 2;
+      clearMarks();
+      row.classList.add(after ? "drop-after" : "drop-before");
+    });
+    row.addEventListener("drop", (e) => {
+      if (dragFrom < 0) return;
+      e.preventDefault();
+      const rect = row.getBoundingClientRect();
+      const after = (e.clientY - rect.top) > rect.height / 2;
+      const insertPos = after ? i + 1 : i;         // slot in the pre-removal array
+      const to = dragFrom < insertPos ? insertPos - 1 : insertPos;
+      clearMarks();
+      applyReorder(dragFrom, to);
+    });
+
+    row.append(num, nm, up, down);
+    panel.appendChild(row);
+  });
+
+  document.body.appendChild(panel);
+}
+
 // The content.items index owning a node = the numeric prefix of the nearest
 // items.N.* data-bind, searched on self/ancestors first, then descendants (so
 // hovering the whole card also resolves the item).
@@ -433,30 +593,52 @@ function setEditing(on) {
 }
 
 // ---------- hover targeting ----------
+function clearRetarget() { clearTimeout(retargetTimer); retargetTimer = null; pendingTarget = null; }
+
 function hideHover() {
+  clearRetarget();
   hoverTarget = null;
   if (hoverBox) hoverBox.style.display = "none";
   if (hoverBtns) hoverBtns.style.display = "none";
 }
 
-function onMove(e) {
-  if (!editing) return;
-  let t = e.target;
-  if (!t || (t.closest && t.closest("[data-ff-chrome]"))) return; // keep controls usable
-  if (t === document.body || t === document.documentElement) { hideHover(); return; }
-  // Prefer the whole item card so ✕/⧉ act on the item, not just the hovered field.
-  const item = t.closest && t.closest(".item");
-  if (item) t = item;
+// Draw the outline + floating buttons over a resolved target.
+function showHoverFor(t) {
   hoverTarget = t;
   const r = t.getBoundingClientRect();
   const x = r.left + scrollX, y = r.top + scrollY;
   hoverBox.style.cssText += `;display:block;left:${x - 3}px;top:${y - 3}px;width:${r.width + 6}px;height:${r.height + 6}px`;
-  // Only items get delete/duplicate controls.
+  // Only items get delete/duplicate/move controls. Park them at the card's INNER
+  // top-right corner so the pointer never has to leave the card to reach them.
   if (itemIndexOf(t) >= 0) {
-    hoverBtns.style.cssText += `;display:flex;left:${Math.max(4, x + r.width - 56)}px;top:${Math.max(4, y - 26)}px`;
+    hoverBtns.style.cssText += ";display:flex;left:-9999px;top:-9999px";
+    const bw = hoverBtns.offsetWidth || 116;
+    hoverBtns.style.left = `${Math.max(4, x + r.width - bw - 8)}px`;
+    hoverBtns.style.top = `${y + 8}px`;
   } else {
     hoverBtns.style.display = "none";
   }
+}
+
+function onMove(e) {
+  if (!editing) return;
+  const t = e.target;
+  if (!t) return;
+  // Inside our own chrome (toolbar, hover buttons, order panel): leave the current
+  // hover exactly where it is and cancel any pending switch, so a reach toward the
+  // buttons can't retarget them out from under the cursor.
+  if (t.closest && t.closest("[data-ff-chrome]")) { clearRetarget(); return; }
+  if (t === document.body || t === document.documentElement) { hideHover(); return; }
+  // Prefer the whole item card so ✕/⧉ act on the item, not just the hovered field.
+  const item = t.closest && t.closest(".item");
+  const cand = item || t;
+  if (cand === hoverTarget) { clearRetarget(); return; } // already shown; nothing to do
+  // First hover shows immediately; switching between cards is debounced.
+  if (hoverTarget === null) { clearRetarget(); showHoverFor(cand); return; }
+  if (pendingTarget === cand) return; // timer already counting down for this target
+  clearTimeout(retargetTimer);
+  pendingTarget = cand;
+  retargetTimer = setTimeout(() => { retargetTimer = null; pendingTarget = null; showHoverFor(cand); }, RETARGET_MS);
 }
 
 function wireEvents() {
@@ -519,4 +701,4 @@ function wireEvents() {
   }, true);
 }
 
-mountEditor();
+if (typeof document !== "undefined") mountEditor();
