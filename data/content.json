@@ -39,7 +39,8 @@
       "community": "Community",
       "skills": "Skills",
       "contact": ""
-    }
+    },
+    "workSuffix": "shipped"
   },
   "about": {
     "short": "",
@@ -243,10 +244,8 @@
       "year": "2025",
       "description": "A web app that checks how many more credits I need to graduate",
       "detail": "",
-      "image": "/assets/course-hero.png",
-      "imageMode": "contain",
-      "imageWidth": 343,
-      "imageHeight": 361,
+      "image": "",
+      "imageMode": "",
       "links": [
         {
           "label": "Live",
@@ -256,7 +255,8 @@
           "label": "GitHub",
           "href": "https://github.com/stantheman0128/course"
         }
-      ]
+      ],
+      "glyph": "🎓"
     }
   ],
   "patent": {

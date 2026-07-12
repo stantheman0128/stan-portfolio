@@ -93,14 +93,16 @@ export function render(content, opts = {}) {
           `<img ${imageAttrs} alt="${esc(it.title)} thumbnail" ` +
           `width="44" height="44" loading="lazy" decoding="async"></span>`;
       } else {
-        // Derive a short glyph from the title so the card never reads "undefined".
+        // Owner-set glyph (usually an emoji) wins; otherwise derive a short
+        // glyph from the title so the card never reads "undefined".
         const words = String(it.title || "")
           .split(/\s+/)
           .filter(Boolean);
         const glyph =
-          words.length >= 2
+          (it.glyph && String(it.glyph).trim()) ||
+          (words.length >= 2
             ? (words[0][0] + words[1][0]).toUpperCase()
-            : (words[0] || "•").slice(0, 2).toUpperCase();
+            : (words[0] || "•").slice(0, 2).toUpperCase());
         thumb = `<span class="thumb text" aria-hidden="true">${esc(glyph)}</span>`;
       }
 
@@ -417,7 +419,11 @@ footer .grow{flex:1}
 .entry .top{flex-direction:column;gap:.1rem}
 }
 img{max-width:100%;height:auto}
-.fw-speed{display:inline-flex;visibility:hidden;min-height:2.3rem;align-items:baseline;gap:.5rem;margin-top:calc(var(--space)*.8);font-size:var(--s-1);color:var(--ink-3);letter-spacing:.01em}
+.hero{position:relative}
+.hero-cta{position:absolute;top:.35rem;right:0;font-size:var(--s-1);color:var(--ink-2);border-bottom:1px solid var(--line-2);padding-bottom:2px}
+.hero-cta:hover,.hero-cta:focus-visible{color:var(--ink);border-color:var(--ink)}
+@media (max-width:40rem){.hero-cta{position:static;display:inline-block;margin-top:.4rem}}
+.fw-speed{display:inline-flex;visibility:hidden;min-height:2.3rem;align-items:center;gap:.5rem;margin-top:calc(var(--space)*.8);font-size:var(--s-1);color:var(--ink-3);letter-spacing:.01em}
 .fw-speed.on{visibility:visible}
 .fw-speed .dot{align-self:center;width:.42rem;height:.42rem;border-radius:50%;background:var(--live);flex:0 0 auto;animation:fw-pulse 2.6s ease-out infinite}
 .fw-speed .n{font-weight:700;color:var(--ink);font-size:var(--s1);letter-spacing:-.015em;font-feature-settings:"tnum" 1}
@@ -431,6 +437,7 @@ img{max-width:100%;height:auto}
 <div class="wrap">
 
   <header class="hero">
+    <a class="hero-cta" href="/interactive">Full interactive version &rarr;</a>
     <h1${bindAttr("profile.name", edit)}>${esc(p.name)}</h1>
     ${edit ? `<p class="latin"><span${bindAttr("profile.latinName", edit)}>${esc(p.latinName || "")}</span> · <span${bindAttr("profile.location", edit)}>${esc(p.location || "")}</span></p>` : ([p.latinName, p.location].filter(Boolean).length ? `<p class="latin">${[p.latinName, p.location].filter(Boolean).map(esc).join(" · ")}</p>` : "")}
     ${roleLine}
@@ -450,7 +457,11 @@ img{max-width:100%;height:auto}
 
     ${
       items.length
-        ? `<section id="work"><h2 class="eyebrow">${heading("work", "Selected work")} · ${shippedCount} shipped</h2><div class="work">${workHTML}</div></section>`
+        ? `<section id="work"><h2 class="eyebrow">${heading("work", "Selected work")}${
+            edit || String(H.workSuffix != null ? H.workSuffix : "shipped").trim()
+              ? ` · ${shippedCount} ${heading("workSuffix", "shipped")}`
+              : ""
+          }</h2><div class="work">${workHTML}</div></section>`
         : ""
     }
 
