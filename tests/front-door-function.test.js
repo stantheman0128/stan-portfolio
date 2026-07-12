@@ -28,6 +28,8 @@ describe("front-door function cache policy", () => {
     const response = onRequest();
 
     expect(response.headers.get("cache-control")).toBe("no-cache");
-    expect(response.headers.get("cloudflare-cdn-cache-control")).toBe("max-age=0");
+    // no-store, not max-age=0: the edge may keep and serve a stale copy of a
+    // max-age=0 entry, which blanked /interactive when hashed bundles rotated.
+    expect(response.headers.get("cloudflare-cdn-cache-control")).toBe("no-store");
   });
 });
