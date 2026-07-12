@@ -53,10 +53,6 @@ function itemLinks(links, ci, edit) {
 
 function itemRow(it, i, ci, edit) {
   const num = String(i + 1).padStart(2, "0");
-  const metaBits = [it.status, it.year].filter(Boolean).map(esc).join(" · ");
-  const meta = edit
-    ? `<span${bindAttr("items." + ci + ".status", edit)}>${esc(it.status || "")}</span> · <span${bindAttr("items." + ci + ".year", edit)}>${esc(it.year || "")}</span>`
-    : metaBits;
   const detail = md(it.detail);
   const detailHTML = edit
     ? `<div class="detail"${bindAttr("items." + ci + ".detail", edit, "md")}>${detail}</div>`
@@ -66,7 +62,6 @@ function itemRow(it, i, ci, edit) {
       <button class="row" type="button" aria-expanded="${edit ? "true" : "false"}">
         <span class="num">${num}</span>
         <span class="title"${bindAttr("items." + ci + ".title", edit)}>${esc(it.title)}</span>
-        <span class="meta">${meta}</span>
       </button>
     </h3>
     <div class="panel">
@@ -335,17 +330,14 @@ img{max-width:100%;display:block}
   border-top:1px solid var(--line);padding-top:clamp(30px,5vw,52px)}
 .item{border-bottom:1px solid var(--line)}
 .row-h{margin:0;font-weight:inherit;font-size:inherit}
-.row{display:grid;grid-template-columns:46px 1fr auto;align-items:baseline;gap:18px;width:100%;
+.row{display:grid;grid-template-columns:46px 1fr;align-items:baseline;gap:18px;width:100%;
   background:none;border:0;text-align:left;cursor:pointer;padding:22px 0;color:var(--ink);
-  font-family:inherit;transition:transform .28s cubic-bezier(.2,.7,.2,1)}
-.row:hover,.item.open .row{transform:translateX(14px)}
+  font-family:inherit}
 .row:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
 .row .num{font-family:var(--mono);font-size:12px;color:var(--faint);transition:color .25s}
 .row:hover .num,.item.open .num,.row:focus-visible .num{color:var(--accent)}
 .row .title{font-family:var(--serif);font-size:clamp(21px,3.2vw,30px);font-weight:400;
   line-height:1.12;letter-spacing:-.01em}
-.row .meta{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;color:var(--muted);
-  text-transform:uppercase;white-space:nowrap;text-align:right}
 
 .panel{display:grid;grid-template-rows:0fr;transition:grid-template-rows .36s cubic-bezier(.2,.7,.2,1)}
 .item.open .panel{grid-template-rows:1fr}

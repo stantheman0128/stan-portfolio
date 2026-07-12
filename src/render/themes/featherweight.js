@@ -74,7 +74,6 @@ export function render(content, opts = {}) {
   // WORK ITEMS ------------------------------------------------------------
   const workHTML = items
     .map(({ it, ci }) => {
-      const status = [it.status, it.year].filter(Boolean).map(esc).join(" · ");
       const links = realLinks(it.links);
 
       // Thumb: real image respecting imageMode, or a typographic card when null.
@@ -123,9 +122,7 @@ export function render(content, opts = {}) {
       return (
         `<article class="item">` +
         thumb +
-        `<div class="head"><h3${bindAttr("items." + ci + ".title", edit)}>${esc(it.title)}</h3>` +
-        (status ? `<span class="status">${status}</span>` : "") +
-        `</div>` +
+        `<div class="head"><h3${bindAttr("items." + ci + ".title", edit)}>${esc(it.title)}</h3></div>` +
         (edit
           ? `<p class="blurb"${bindAttr("items." + ci + ".description", edit)}>${esc(it.description || "")}</p>`
           : (it.description ? `<p class="blurb">${esc(it.description)}</p>` : "")) +
@@ -339,8 +336,6 @@ section{margin-top:calc(var(--space)*2.1)}
 .thumb.text{background:var(--ink);color:var(--bg);border-color:var(--ink);font-weight:600;font-size:var(--s1);letter-spacing:-.02em}
 .item .head{display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap}
 .item h3{font-size:var(--s1);letter-spacing:-.018em}
-.item .status{font-size:var(--s-1);color:var(--ink-3);letter-spacing:.02em;white-space:nowrap}
-.item .status::before{content:"· "}
 .item .blurb{margin-top:.3rem;color:var(--ink-2);max-width:var(--measure)}
 .item .detail{margin-top:.4rem;color:var(--ink-3);font-size:var(--s-1);max-width:var(--measure)}
 .item .detail p{margin:0}
@@ -510,11 +505,22 @@ img{max-width:100%;height:auto}
     if (!el) return;
     el.textContent = "";
     var dot = document.createElement("span"); dot.className = "dot"; dot.setAttribute("aria-hidden", "true");
-    var lbl = document.createElement("span"); lbl.className = "lbl"; lbl.textContent = "this page loaded in";
+    var lbl = document.createElement("span"); lbl.className = "lbl"; lbl.textContent = "You loaded this page in";
     var b = document.createElement("span"); b.className = "n"; b.textContent = "~" + n;
     var u = document.createElement("span"); u.className = "u"; u.textContent = "ms";
     el.appendChild(dot); el.appendChild(lbl); el.appendChild(b); el.appendChild(u);
     el.classList.add("on");
+    // Compare against the RUM baseline (aggregate quantiles, edge-cached).
+    // Silent no-op when the endpoint is empty or down: the time stands alone.
+    fetch("/api/rum-baseline").then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+      if (!d || !d.ok || !d.dcl || !n) return;
+      var q = d.dcl;
+      var pct = n <= q.p10 ? 90 : n <= q.p25 ? 75 : n <= q.p50 ? 50 : n <= q.p75 ? 25 : 0;
+      if (!pct) return; // slowest quartile: just show the time, no shaming
+      var cmp = document.createElement("span"); cmp.className = "u";
+      cmp.textContent = "— faster than ~" + pct + "% of visits";
+      el.appendChild(cmp);
+    }).catch(function(){});
   }
   // Anonymous RUM: report this visit's real timings so latency can be measured from
   // actual traffic. colo + country are stamped server-side from request.cf.
