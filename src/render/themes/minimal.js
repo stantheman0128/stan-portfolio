@@ -133,11 +133,13 @@ function patentBlock(pt, edit) {
   const hi = (pt.highlights || [])
     .map((h, i) => (edit || String(h).trim() ? `<li${bindAttr("patent.highlights." + i, edit)}>${esc(h)}</li>` : ""))
     .join("");
+  // Inline preview uses a small rasterized thumb, not the full-res scan - the
+  // lightbox (below) keeps the original for zooming in to actually read it.
   const fig = pt.image
     ? `<figure class="pt-fig">
         <a href="${edit ? esc(pt.image) : "#lb-patent"}"${edit ? ` target="_blank" rel="noopener"` : ""}>
-          <img src="${esc(pt.image)}" alt="${esc(pt.imageAlt || "Patent document, first page")}"
-            width="${pt.imageWidth | 0 || 935}" height="${pt.imageHeight | 0 || 1210}" loading="lazy" decoding="async">
+          <img src="${esc(pt.thumbImage || pt.image)}" alt="${esc(pt.imageAlt || "Patent document, first page")}"
+            width="${pt.thumbWidth | 0 || pt.imageWidth | 0 || 935}" height="${pt.thumbHeight | 0 || pt.imageHeight | 0 || 1210}" loading="lazy" decoding="async">
         </a>
         <figcaption>${esc((pt.ids || [])[0] || "Patent")} · page 1 — click to zoom</figcaption>
       </figure>`

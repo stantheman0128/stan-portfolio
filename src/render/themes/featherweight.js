@@ -161,10 +161,14 @@ export function render(content, opts = {}) {
     const highlights = (patent.highlights || [])
       .map((h, i) => `<li${bindAttr("patent.highlights." + i, edit)}>${esc(h)}</li>`)
       .join("");
+    // Inline preview uses a small rasterized thumb (not the full-res scan) so
+    // the always-visible figure doesn't download a much larger image than its
+    // ~220-260px display box needs. The lightbox below keeps the full-res
+    // original for when a visitor actually wants to zoom in and read it.
     const fig = patent.image
       ? `<a class="pt-img" href="${edit ? esc(patent.image) : "#lb-patent"}">` +
-        `<img src="${esc(patent.image)}" alt="${esc(patent.imageAlt || "Patent document, first page")}" ` +
-        `width="${patent.imageWidth | 0 || 935}" height="${patent.imageHeight | 0 || 1210}" loading="lazy" decoding="async"></a>`
+        `<img src="${esc(patent.thumbImage || patent.image)}" alt="${esc(patent.imageAlt || "Patent document, first page")}" ` +
+        `width="${patent.thumbWidth | 0 || patent.imageWidth | 0 || 935}" height="${patent.thumbHeight | 0 || patent.imageHeight | 0 || 1210}" loading="lazy" decoding="async"></a>`
       : "";
     patentHTML =
       `<section id="patent"><h2 class="eyebrow">${heading("patent", "Patent")}</h2>` +

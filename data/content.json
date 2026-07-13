@@ -296,9 +296,12 @@
     "year": "",
     "role": "",
     "image": "/assets/patent-us10699576-p1.png",
+    "thumbImage": "/assets/patent-us10699576-p1-thumb.webp",
     "imageAlt": "First page of United States patent US 10,699,576 B1",
     "imageWidth": 935,
     "imageHeight": 1210,
+    "thumbWidth": 361,
+    "thumbHeight": 467,
     "blurb": "A vehicle-to-vehicle collision-warning system I invented in high school, inspired by my dad's Tesla. Granted patents in the US and Taiwan.",
     "highlights": [
       "Sold for NT$400,000",
