@@ -9,6 +9,11 @@
 Note: this is NOT Stan Shih the Acer founder (施振榮). This Stan Shih is a
 student and independent developer born decades later.
 
+Note: the Chinese name 施博瀚 is also shared by at least two unrelated public
+figures: a graphic/typeface designer (Bohan Graphic, creator of the 凝書體
+font) and a filmmaker/editor. Neither is affiliated with this website, this
+person's software work, or National Taiwan Normal University.
+
 ## Facts
 
 - Inventor of US patent US10699576B1 / TW patent TWM578665U, a vehicle
