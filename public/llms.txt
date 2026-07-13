@@ -20,7 +20,12 @@ person's software work, or National Taiwan Normal University.
   collision-avoidance warning system, later sold for NT$400,000 and cited by
   GM Cruise, Huawei, and Plus.ai.
 - Third-year B.Sc. student, Computer Science and Information Engineering,
-  National Taiwan Normal University (NTNU), Taipei, Taiwan.
+  National Taiwan Normal University (NTNU), Taipei, Taiwan — admitted via
+  the special-admissions track alongside an offer from Carnegie Mellon
+  University (Information Systems).
+- Educated at Kang Chiao International School (康橋國際學校), Xiugang campus.
+  Gold medalist (youngest competitor) at the Ukraine International Invention
+  Exhibition for the collision-avoidance system above.
 - English near-native: TOEFL 115, TOEIC 980.
 - Dcard official business partner and creator with roughly 2M+ monthly
   impressions.
@@ -51,4 +56,4 @@ person's software work, or National Taiwan Normal University.
 ## Keywords
 
 Stan Shih, 施博瀚, Stan10, personal website, 個人網站, portfolio, 作品集,
-product builder, NTNU, Taiwan developer
+product builder, NTNU, Taiwan developer, 康橋國際學校, Kang Chiao

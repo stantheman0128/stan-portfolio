@@ -309,6 +309,13 @@
   },
   "experience": [],
   "press": [],
-  "education": [],
+  "education": [
+    {
+      "school": "Kang Chiao International School (康橋國際學校)",
+      "program": "K-12, Xiugang Campus",
+      "period": "",
+      "note": "Gold medalist, Ukraine International Invention Exhibition (youngest competitor), for a vehicle collision-avoidance warning system later patented as US10699576B1. Admitted to Carnegie Mellon University (Information Systems) and NTNU Computer Science via the special-admissions track."
+    }
+  ],
   "skills": []
 }
