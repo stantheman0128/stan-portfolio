@@ -15,12 +15,12 @@
 // top-level _worker.js: that would disable the whole functions/ directory (the API).
 import { HTML, MARKDOWN } from "./_front-door.js";
 
-// Pages does not apply public/_headers to Function responses. Match the dev-minimal
-// policy in public/_headers while actively shipping; restore the perf profile in
-// that file's comment block when stable.
+// Pages does not apply public/_headers to Function responses. Keep the browser's
+// short TTL + SWR, but bound Cloudflare's own cached copy to five minutes with no
+// edge SWR. Cloudflare consumes the edge-only header before returning the response.
 const COMMON = {
-  "cache-control": "no-cache",
-  "cloudflare-cdn-cache-control": "no-store",
+  "cache-control": "public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800",
+  "cloudflare-cdn-cache-control": "public, max-age=300",
   "x-content-type-options": "nosniff",
   // Agent discovery (RFC 8288): points AI crawlers at the markdown profile.
   link: '</llms.txt>; rel="alternate"; type="text/markdown"',

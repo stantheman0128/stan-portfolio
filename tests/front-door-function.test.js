@@ -24,12 +24,16 @@ describe("front-door function payload", () => {
 });
 
 describe("front-door function cache policy", () => {
-  it("uses dev-minimal cache while actively shipping", () => {
+  it("uses the restored perf profile: short browser TTL + SWR, 5min edge TTL", () => {
     const response = onRequest();
 
-    expect(response.headers.get("cache-control")).toBe("no-cache");
-    // no-store, not max-age=0: the edge may keep and serve a stale copy of a
-    // max-age=0 entry, which blanked /interactive when hashed bundles rotated.
-    expect(response.headers.get("cloudflare-cdn-cache-control")).toBe("no-store");
+    // Requires the zone's Edge TTL Cache Rule set to "Respect Origin" - an
+    // override rule ignores this and was the root cause of a prior incident
+    // (edge served day-old HTML referencing bundle hashes an atomic deploy
+    // had already deleted, blanking /interactive).
+    expect(response.headers.get("cache-control")).toBe(
+      "public, max-age=300, stale-while-revalidate=86400, stale-if-error=604800"
+    );
+    expect(response.headers.get("cloudflare-cdn-cache-control")).toBe("public, max-age=300");
   });
 });
