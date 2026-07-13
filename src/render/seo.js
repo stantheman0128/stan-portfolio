@@ -5,7 +5,11 @@
 // tags exist in baked HTML, not only after hydration.
 
 const ORIGIN = "https://stan-shih.com";
-const OG_IMAGE = ORIGIN + "/assets/icon-512.png";
+// Baked from public/og-image.svg via tools/bake-og-image.mjs — most link-preview
+// crawlers (Facebook, LINE, iMessage, Slack) don't render SVG for social cards.
+const OG_IMAGE = ORIGIN + "/assets/og-image.png";
+const OG_IMAGE_W = 1200;
+const OG_IMAGE_H = 630;
 // Chinese legal name plus romanizations/handles people actually search for.
 const ALT_NAMES = ["施博瀚", "Po-Han Shih", "Stan10"];
 const SITE_NAME = "Stan Shih — Personal Website";
@@ -85,9 +89,12 @@ export function seoHead(p, { path = "/", title, desc } = {}) {
     `<meta property="og:description" content="${esc(d)}">`,
     `<meta property="og:url" content="${canonical}">`,
     `<meta property="og:image" content="${OG_IMAGE}">`,
+    `<meta property="og:image:width" content="${OG_IMAGE_W}">`,
+    `<meta property="og:image:height" content="${OG_IMAGE_H}">`,
+    `<meta property="og:image:alt" content="${esc(t)}">`,
     `<meta property="og:locale" content="en_US">`,
     `<meta property="og:locale:alternate" content="zh_TW">`,
-    `<meta name="twitter:card" content="summary">`,
+    `<meta name="twitter:card" content="summary_large_image">`,
     `<meta name="twitter:title" content="${esc(t)}">`,
     `<meta name="twitter:description" content="${esc(d)}">`,
     `<meta name="twitter:image" content="${OG_IMAGE}">`,
