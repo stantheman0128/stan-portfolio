@@ -12,6 +12,10 @@ const OG_IMAGE_W = 1200;
 const OG_IMAGE_H = 630;
 // Chinese legal name plus romanizations/handles people actually search for.
 const ALT_NAMES = ["施博瀚", "Po-Han Shih", "Stan10"];
+// Structured entity anchor: disambiguates from other public 施博瀚/Stan Shih
+// namesakes (Acer's founder, a graphic designer, a filmmaker) with a
+// third-party-verifiable identity record.
+const WIKIDATA_URL = "https://www.wikidata.org/wiki/Q140533907";
 const SITE_NAME = "Stan Shih — Personal Website";
 const SITE_ALT_NAMES = ["施博瀚個人網站", "Stan Shih Portfolio", "Stan 個人網站"];
 
@@ -61,7 +65,9 @@ function jsonLd(p, desc) {
       { "@type": "CollegeOrUniversity", name: "National Taiwan Normal University" },
       { "@type": "EducationalOrganization", name: "Kang Chiao International School" },
     ],
-    sameAs: [p.githubUrl, p.linkedinUrl, p.instagramUrl, p.dcardUrl, p.threadsUrl].filter(Boolean),
+    sameAs: [p.githubUrl, p.linkedinUrl, p.instagramUrl, p.dcardUrl, p.threadsUrl, WIKIDATA_URL].filter(
+      Boolean
+    ),
   };
   const site = {
     "@type": "WebSite",

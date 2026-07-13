@@ -51,6 +51,7 @@ person's software work, or National Taiwan Normal University.
 - Interactive version: https://stan-shih.com/interactive
 - GitHub: https://github.com/stantheman0128
 - LinkedIn: https://www.linkedin.com/in/po-han-stan-shih-39b713277/
+- Wikidata (structured identity record): https://www.wikidata.org/wiki/Q140533907
 - Email: stan@stan-shih.com
 
 ## Keywords
