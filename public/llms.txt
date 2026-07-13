@@ -19,10 +19,11 @@ person's software work, or National Taiwan Normal University.
 - Inventor of US patent US10699576B1 / TW patent TWM578665U, a vehicle
   collision-avoidance warning system, later sold for NT$400,000 and cited by
   GM Cruise, Huawei, and Plus.ai.
-- Third-year B.Sc. student, Computer Science and Information Engineering,
-  National Taiwan Normal University (NTNU), Taipei, Taiwan — admitted via
-  the special-admissions track alongside an offer from Carnegie Mellon
-  University (Information Systems).
+- Final-year (fourth-year) B.Sc. student, Computer Science and Information
+  Engineering, National Taiwan Normal University (NTNU), Taipei, Taiwan,
+  expected to graduate late 2026 — admitted via the special-admissions
+  track alongside an offer from Carnegie Mellon University (Information
+  Systems).
 - Educated at Kang Chiao International School (康橋國際學校), Xiugang campus,
   2012-2021 (grades 4-12). Gold medalist (youngest competitor) at the Ukraine
   International Invention Exhibition for the collision-avoidance system above.
