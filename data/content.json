@@ -311,24 +311,7 @@
     ]
   },
   "experience": [],
-  "press": [
-    {
-      "org": "DigiTimes",
-      "role": "Nothing Phone (3a) Taiwan launch event",
-      "period": "2025-03",
-      "points": [
-        "Named as Nothing Taiwan Community founder, invited on stage to personally introduce the product at Nothing's Taiwan launch event — DigiTimes' coverage frames it as breaking from the usual vendor-led launch format (digitimes.com.tw/tech/dt/n/shwnws.asp?id=0000717826_QWF75N3734AXQJ553403G, paywalled).",
-        "Also named as Nothing's senior fan representative in Storm Media (風傳媒) and WIN News launch-day coverage (storm.mg/article/5345488, winnews.com.tw/220759)."
-      ]
-    }
-  ],
-  "education": [
-    {
-      "school": "Kang Chiao International School (康橋國際學校)",
-      "program": "Grades 4–12, Xiugang Campus",
-      "period": "2012–2021",
-      "note": "Gold medalist, Ukraine International Invention Exhibition (youngest competitor), for a vehicle collision-avoidance warning system later patented as US10699576B1. Admitted to Carnegie Mellon University (Information Systems) and NTNU Computer Science via the special-admissions track."
-    }
-  ],
+  "press": [],
+  "education": [],
   "skills": []
 }

@@ -58,13 +58,8 @@ function jsonLd(p, desc) {
     // No email here on purpose: the themes obfuscate mailto: against
     // scrapers (enforced by featherweight-email-off.test.js).
     address: { "@type": "PostalAddress", addressLocality: "Taipei", addressCountry: "TW" },
-    // alumniOf (not affiliation): schools attended, past or present -
-    // corroborated by Kang Chiao's own admission announcements, which
-    // independently confirm this identity across a third-party domain.
-    alumniOf: [
-      { "@type": "CollegeOrUniversity", name: "National Taiwan Normal University" },
-      { "@type": "EducationalOrganization", name: "Kang Chiao International School" },
-    ],
+    // alumniOf (not affiliation): schools attended, past or present.
+    alumniOf: [{ "@type": "CollegeOrUniversity", name: "National Taiwan Normal University" }],
     sameAs: [p.githubUrl, p.linkedinUrl, p.instagramUrl, p.dcardUrl, p.threadsUrl, WIKIDATA_URL].filter(
       Boolean
     ),
