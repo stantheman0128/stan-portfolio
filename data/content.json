@@ -3,9 +3,9 @@
   "profile": {
     "name": "Stan Shih",
     "latinName": "Po-Han Shih",
-    "role": "AI Product builder · Future Startup Founder",
-    "tagline": "I build stuff I like (and that are fun).",
-    "subtagline": "",
+    "role": "AI Product Developer · AI Agent Builder",
+    "tagline": "I build AI tools and software for everyday problems.",
+    "subtagline": "Stan Shih (施博瀚 / Po-Han Shih), an AI product developer and AI agent builder in Taipei, Taiwan. Explore my web apps, Android tools, and browser extensions.",
     "location": "Taipei, Taiwan",
     "email": "stan@stan-shih.com",
     "githubUrl": "https://github.com/stantheman0128",
@@ -40,6 +40,14 @@
         "label": "Threads",
         "href": "https://www.threads.com/@stantheman_0128"
       }
+    ],
+    "chineseName": "施博瀚",
+    "imageUrl": "/assets/reward-photo.jpg",
+    "focus": [
+      "AI product development",
+      "AI agents",
+      "Developer tools",
+      "Android apps"
     ]
   },
   "footer": {
@@ -69,9 +77,22 @@
     "workSuffix": "shipped"
   },
   "about": {
-    "short": "",
-    "paragraphs": [],
-    "principles": []
+    "short": "I am Stan Shih (施博瀚 / Po-Han Shih), an AI product developer and AI agent builder based in Taipei, Taiwan.",
+    "paragraphs": [
+      "I am Stan Shih (施博瀚 / Po-Han Shih), an AI product developer and AI agent builder based in Taipei, Taiwan.",
+      "My work connects AI to practical software: a customer-service chatbot for a dessert shop, tools for following coding-agent sessions, and an interactive guide built into this website. I also develop Android apps and browser extensions.",
+      "I publish software as stantheman0128 on GitHub. My projects include Antnest Chatbot, ClaudePulse for Windows, Paper Stan, and Notify+. This website collects the products, implementation notes, and public links behind that work."
+    ],
+    "principles": [],
+    "zhHant": {
+      "title": "施博瀚 Stan Shih — AI 產品開發者",
+      "description": "施博瀚（Stan Shih／Po-Han Shih）是位於台北的 AI 產品開發者與 AI Agent Builder。認識他的 AI 客服、開發者工具、Android 應用與公開作品。",
+      "paragraphs": [
+        "我是施博瀚，英文名字是 Stan Shih，也使用 Po-Han Shih。我是一位在台北的 AI 產品開發者與 AI Agent Builder，GitHub 帳號是 stantheman0128。",
+        "我把 AI 接進實際的軟體流程：從甜點店的客服聊天機器人、追蹤程式開發代理狀態的桌面工具，到這個網站裡的互動導覽角色。我也開發 Android 應用與瀏覽器擴充功能。",
+        "我的作品包括 Antnest Chatbot、Windows 版 ClaudePulse、Paper Stan 與 Notify+。這個網站整理我開發的產品、實作方式與公開連結，讓你能直接了解每個專案做了什麼。"
+      ]
+    }
   },
   "stats": [],
   "items": [
@@ -80,7 +101,7 @@
       "title": "Colonist.io Stats Tracker",
       "status": "Local tool",
       "year": "2026",
-      "description": "A Chrome extension that keeps track of live dice rolls and resource count (and many other features",
+      "description": "A Chrome extension that tracks live dice rolls and resource counts in Colonist.io.",
       "detail": "",
       "image": "/assets/colonist-stats-icon.png",
       "imageMode": "icon",
@@ -99,10 +120,10 @@
     },
     {
       "id": "line-notify-plus",
-      "title": "LINE Notify+",
-      "status": "In progress",
+      "title": "Notify+",
+      "status": "Published on Google Play",
       "year": "2025",
-      "description": "An Android app that provides better and more customizable LINE notifications for Android users (as compared with native notifications",
+      "description": "An Android app that organizes LINE notifications by conversation, with grouping and quick replies.",
       "detail": "",
       "image": "/assets/line-notify-screenshot.png",
       "imageMode": "",
@@ -116,6 +137,10 @@
         {
           "label": "GitHub",
           "href": "https://github.com/stantheman0128/line-notify-plus"
+        },
+        {
+          "label": "Case study",
+          "href": "/work/notify-plus"
         }
       ]
     },
@@ -147,8 +172,8 @@
       "status": "Live",
       "year": "2026",
       "themeExclude": "featherweight",
-      "description": "The page you're reading has a twin built for pure speed: zero JavaScript, system fonts, nothing blocks first paint.",
-      "detail": "Same content, opposite philosophy — no hedgehog, no quest, just one line that times itself. About 6 KB gzipped, ~0.2 s edge TTFB, Lighthouse 99. On a slow connection this site quietly sends you there instead.",
+      "description": "A lightweight edition of this site with pre-rendered content and system fonts. The homepage content is available without running JavaScript.",
+      "detail": "The lightweight homepage uses pre-rendered HTML and system fonts to make the portfolio readable immediately. It shares the same project data as the interactive edition, with direct links to the author profile and project case studies.",
       "image": "",
       "imageMode": "",
       "links": [
@@ -175,7 +200,11 @@
         },
         {
           "label": "GitHub",
-          "href": "https:https://github.com/stantheman0128/stan-portfolio//"
+          "href": "https://github.com/stantheman0128/stan-portfolio"
+        },
+        {
+          "label": "Case study",
+          "href": "/work/paper-stan"
         }
       ],
       "imageWidth": 874,
@@ -186,7 +215,7 @@
       "title": "Antnest Chatbot",
       "status": "Production",
       "year": "2025",
-      "description": "A LINE AI Bot + admin dashboard for a dessert shop (won Zeabur hackathon  silver medal with it yay",
+      "description": "An AI customer-service system for a dessert shop, combining LINE and web chat with reservations and an admin dashboard.",
       "detail": "",
       "image": "/assets/antnest-logo.png",
       "imageMode": "contain",
@@ -200,6 +229,10 @@
         {
           "label": "GitHub",
           "href": "https://github.com/stantheman0128/antnest-chatbot"
+        },
+        {
+          "label": "Case study",
+          "href": "/work/antnest-chatbot"
         }
       ]
     },
@@ -240,6 +273,10 @@
         {
           "label": "GitHub",
           "href": "https://github.com/stantheman0128/claudepulse-win"
+        },
+        {
+          "label": "Case study",
+          "href": "/work/claudepulse"
         }
       ]
     },
@@ -313,5 +350,158 @@
   "experience": [],
   "press": [],
   "education": [],
-  "skills": []
+  "skills": [],
+  "caseStudies": [
+    {
+      "slug": "antnest-chatbot",
+      "itemId": "antnest-chatbot",
+      "title": "Antnest Chatbot",
+      "subtitle": "AI customer service connected to a dessert shop’s booking workflow",
+      "summary": "A LINE and web chatbot with a shared support workflow, reservations, calendar export, and an admin dashboard.",
+      "modified": "2026-09-14",
+      "sections": [
+        {
+          "title": "The product",
+          "paragraphs": [
+            "Antnest Chatbot brings customer questions and reservations into one system for a dessert shop. Customers can use LINE or the web interface; the shop has a back office for products, settings, customers, and bookings."
+          ]
+        },
+        {
+          "title": "How it works",
+          "paragraphs": [
+            "The application combines keyword-based answers with Gemini-generated responses. LINE conversations retain context, and model failover provides another route when the primary model is unavailable.",
+            "Reservations support dates and flexible time slots, with an iCal export for calendars. A LIFF booking page works inside LINE and in a browser. The stack uses Next.js, TypeScript, and Supabase."
+          ]
+        },
+        {
+          "title": "What this work demonstrates",
+          "paragraphs": [
+            "The useful unit is the complete customer workflow: an answer, the relevant product information, and a way to make a reservation. The public repository documents these components and their integration."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "label": "Antnest Chatbot — public source and documentation",
+          "href": "https://github.com/stantheman0128/antnest-chatbot"
+        }
+      ]
+    },
+    {
+      "slug": "paper-stan",
+      "itemId": "site-minimal",
+      "title": "Paper Stan",
+      "subtitle": "A portfolio guide with bounded AI answers and local animation",
+      "summary": "An interactive paper-doll guide that answers project questions using this portfolio’s public content.",
+      "modified": "2026-09-14",
+      "sections": [
+        {
+          "title": "The product",
+          "paragraphs": [
+            "Paper Stan is the small interactive guide in this website’s full edition. Visitors can explore the portfolio, interact with the character, and ask about the projects on the page. The character combines a local animation director with an optional server-side AI dialogue endpoint."
+          ]
+        },
+        {
+          "title": "Keeping answers tied to the portfolio",
+          "paragraphs": [
+            "The dialogue code selects relevant projects from the same content data used by the website. It limits request size and conversation history, asks for a structured response, and validates the reply before returning it. Some follow-up questions can use a local continuation without calling a model.",
+            "The endpoint includes per-IP limits and a daily inference limit. These are approximate safeguards backed by Cloudflare KV. The feature also has fallback replies for unavailable or invalid model responses."
+          ]
+        },
+        {
+          "title": "A deliberate boundary",
+          "paragraphs": [
+            "Movement, expression, and dialogue have separate responsibilities. The animation director can keep the character responsive without making an AI request for every interaction. Public portfolio facts provide the context for questions; the guide is not intended to invent project results or act as a general research assistant."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "label": "Explore the interactive edition",
+          "href": "/interactive"
+        },
+        {
+          "label": "Dialogue implementation",
+          "href": "https://github.com/stantheman0128/stan-portfolio/blob/main/src/render/fx/paper-stan-dialogue.js"
+        },
+        {
+          "label": "Server-side limits and request handling",
+          "href": "https://github.com/stantheman0128/stan-portfolio/blob/main/functions/api/paper-stan/reply.js"
+        }
+      ]
+    },
+    {
+      "slug": "claudepulse",
+      "itemId": "claudepulse",
+      "title": "ClaudePulse for Windows",
+      "subtitle": "A system-tray view of multiple coding-agent sessions",
+      "summary": "A Windows desktop tool that tracks Claude Code sessions and notifies the user when attention is needed.",
+      "modified": "2026-09-14",
+      "sections": [
+        {
+          "title": "The product",
+          "paragraphs": [
+            "ClaudePulse for Windows puts coding-session status in the system tray. It is inspired by the original macOS ClaudePulse and brings the concept to Windows with session tracking, permission alerts, and notification-to-terminal navigation."
+          ]
+        },
+        {
+          "title": "How it works",
+          "paragraphs": [
+            "A local HTTP listener receives Claude Code hook events. The application maintains each session’s state and updates the tray icon. Notifications are debounced to reduce alerts during intermediate stops, while permission requests can receive immediate attention.",
+            "The hook configurator merges its entries into existing settings rather than replacing the user’s hooks. The implementation uses .NET, Windows tray APIs, and a local session manager."
+          ]
+        },
+        {
+          "title": "The interaction that matters",
+          "paragraphs": [
+            "An alert is more useful when it leads back to the relevant work. Clicking a notification can bring the corresponding terminal forward. The repository explains the supported environment, installation, hook setup, and the original project that inspired this version."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "label": "ClaudePulse for Windows — source, setup, and acknowledgments",
+          "href": "https://github.com/stantheman0128/claudepulse-win"
+        }
+      ]
+    },
+    {
+      "slug": "notify-plus",
+      "itemId": "line-notify-plus",
+      "title": "Notify+",
+      "subtitle": "More readable LINE notifications on Android",
+      "summary": "An independently developed Android notification organizer, published on Google Play under Stan Shih.",
+      "modified": "2026-09-14",
+      "sections": [
+        {
+          "title": "The product",
+          "paragraphs": [
+            "Notify+ organizes LINE notifications by conversation. It offers message merging, grouped notifications, quick replies, contact avatars, and per-chat controls. The Google Play listing identifies the developer as Stan Shih."
+          ]
+        },
+        {
+          "title": "Working inside the notification flow",
+          "paragraphs": [
+            "The app uses Android notification access to reorganize notifications that arrive on the device. A replacement mode helps avoid showing both an original notification and a reorganized one for the same message. Users can also choose how individual conversations are handled."
+          ]
+        },
+        {
+          "title": "Availability and relationship to LINE",
+          "paragraphs": [
+            "Notify+ is available on Google Play. It is an independent third-party app and is not an official LINE or LY Corporation product. The store listing and public repository provide the current product information and support links."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "label": "Notify+ on Google Play — developer: Stan Shih",
+          "href": "https://play.google.com/store/apps/details?id=com.stanslab.linenotify"
+        },
+        {
+          "label": "Notify+ public repository",
+          "href": "https://github.com/stantheman0128/line-notify-plus"
+        }
+      ]
+    }
+  ]
 }

@@ -4,7 +4,8 @@
 // themes, so it can never drift from the visible site. Empty sections are
 // skipped — the owner-published content often leaves whole arrays blank.
 import { realLinks } from "./util.js";
-import { seoDescription, zhFooterLine } from "./seo.js";
+import { seoDescription, zhFooterLine, publicUrl } from "./seo.js";
+import { publishedStudies } from "./editorial.js";
 
 export function renderMarkdown(content) {
   const c = content || {};
@@ -34,7 +35,8 @@ export function renderMarkdown(content) {
       out.push(`### ${it.title}${meta ? ` (${meta})` : ""}`);
       if (it.description) out.push(it.description);
       const links = realLinks(it.links)
-        .map((l) => `[${l.label || l.href}](${l.href})`)
+        .filter((l) => publicUrl(l.href))
+        .map((l) => `[${l.label || l.href}](${publicUrl(l.href)})`)
         .join(" · ");
       if (links) out.push(links);
       out.push("");
@@ -42,6 +44,12 @@ export function renderMarkdown(content) {
   }
 
   const pat = c.patent;
+  const studies = publishedStudies(c);
+  out.push("## Profile and case studies", "",
+    "- [About Stan Shih (施博瀚)](https://stan-shih.com/about)",
+    "- [施博瀚：繁體中文介紹](https://stan-shih.com/zh/about)",
+    "- [Case studies](https://stan-shih.com/work)",
+    ...studies.map(s => `- [${s.title}](https://stan-shih.com/work/${s.slug}): ${s.summary}`), "");
   if (pat && pat.title) {
     out.push(`## ${h.patent || "Patent"}`, "");
     out.push(`**${pat.title}**${pat.ids && pat.ids.length ? ` — ${pat.ids.join(" / ")}` : ""}`);

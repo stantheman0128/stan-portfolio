@@ -41,8 +41,9 @@ describe("seoHead", () => {
     expect(site.about["@id"]).toBe(person["@id"]);
   });
 
-  it("links the Wikidata entity for cross-source identity resolution", () => {
-    expect(html).toContain("https://www.wikidata.org/wiki/Q140533907");
+  it("does not assert an unavailable identity record or removed education", () => {
+    expect(html).not.toContain("https://www.wikidata.org/wiki/Q140533907");
+    expect(html).not.toContain("alumniOf");
   });
 });
 

@@ -1,1 +1,5 @@
-/* /index.html 200
+# Preserve the original application routes without masking unknown URLs.
+/projects /#work 301
+/projects/ /#work 301
+/colonist /#work 301
+/colonist/ /#work 301

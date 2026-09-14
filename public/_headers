@@ -1,4 +1,12 @@
 # Cache strategy: split the browser TTL from the Cloudflare edge TTL.
+# Public editing tools are not search landing pages.
+/studio
+  X-Robots-Tag: noindex
+/studio.html
+  X-Robots-Tag: noindex
+/admin/*
+  X-Robots-Tag: noindex
+# The following rules control cache behavior for public content.
 #
 # The old rule (max-age=0, s-maxage=86400, must-revalidate) forced every RETURN
 # visit to spend a full network round trip on a 304 revalidation. Measured from

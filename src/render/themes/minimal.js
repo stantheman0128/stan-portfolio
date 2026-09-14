@@ -2,7 +2,8 @@
 // a numbered index of work with click-to-expand panels and a floating desktop hover preview.
 // Extended beyond the demo with About, Patent, Experience, Press, Education, Skills, and stats.
 import { esc, md, realLinks, bindAttr, editLinksHTML } from "../util.js";
-import { seoHead, seoDescription, zhFooterLine } from "../seo.js";
+import { seoHead, seoDescription, seoTitle, zhFooterLine } from "../seo.js";
+import { profileNav } from "../editorial.js";
 import { questCSS, questBadgeHTML, questJS } from "../fx/quest.js";
 import { ctaCSS, ctaTopHTML, ctaJS } from "../fx/cta.js";
 import { shatterJS } from "../fx/shatter.js";
@@ -263,7 +264,7 @@ export function render(content, opts = {}) {
         .map((l) => `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`)
         .join("");
 
-  const title = `${esc(p.name || "Portfolio")}${p.role ? " — " + esc(p.role) : ""}`;
+  const title = esc(seoTitle(p));
   const rawMetaDesc = p.subtagline || p.tagline || seoDescription(p);
   const metaDesc = esc(rawMetaDesc);
 
@@ -300,6 +301,9 @@ ${seoHead(p, { path: "/interactive", desc: rawMetaDesc })}
 <meta name="theme-color" content="#f6f5f1">
 <link rel="manifest" href="/site.webmanifest">
 <style>
+.identity-nav{display:flex;flex-wrap:wrap;gap:0 1.5rem;margin:1rem 0;font-size:.875rem}
+.identity-nav a{display:inline-flex;min-height:44px;align-items:center}
+.hero-name .chinese-name{display:block;font-size:.45em;line-height:1.5;letter-spacing:0}
 :root{
   --bg:#f6f5f1; --ink:#17161a; --muted:#8b877f; --faint:#b7b2a8;
   --line:rgba(23,22,26,.12); --line-strong:rgba(23,22,26,.28); --accent:#c2522d;
@@ -507,10 +511,11 @@ ${rateCSS}
 
   <section class="hero">
     <div class="hero-text">
-      <h1 class="hero-name"><span${bindAttr("profile.name", edit)}>${esc(p.name || "")}</span></h1>
+      <h1 class="hero-name"><span${bindAttr("profile.name", edit)}>${esc(p.name || "")}</span>${p.chineseName ? `<span class="chinese-name" lang="zh-Hant"${bindAttr("profile.chineseName", edit)}>${esc(p.chineseName)}</span>` : ""}</h1>
       ${p.role || edit ? `<p class="hero-role"${bindAttr("profile.role", edit)}>${esc(p.role || "")}</p>` : ""}
       <p class="hero-tag"${bindAttr("profile.tagline", edit)}>${accentTagline(p.tagline)}</p>
       ${p.subtagline || edit ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline || "")}</p>` : ""}
+      ${profileNav()}
       ${p.available || edit ? `<p class="avail"${bindAttr("profile.available", edit)}>${esc(p.available || "")}</p>` : ""}
     </div>
     <div class="hero-side">${ctaTopHTML}</div>

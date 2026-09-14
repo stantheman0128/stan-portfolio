@@ -3,7 +3,8 @@
 // so every value is read from `content`.
 import { esc, md, realLinks, bindAttr, editLinksHTML } from "../util.js";
 import { creatorEntryJS } from "../fx/creator-entry.js";
-import { seoHead, seoDescription, zhFooterLine } from "../seo.js";
+import { seoHead, seoDescription, seoTitle, zhFooterLine } from "../seo.js";
+import { profileNav } from "../editorial.js";
 
 function thumbnailBase(image) {
   const match = String(image || "").match(/^\/assets\/(.+)\.[a-z0-9]+$/i);
@@ -321,7 +322,7 @@ export function render(content, opts = {}) {
     ? `<p class="lede"><b${bindAttr("profile.role", edit)}>${esc(p.role || "")}</b></p>`
     : "";
 
-  const title = [p.name, p.role].filter(Boolean).map(esc).join(" — ");
+  const title = esc(seoTitle(p));
   const rawDesc = p.subtagline || about.short || seoDescription(p);
   const desc = esc(rawDesc);
 
@@ -354,6 +355,9 @@ a:focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:
 :focus-visible{outline:2px solid var(--focus);outline-offset:3px;border-radius:2px}
 .hero h1{font-size:var(--s3);letter-spacing:-.032em;margin-bottom:.35rem}
 .hero .latin{font-size:var(--s-1);letter-spacing:.04em;color:var(--ink-3);margin-bottom:calc(var(--space)*.9)}
+.hero .chinese-name{font-size:.7em;white-space:nowrap;letter-spacing:0}
+.identity-nav{display:flex;flex-wrap:wrap;gap:0 1.5rem;margin:.75rem 0 1rem;font-size:var(--s-1)}
+.identity-nav a{display:inline-flex;min-height:44px;align-items:center}
 .lede{font-size:var(--s1);line-height:1.4;letter-spacing:-.014em;color:var(--ink);max-width:34ch;margin-bottom:calc(var(--space)*.85)}
 .lede b{font-weight:600}
 .lede + .lede{margin-top:calc(var(--space)*-.55)}
@@ -502,11 +506,12 @@ a.thumb{cursor:zoom-in;position:relative}
 <div class="wrap">
 
   <header class="hero">
-    <h1${bindAttr("profile.name", edit)}>${esc(p.name)}</h1>
+    <h1><span${bindAttr("profile.name", edit)}>${esc(p.name)}</span>${p.chineseName ? ` <span class="chinese-name" lang="zh-Hant"${bindAttr("profile.chineseName", edit)}>${esc(p.chineseName)}</span>` : ""}</h1>
     ${edit ? `<p class="latin"><span${bindAttr("profile.latinName", edit)}>${esc(p.latinName || "")}</span> · <span${bindAttr("profile.location", edit)}>${esc(p.location || "")}</span></p>` : ([p.latinName, p.location].filter(Boolean).length ? `<p class="latin">${[p.latinName, p.location].filter(Boolean).map(esc).join(" · ")}</p>` : "")}
     ${roleLine}
     ${lede}
     ${p.subtagline || edit ? `<p class="sub"${bindAttr("profile.subtagline", edit)}>${esc(p.subtagline || "")}</p>` : ""}
+    ${profileNav()}
     ${nav ? `<nav class="quicknav" aria-label="Sections">${nav}</nav>` : ""}
     <a class="hero-cta" href="/interactive">Full interactive version &rarr;</a>
     <p class="fw-speed" id="fw-speed" role="status" aria-live="polite"></p>
