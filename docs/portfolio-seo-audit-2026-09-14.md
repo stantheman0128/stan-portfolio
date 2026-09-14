@@ -60,7 +60,10 @@ portfolio-wikidata。
 - Description: Stan Shih (施博瀚 / Po-Han Shih), an AI product developer and AI agent builder
   in Taipei, Taiwan. Explore my web apps, Android tools, and browser extensions.
 
-## 搜尋 Stan：目標拆解
+## 姓名搜尋：目標與量測
+
+Stan 後續明確指定主要目標為 Google 搜尋「Stan Shih」或「施博瀚」前一至兩名。
+以下長尾查詢用於輔助辨識及早期量測，不取代這兩個主要成效目標。
 
 「比某人有名」與「某一查詢排名第一」是不同目標。排名依查詢意圖、地區、語言等而變。
 Stan 還對應字典用語、影視、品牌與其他人物，技術 SEO 不能保證單字查詢世界第一。
@@ -127,8 +130,29 @@ llms.txt 只是輔助入口，不能當作排名／引用保證。正文可取�
   照片可讀取，語言切換正常，互動版主內容與 Paper Stan 容器載入。
 - 既有完整環境的 Wrangler 因遠端 AI 綁定登入失效而無法啟動，因此這不是完整 API／AI
   功能測試。未修改登入或雲端設定；沒有執行 AI 推論。
-- Search Console 已建立 `https://stan-shih.com/` URL-prefix property，待新版上線後驗證。
+- Search Console 已加入 `https://stan-shih.com/` URL-prefix property，並完成目前帳號的所有權驗證。
   預覽、正式部署與 sitemap 提交結果另記於發布紀錄；本地檢查不代表正式 Google 收錄。
+
+## 發布紀錄（2026-09-14）
+
+- 實作 commit：`43777326c59df7918e3caa5c919947f0bd3ee18f`。
+- 預覽部署 `ebfca503` Cloudflare check 成功；預覽站的 9 個 canonical 頁、
+  sitemap、Markdown 同步、404、301 與編輯器 noindex 全部通過 HTTP 驗證。
+- 正式 main 以 fast-forward 從 `af44ea5` 更新至 `4377732`，remote SHA 已核對。
+  Cloudflare 正式部署 `f29b2ef4` 成功；`https://stan-shih.com` 上相同檢查全部通過。
+- Google Search Console 以 HTML tag 回報 **Ownership verified**。
+  目前資料仍顯示 Processing data；不可宣稱已取得排名、曝光成長或所有新頁面已收錄。
+- 舊 sitemap 紀錄：2026-07-13 提交、2026-09-13 最後讀取、Success、2 個發現頁面。
+  本次重新提交包含 9 個網址的 `/sitemap.xml`，Google 回報 **Sitemap submitted successfully**。
+- `/zh/about` 初次檢查為 URL is unknown to Google；`/about` 為 Discovered - currently not indexed，
+  並已列出新 sitemap。兩頁各提交一次 Request indexing，皆回報 **Indexing requested**，
+  已進入 priority crawl queue。此回報不代表已收錄。
+- 首頁原本已收錄（**URL is on Google / Page is indexed**）；最後抓取日期為 2026-09-07，
+  Googlebot smartphone，抓取與索引均允許。User-declared canonical 與 Google-selected canonical
+  都是本次使用的 `https://stan-shih.com/`；這是舊版抓取狀態，並非新版已重新收錄的證據。
+  已另送出一次首頁重新抓取要求，Google 同樣回報 **Indexing requested**。
+- 本地預覽程序已停止，Sentinel heavy slot 已釋放。鍵盤焦點、深色模式、作品展開、
+  Paper Stan 對話框也已用瀏覽器驗證；未測試此次未修改的雲端 AI 推論及發佈 API。
 
 ## 一手參考
 

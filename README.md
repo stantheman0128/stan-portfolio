@@ -40,6 +40,10 @@ See [the audit and roadmap](docs/portfolio-seo-audit-2026-09-14.md).
 - `src/studio/` and `studio.html`: existing Live Studio editor.
 - `public/404.html` and `public/_redirects`: missing pages and legacy URLs.
 
+Edit `about.zhHant` and `caseStudies` in `data/content.json`; the current Live Studio
+does not expose dedicated controls for those new sections. Existing editor saves
+preserve them when editing the current published content.
+
 The original `data/site.json`, `data/projects/`, and Sveltia `/admin/`
 are retained legacy files, not the current homepage's content source.
 Do not reintroduce the old CMS based on historical handoff entries.
