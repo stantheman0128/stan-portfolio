@@ -70,4 +70,24 @@ Public profile website/name consistency is the next practical off-site action; i
 requires reviewing the specific profile before editing. Do not add repeated biography
 pages or rewrite visible copy as an automatic SEO fix.
 
-Production deployment and post-release checks are recorded below after completion.
+## Production release
+- Source commit: 01c7ed3; preview deployment 8faf90f5 succeeded.
+- Production deployment 0feb49e3-d7e5-4479-8ed9-206ba322c423 succeeded on main.
+- At 01:38:58 Asia/Taipei, the production /about response returned 302 with exact
+  Location https://www.youtube.com/watch?v=dQw4w9WgXcQ.
+- A fresh Chrome navigation to https://stan-shih.com/about landed on that exact
+  YouTube URL and showed the Rick Astley video title. Closed the verification tab.
+- All 8 remaining canonical pages returned 200 with static content and schema;
+  sitemap contains exactly those 8 URLs. All three redirect variants, unknown-URL
+  404, editor noindex, and homepage Markdown parity passed on production.
+- Homepage index inspection: indexed; last crawl Sep 17, 2026, 9:38:12 AM,
+  Googlebot smartphone, fetch successful, crawling and indexing allowed;
+  Google-selected canonical matches https://stan-shih.com/.
+- The inspection's sitemap subsection said Temporary processing error, while the
+  dedicated Sitemaps report showed the existing submission Success (last read Sep 14).
+  The updated sitemap was resubmitted after deployment; acceptance recorded below.
+- All temporary Sentinel command exemptions used for this task were revoked by
+  their wrappers after command completion; no global protection was disabled.
+
+- Google Search Console confirmed: Sitemap submitted successfully after the release.
+  Submission acceptance does not mean all URLs have already been recrawled.
