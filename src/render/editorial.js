@@ -39,7 +39,7 @@ export function publishedStudies(c) {
 }
 
 export function profileNav() {
-  return '<nav class="identity-nav" aria-label="About and case studies"><a href="/about">About Stan</a><a href="/work">Case studies</a><a href="/zh/about" lang="zh-Hant">中文介紹</a></nav>';
+  return '<nav class="identity-nav" aria-label="About and case studies"><a href="/">About Stan</a><a href="/work">Case studies</a><a href="/zh/about" lang="zh-Hant">中文介紹</a></nav>';
 }
 
 const paragraphs = list => (list || []).filter(Boolean).map(p => `<p>${esc(p)}</p>`).join("\n");
@@ -61,7 +61,7 @@ function shell(c, { path, title, description, lang = "en", pageType = "WebPage",
 ${seoHead(p, { path, title, desc: description, lang, pageType, alternates, article, breadcrumbs })}
 <style>${styles}</style></head><body>
 <a class="skip" href="#main">${zh ? "跳至主要內容" : "Skip to content"}</a>
-<div class="wrap"><header><nav class="site-nav" aria-label="${zh ? "主要導覽" : "Main navigation"}"><a class="brand" href="/">${esc(displayName(p))}</a><div class="links"><a href="${zh ? "/zh/about" : "/about"}">${zh ? "關於我" : "About"}</a><a href="/work">${zh ? "作品案例" : "Case studies"}</a><a href="/#contact">${zh ? "聯絡" : "Contact"}</a></div></nav></header>
+<div class="wrap"><header><nav class="site-nav" aria-label="${zh ? "主要導覽" : "Main navigation"}"><a class="brand" href="/">${esc(displayName(p))}</a><div class="links"><a href="${zh ? "/zh/about" : "/"}">${zh ? "關於我" : "About"}</a><a href="/work">${zh ? "作品案例" : "Case studies"}</a><a href="/#contact">${zh ? "聯絡" : "Contact"}</a></div></nav></header>
 <main id="main">${body}</main>
 <footer>${esc(displayName(p))} · ${zh ? "台北，台灣" : esc(p.location || "Taipei, Taiwan")}<br><a href="/">${zh ? "個人網站與作品集" : "Personal website and portfolio"}</a></footer>
 </div></body></html>`;
@@ -70,13 +70,13 @@ ${seoHead(p, { path, title, desc: description, lang, pageType, alternates, artic
 function aboutPage(c, zh) {
   const p = c.profile || {};
   const a = c.about || {};
-  const path = zh ? "/zh/about" : "/about";
+  const path = zh ? "/zh/about" : "/";
   const title = zh ? a.zhHant.title : `About ${displayName(p)} — AI Product Developer`;
   const description = zh ? a.zhHant.description : a.short;
   const identity = zh
     ? [["中文姓名", p.chineseName], ["英文姓名", p.name], ["另用英文姓名", p.latinName], ["GitHub", "stantheman0128"], ["所在地", "台北，台灣"]]
     : [["Name", p.name], ["Chinese name", p.chineseName], ["Also known as", p.latinName], ["GitHub", "stantheman0128"], ["Based in", p.location]];
-  const body = `<div class="profile-intro"><div><h1>${zh ? esc(p.chineseName + " · " + p.name) : esc(displayName(p))}</h1><p class="intro">${zh ? "AI 產品開發者 · AI Agent Builder" : esc(p.role)}</p><a class="language" href="${zh ? "/about" : "/zh/about"}" lang="${zh ? "en" : "zh-Hant"}">${zh ? "Read in English" : "閱讀繁體中文介紹"} →</a></div>${p.imageUrl ? `<img class="portrait" src="${esc(p.imageUrl)}" width="128" height="160" alt="${esc(displayName(p))}" decoding="async">` : ""}</div>
+  const body = `<div class="profile-intro"><div><h1>${zh ? esc(p.chineseName + " · " + p.name) : esc(displayName(p))}</h1><p class="intro">${zh ? "AI 產品開發者 · AI Agent Builder" : esc(p.role)}</p><a class="language" href="${zh ? "/" : "/zh/about"}" lang="${zh ? "en" : "zh-Hant"}">${zh ? "Read in English" : "閱讀繁體中文介紹"} →</a></div>${p.imageUrl ? `<img class="portrait" src="${esc(p.imageUrl)}" width="128" height="160" alt="${esc(displayName(p))}" decoding="async">` : ""}</div>
   <section aria-label="${zh ? "個人介紹" : "Introduction"}">${paragraphs(zh ? a.zhHant.paragraphs : a.paragraphs)}</section>
   <h2>${zh ? "姓名與公開身分" : "Names and public identity"}</h2>
   <dl class="identity">${identity.filter(x => x[1]).map(([label, value]) => `<dt>${esc(label)}</dt><dd>${esc(value)}</dd>`).join("")}</dl>
@@ -84,23 +84,24 @@ function aboutPage(c, zh) {
   <h2>${zh ? "作品與實作" : "Projects and implementation"}</h2>${workList(c, zh)}
   <h2>${zh ? "本人公開帳號" : "Find my work elsewhere"}</h2>${sources([{ label: "GitHub · stantheman0128", href: p.githubUrl }, { label: "LinkedIn · Po-Han (Stan) Shih", href: p.linkedinUrl }])}
   <p>${zh ? "Notify+ 的 Google Play 商店頁也列出開發者 Stan Shih。" : "The Notify+ Google Play listing also identifies its developer as Stan Shih."}</p>${sources([{ label: "Notify+ · Google Play", href: "https://play.google.com/store/apps/details?id=com.stanslab.linenotify" }])}`;
-  return { path, html: shell(c, { path, title, description, lang: zh ? "zh-Hant" : "en", pageType: "ProfilePage", alternates: [{ lang: "en", path: "/about" }, { lang: "zh-Hant", path: "/zh/about" }, { lang: "x-default", path: "/about" }], body }) };
+  return { path, html: shell(c, { path, title, description, lang: zh ? "zh-Hant" : "en", pageType: "ProfilePage", alternates: [], body }) };
 }
 
 export function editorialPages(c) {
   const p = c.profile || {};
-  const pages = [aboutPage(c, false), aboutPage(c, true)];
+  // /about is an owner-requested external redirect, never an identity page.
+  const pages = [aboutPage(c, true)];
   const title = `Case studies — ${displayName(p)}`;
-  pages.push({ path: "/work", html: shell(c, { path: "/work", title, description: `AI products, developer tools, and Android apps by ${displayName(p)}. Read how the projects work and explore their public sources.`, body: `<h1>Case studies</h1><p class="intro">AI products, developer tools, and the decisions behind them.</p><p>By <a href="/about">${esc(displayName(p))}</a> · ${esc(p.location)}</p>${workList(c)}` }) });
+  pages.push({ path: "/work", html: shell(c, { path: "/work", title, description: `AI products, developer tools, and Android apps by ${displayName(p)}. Read how the projects work and explore their public sources.`, body: `<h1>Case studies</h1><p class="intro">AI products, developer tools, and the decisions behind them.</p><p>By <a href="/">${esc(displayName(p))}</a> · ${esc(p.location)}</p>${workList(c)}` }) });
   for (const s of publishedStudies(c)) {
     const path = "/work/" + s.slug;
     const project = c.items.find(i => i.id === s.itemId);
     const pageTitle = `${s.title} — ${displayName(p)}`;
     const body = `<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="/work">Case studies</a><span aria-hidden="true">/</span><span>${esc(s.title)}</span></nav>
-    <article><header><h1>${esc(s.title)}</h1><p class="intro">${esc(s.subtitle)}</p><p class="meta">By <a rel="author" href="/about">${esc(displayName(p))}</a> · Updated <time datetime="${esc(s.modified)}">${esc(s.modified)}</time></p><p>${esc(s.summary)}</p></header>
+    <article><header><h1>${esc(s.title)}</h1><p class="intro">${esc(s.subtitle)}</p><p class="meta">By <a rel="author" href="/">${esc(displayName(p))}</a> · Updated <time datetime="${esc(s.modified)}">${esc(s.modified)}</time></p><p>${esc(s.summary)}</p></header>
     ${s.sections.map(section => `<section><h2>${esc(section.title)}</h2>${paragraphs(section.paragraphs)}</section>`).join("")}
     <section><h2>Explore the project</h2>${sources(s.sources)}</section></article>
-    <section><h2>About the developer</h2><p>${esc(c.about.short)}</p><a href="/about">About Stan Shih 施博瀚 →</a></section>`;
+    <section><h2>About the developer</h2><p>${esc(c.about.short)}</p><a href="/">About Stan Shih 施博瀚 →</a></section>`;
     pages.push({ path, html: shell(c, { path, title: pageTitle, description: s.summary, article: { ...s, image: project.image }, breadcrumbs: [{ name: "Home", path: "/" }, { name: "Case studies", path: "/work" }, { name: s.title, path }], body }) });
   }
   return pages;

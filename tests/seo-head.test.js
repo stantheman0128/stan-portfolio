@@ -39,6 +39,8 @@ describe("seoHead", () => {
     expect(person.image).toBe("https://stan-shih.com/assets/og-image.png");
     expect(person.sameAs).toContain(profile.githubUrl);
     expect(site.about["@id"]).toBe(person["@id"]);
+    expect(person.url).toBe("https://stan-shih.com/");
+    expect(graph.find(n => n["@type"] === "ProfilePage").mainEntity["@id"]).toBe(person["@id"]);
   });
 
   it("does not assert an unavailable identity record or removed education", () => {

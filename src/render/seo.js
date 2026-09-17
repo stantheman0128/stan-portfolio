@@ -68,7 +68,7 @@ function jsonLd(p, { path, title, desc, lang, pageType, article, breadcrumbs }) 
     "@id": ORIGIN + "/#person",
     name: p.name || "Stan Shih",
     alternateName: [...new Set([...ALT_NAMES, p.chineseName, p.latinName, "stantheman0128"].filter(Boolean))],
-    url: ORIGIN + "/about",
+    url: ORIGIN + "/",
     image: p.imageUrl ? publicUrl(p.imageUrl) : OG_IMAGE,
     jobTitle: p.role || undefined,
     description: seoDescription(p),
@@ -129,7 +129,7 @@ function jsonLd(p, { path, title, desc, lang, pageType, article, breadcrumbs }) 
 // Full head fragment. `path` is the canonical path for the page being
 // rendered ("/" for the front door AND its /fast/ duplicate on purpose:
 // the duplicate must point search engines back at the real page).
-export function seoHead(p, { path = "/", title, desc, lang = "en", pageType = "WebPage", alternates = [], article, breadcrumbs } = {}) {
+export function seoHead(p, { path = "/", title, desc, lang = "en", pageType = path === "/" ? "ProfilePage" : "WebPage", alternates = [], article, breadcrumbs } = {}) {
   const canonical = ORIGIN + path;
   const t = title || seoTitle(p);
   const d = desc || seoDescription(p);

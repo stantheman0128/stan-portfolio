@@ -1,4 +1,7 @@
 # Preserve the original application routes without masking unknown URLs.
+/about https://www.youtube.com/watch?v=dQw4w9WgXcQ 302
+/about/ https://www.youtube.com/watch?v=dQw4w9WgXcQ 302
+/about.html https://www.youtube.com/watch?v=dQw4w9WgXcQ 302
 /projects /#work 301
 /projects/ /#work 301
 /colonist /#work 301

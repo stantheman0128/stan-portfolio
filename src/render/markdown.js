@@ -46,7 +46,7 @@ export function renderMarkdown(content) {
   const pat = c.patent;
   const studies = publishedStudies(c);
   out.push("## Profile and case studies", "",
-    "- [About Stan Shih (施博瀚)](https://stan-shih.com/about)",
+    "- [About Stan Shih (施博瀚)](https://stan-shih.com/)",
     "- [施博瀚：繁體中文介紹](https://stan-shih.com/zh/about)",
     "- [Case studies](https://stan-shih.com/work)",
     ...studies.map(s => `- [${s.title}](https://stan-shih.com/work/${s.slug}): ${s.summary}`), "");

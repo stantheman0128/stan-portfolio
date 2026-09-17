@@ -31,9 +31,9 @@ See [the audit and roadmap](docs/portfolio-seo-audit-2026-09-14.md).
 - `src/render/themes/featherweight.js`: static public homepage.
 - `src/render/themes/minimal.js`: interactive edition.
 - `src/render/seo.js`: canonical, social metadata, and identity JSON-LD.
-- `src/render/editorial.js`: English/Chinese profile, work index, and case-study pages.
+- `src/render/editorial.js`: Chinese profile, work index, and case-study pages.
 - `src/render/markdown.js`: Markdown rendition of current content.
-- `tools/postbuild.mjs`: builds homepage, full interactive HTML, /about, /zh/about,
+- `tools/postbuild.mjs`: builds homepage, full interactive HTML, /zh/about,
   /work and its case studies, /fast/, sitemap, llms.txt,
   and the generated `functions/_front-door.js` edge payload.
 - `functions/index.js`: homepage HTML / Markdown content negotiation.
@@ -74,7 +74,10 @@ does not prove deployment, search indexing, or improved ranking.
 ## Public content
 
 Keep the main portfolio and case studies in English. `/zh/about` is the intentional
-Traditional Chinese profile, paired with `/about` through reciprocal hreflang.
+Traditional Chinese profile. `/about` is an owner-requested 302 redirect to YouTube;
+it is excluded from sitemap, identity URLs, author links, and hreflang. The homepage
+is the canonical identity URL. Do not change visible copy or styling for SEO without
+separate authorization.
 Use public evidence for availability, impact, and credentials. Preserve sections
 intentionally removed by the owner. Do not invent URLs or expose private project
 data. AI-readable content must not restore an independently maintained biography

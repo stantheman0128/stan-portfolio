@@ -10,19 +10,20 @@ const graph = html => JSON.parse(html.match(/<script type="application\/ld\+json
 describe("searchable identity and case-study pages", () => {
   const pages = editorialPages(content);
 
-  it("offers reciprocal language versions with one stable Person identity", () => {
-    for (const [path, lang] of [["/about", "en"], ["/zh/about", "zh-Hant"]]) {
+  it("keeps identity on the homepage and excludes the external redirect from search pages", () => {
+    for (const [path, lang] of [["/zh/about", "zh-Hant"]]) {
       const html = pages.find(p => p.path === path).html;
       expect(html).toContain(`<html lang="${lang}">`);
       expect(html).toContain(`rel="canonical" href="https://stan-shih.com${path}"`);
-      expect(html).toContain('hreflang="en" href="https://stan-shih.com/about"');
-      expect(html).toContain('hreflang="zh-Hant" href="https://stan-shih.com/zh/about"');
+      expect(html).not.toContain('hreflang="en"');
+      expect(pages.some(p => p.path === "/about")).toBe(false);
       const nodes = graph(html);
       const profile = nodes.find(n => n["@type"] === "ProfilePage");
       const person = nodes.find(n => n["@type"] === "Person");
       expect(profile.mainEntity["@id"]).toBe(person["@id"]);
       expect(person["@id"]).toBe("https://stan-shih.com/#person");
       expect(person.alternateName).toEqual(expect.arrayContaining(["施博瀚", "Po-Han Shih", "stantheman0128"]));
+      expect(person.url).toBe("https://stan-shih.com/");
       expect(person.image).toBe("https://stan-shih.com/assets/reward-photo.jpg");
       expect(html).not.toContain("Q140533907");
     }
@@ -31,7 +32,7 @@ describe("searchable identity and case-study pages", () => {
   it("bakes full, attributed article content with a distinct canonical URL", () => {
     for (const s of content.caseStudies) {
       const html = pages.find(p => p.path === `/work/${s.slug}`).html;
-      expect(html).toContain('<a rel="author" href="/about">');
+      expect(html).toContain('<a rel="author" href="/">');
       expect(html).toContain('id="main"');
       expect(html).not.toContain('fetch(');
       for (const section of s.sections) expect(html).toContain(section.title);
@@ -66,7 +67,7 @@ describe("searchable identity and case-study pages", () => {
   });
 
   it("lists each canonical page once and excludes duplicate host aliases", () => {
-    const paths = ["/", "/interactive", ...pages.map(p => p.path), "/about"];
+    const paths = ["/", "/interactive", ...pages.map(p => p.path), "/"];
     const xml = sitemapXml(paths);
     expect([...xml.matchAll(/<loc>/g)]).toHaveLength(new Set(paths).size);
     for (const p of pages) expect(xml).toContain(`<loc>https://stan-shih.com${p.path}</loc>`);
@@ -80,7 +81,7 @@ describe("searchable identity and case-study pages", () => {
       const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/)[1];
       expect(h1).toContain("Stan Shih");
       expect(h1).toContain("施博瀚");
-      expect(html).toContain('href="/about"');
+      expect(html).toContain('href="/"');
       expect(html).toContain('href="/zh/about"');
       expect(html).toContain('href="/work"');
     }
