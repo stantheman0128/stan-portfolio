@@ -1,0 +1,535 @@
+{
+  "checkedAt": "2026-09-18T18:21:43.782Z",
+  "login": "stantheman0128",
+  "method": "Public authored merged pull requests; excludes repositories owned by the author. Snapshot, not a ranking or a count of all contributions.",
+  "searchUrl": "https://github.com/search?q=author%3Astantheman0128+is%3Apr+is%3Amerged+is%3Apublic&type=pullrequests",
+  "pullRequestCount": 75,
+  "repositoryCount": 26,
+  "pullRequests": [
+    {
+      "repository": "OpenWhispr/openwhispr",
+      "number": 2031,
+      "title": "fix(windows): quote Expand-Archive fallback paths that contain apostrophes",
+      "url": "https://github.com/OpenWhispr/openwhispr/pull/2031",
+      "mergedAt": "2026-09-16T00:12:12Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3493,
+      "title": "fix(openrouter): never send an empty messages array to the API (Fixes #3491)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3493",
+      "mergedAt": "2026-09-11T03:29:31Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3453,
+      "title": "fix(hooks): stop login-shell PATH rebuild on Claude Code hooks (#3190)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3453",
+      "mergedAt": "2026-09-11T03:17:59Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3530,
+      "title": "fix(sqlite): populate session_summaries files_read and files_edited (#3517)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3530",
+      "mergedAt": "2026-09-11T03:16:37Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3501,
+      "title": "fix(observer): skip textless assistant frames before batch confirm (Fixes #3492)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3501",
+      "mergedAt": "2026-09-11T03:13:25Z"
+    },
+    {
+      "repository": "apache/kafka",
+      "number": 23154,
+      "title": "KAFKA-21017: Deflake ConsumerGroupCommandSaslAuthenticationTest",
+      "url": "https://github.com/apache/kafka/pull/23154",
+      "mergedAt": "2026-09-10T07:11:16Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 3727,
+      "title": "Canonicalize Lute wallet metadata and verified facts",
+      "url": "https://github.com/Chain-Love/chain-love/pull/3727",
+      "mergedAt": "2026-09-09T18:01:11Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1662,
+      "title": "fix(lang-sync): read and write article text as UTF-8 on Windows",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1662",
+      "mergedAt": "2026-09-03T00:48:30Z"
+    },
+    {
+      "repository": "stacklok/toolhive",
+      "number": 6481,
+      "title": "Detect GUI editors without a PATH binary",
+      "url": "https://github.com/stacklok/toolhive/pull/6481",
+      "mergedAt": "2026-09-02T00:24:39Z"
+    },
+    {
+      "repository": "ray-project/ray",
+      "number": 65286,
+      "title": "[Tune] Sanitize Windows-reserved characters in trial directory names",
+      "url": "https://github.com/ray-project/ray/pull/65286",
+      "mergedAt": "2026-08-31T20:12:48Z"
+    },
+    {
+      "repository": "stacklok/toolhive",
+      "number": 6416,
+      "title": "Fix Windows unix socket URL round-trip",
+      "url": "https://github.com/stacklok/toolhive/pull/6416",
+      "mergedAt": "2026-08-25T09:27:07Z"
+    },
+    {
+      "repository": "kar2phi/video-lens",
+      "number": 3,
+      "title": "fix(gallery): escape script closers in backfill_meta JSON (#2)",
+      "url": "https://github.com/kar2phi/video-lens/pull/3",
+      "mergedAt": "2026-08-22T17:10:31Z"
+    },
+    {
+      "repository": "ray-project/kuberay",
+      "number": 5077,
+      "title": "[History Server] Anchor the GCS GetContent search at the configured root dir",
+      "url": "https://github.com/ray-project/kuberay/pull/5077",
+      "mergedAt": "2026-08-18T01:10:55Z"
+    },
+    {
+      "repository": "OpenWhispr/openwhispr",
+      "number": 1474,
+      "title": "fix(meeting): refresh WASAPI helper capability before recording starts (Fixes #1471)",
+      "url": "https://github.com/OpenWhispr/openwhispr/pull/1474",
+      "mergedAt": "2026-08-14T18:10:44Z"
+    },
+    {
+      "repository": "OpenWhispr/openwhispr",
+      "number": 1514,
+      "title": "fix(windows): ASCII-safe Whisper model cache for non-ASCII profiles (#1399)",
+      "url": "https://github.com/OpenWhispr/openwhispr/pull/1514",
+      "mergedAt": "2026-08-14T04:20:44Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1329,
+      "title": "新增 Technology 文章：功字裡的那根反斜線",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1329",
+      "mergedAt": "2026-08-13T00:44:13Z"
+    },
+    {
+      "repository": "k2-fsa/sherpa-onnx",
+      "number": 3771,
+      "title": "fix(asr): stop forcing lowercase in mic and ALSA display (#3621)",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/pull/3771",
+      "mergedAt": "2026-08-10T12:58:17Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1305,
+      "title": "refactor(article-health): one source for a check's language scope",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1305",
+      "mergedAt": "2026-08-10T00:45:04Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1298,
+      "title": "fix(husky): make pre-commit gates actually see staged CJK-named articles",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1298",
+      "mergedAt": "2026-08-08T00:45:37Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1300,
+      "title": "fix(gates): cp950-safe console output in the pre-commit and CI gate scripts",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1300",
+      "mergedAt": "2026-08-08T00:45:34Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1294,
+      "title": "fix(prebuild): cp950-safe console output in 7 prebuild generators",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1294",
+      "mergedAt": "2026-08-07T00:46:05Z"
+    },
+    {
+      "repository": "tobychui/zoraxy",
+      "number": 1238,
+      "title": "Fix HTTP proxy rate limit UI not loading per-host value (#1107)",
+      "url": "https://github.com/tobychui/zoraxy/pull/1238",
+      "mergedAt": "2026-08-06T11:43:02Z"
+    },
+    {
+      "repository": "datalayer/jupyter-mcp-server",
+      "number": 309,
+      "title": "fix(execute): MCP progress keepalive for long cell runs (#298)",
+      "url": "https://github.com/datalayer/jupyter-mcp-server/pull/309",
+      "mergedAt": "2026-08-06T09:57:34Z"
+    },
+    {
+      "repository": "flyteorg/flyte",
+      "number": 7770,
+      "title": "Make the TaskAction requeue duration configurable",
+      "url": "https://github.com/flyteorg/flyte/pull/7770",
+      "mergedAt": "2026-08-04T17:53:31Z"
+    },
+    {
+      "repository": "stacklok/toolhive",
+      "number": 5951,
+      "title": "Set Windows DACL on discovery directory under LOCALAPPDATA",
+      "url": "https://github.com/stacklok/toolhive/pull/5951",
+      "mergedAt": "2026-08-04T16:07:10Z"
+    },
+    {
+      "repository": "OpenWhispr/openwhispr",
+      "number": 1226,
+      "title": "fix(i18n): Simplified vs Traditional Chinese script for zh STT",
+      "url": "https://github.com/OpenWhispr/openwhispr/pull/1226",
+      "mergedAt": "2026-08-03T17:42:53Z"
+    },
+    {
+      "repository": "tobychui/zoraxy",
+      "number": 1239,
+      "title": "Fix SSO redirect loop when SSO URL omits http(s) scheme",
+      "url": "https://github.com/tobychui/zoraxy/pull/1239",
+      "mergedAt": "2026-08-01T04:51:18Z"
+    },
+    {
+      "repository": "c9s/bbgo",
+      "number": 2567,
+      "title": "fix(binance): lock futures MinNotional conversion and warn on zero",
+      "url": "https://github.com/c9s/bbgo/pull/2567",
+      "mergedAt": "2026-07-31T12:04:04Z"
+    },
+    {
+      "repository": "c9s/bbgo",
+      "number": 2566,
+      "title": "fix(bbgo): skip interaction/OTP setup when no notifier is configured",
+      "url": "https://github.com/c9s/bbgo/pull/2566",
+      "mergedAt": "2026-07-31T04:29:44Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1282,
+      "title": "fix(lang-sync): cp950-safe console output in sync-on-update, status, verify-*",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1282",
+      "mergedAt": "2026-07-30T15:04:35Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1275,
+      "title": "fix(prebuild): cp950-safe sync-translations-json on Windows",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1275",
+      "mergedAt": "2026-07-30T00:46:48Z"
+    },
+    {
+      "repository": "openclaw/openclaw",
+      "number": 110195,
+      "title": "fix(ui): restore WCAG AA contrast for muted webchat text (AI-assisted)",
+      "url": "https://github.com/openclaw/openclaw/pull/110195",
+      "mergedAt": "2026-07-29T04:17:34Z"
+    },
+    {
+      "repository": "stacklok/toolhive",
+      "number": 5954,
+      "title": "Emit event: message on streamable-http SSE frames",
+      "url": "https://github.com/stacklok/toolhive/pull/5954",
+      "mergedAt": "2026-07-28T16:16:15Z"
+    },
+    {
+      "repository": "Nanako0129/coralline",
+      "number": 46,
+      "title": "feat: native PowerShell statusline for Windows without Git Bash",
+      "url": "https://github.com/Nanako0129/coralline/pull/46",
+      "mergedAt": "2026-07-27T16:13:19Z"
+    },
+    {
+      "repository": "k2-fsa/sherpa-onnx",
+      "number": 3770,
+      "title": "fix(tts): insert pad after BOS in PiperPhonemesToIdsVits (#3721)",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/pull/3770",
+      "mergedAt": "2026-07-27T12:11:12Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1263,
+      "title": "fix(seo): shorten English BIM article title and description",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1263",
+      "mergedAt": "2026-07-26T14:34:17Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1262,
+      "title": "fix(ui): scroll tall header dropdown menus (Fixes #1259)",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1262",
+      "mergedAt": "2026-07-26T14:34:13Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1261,
+      "title": "fix(lang-sync): decode CJK paths in sync-on-update on Windows",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1261",
+      "mergedAt": "2026-07-26T14:34:10Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1260,
+      "title": "fix(prebuild): correct i18n-progress categories on Windows",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1260",
+      "mergedAt": "2026-07-26T14:33:46Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1250,
+      "title": "fix(weekly-report): count CJK-named zh articles on all platforms",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1250",
+      "mergedAt": "2026-07-24T14:19:16Z"
+    },
+    {
+      "repository": "tobychui/arozos",
+      "number": 289,
+      "title": "Fix Windows hardware info when wmic.exe is missing",
+      "url": "https://github.com/tobychui/arozos/pull/289",
+      "mergedAt": "2026-07-24T13:23:09Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1242,
+      "title": "fix(data): re-render enterprise bubble labels on metric/sector switch (#1223)",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1242",
+      "mergedAt": "2026-07-24T08:49:01Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1243,
+      "title": "fix(lang-sync): correct translation status on Windows (path keys + CJK git cache)",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1243",
+      "mergedAt": "2026-07-24T08:48:24Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1245,
+      "title": "fix(dashboard): resolve git dates for CJK articles on Windows",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1245",
+      "mergedAt": "2026-07-24T08:48:07Z"
+    },
+    {
+      "repository": "microsoft/SkillOpt",
+      "number": 165,
+      "title": "fix(sleep): keep all-test batches out of consolidate train/val",
+      "url": "https://github.com/microsoft/SkillOpt/pull/165",
+      "mergedAt": "2026-07-24T06:04:01Z"
+    },
+    {
+      "repository": "yvgude/lean-ctx",
+      "number": 1239,
+      "title": "fix(hooks): keep native Read for Claude auto memory (#1228)",
+      "url": "https://github.com/yvgude/lean-ctx/pull/1239",
+      "mergedAt": "2026-07-23T22:06:36Z"
+    },
+    {
+      "repository": "KohakuBlueleaf/LyCORIS",
+      "number": 285,
+      "title": "fix: use in_channels/groups for Conv*d LoRA weight shapes (#260)",
+      "url": "https://github.com/KohakuBlueleaf/LyCORIS/pull/285",
+      "mergedAt": "2026-07-23T10:49:50Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3320,
+      "title": "fix(windows): hide consoles for IDE detection and npm install",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3320",
+      "mergedAt": "2026-07-23T06:49:28Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3295,
+      "title": "fix(mcp): rename __IMPORTANT tool so leading-underscore-strict clients can load the server",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3295",
+      "mergedAt": "2026-07-23T06:43:27Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3265,
+      "title": "fix(oauth): treat missing Windows credential as absent",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3265",
+      "mergedAt": "2026-07-23T06:43:03Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3319,
+      "title": "fix(windows): hide console when npm install helper spawns npm",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3319",
+      "mergedAt": "2026-07-23T06:38:35Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3318,
+      "title": "fix(windows): detect worker ESM main via pathToFileURL",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3318",
+      "mergedAt": "2026-07-23T06:38:17Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3314,
+      "title": "fix(supervisor): preserve Azure AI Foundry auth env (#3160)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3314",
+      "mergedAt": "2026-07-23T06:38:11Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3313,
+      "title": "fix(version-bump): match skill frontmatter name to its directory (#3122)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3313",
+      "mergedAt": "2026-07-23T06:38:06Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3312,
+      "title": "fix(tests): use fileURLToPath for import.meta.url paths so tests run on Windows",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3312",
+      "mergedAt": "2026-07-23T06:38:01Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3307,
+      "title": "fix(windows): strip UTF-8 BOM in readJsonSafe (#3013)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3307",
+      "mergedAt": "2026-07-23T06:37:56Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3305,
+      "title": "fix(windows): hide worker-wrapper spawn and taskkill consoles (#3170)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3305",
+      "mergedAt": "2026-07-23T06:37:50Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3304,
+      "title": "fix(project): preserve worktree compound key from subdirectory",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3304",
+      "mergedAt": "2026-07-23T06:37:45Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3296,
+      "title": "fix(tsconfig): switch moduleResolution from removed node to bundler",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3296",
+      "mergedAt": "2026-07-23T06:37:40Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3294,
+      "title": "fix(worker): enforce CLAUDE_MEM_MAX_CONCURRENT_AGENTS with slot reservations in waitForSlot",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3294",
+      "mergedAt": "2026-07-23T06:37:31Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3293,
+      "title": "fix(worker): quote script path in Start-Process -ArgumentList so spaced Windows profile paths survive",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3293",
+      "mergedAt": "2026-07-23T06:37:27Z"
+    },
+    {
+      "repository": "k2-fsa/sherpa-onnx",
+      "number": 3772,
+      "title": "docs(rust): add FunASR Nano offline ASR example (#3210)",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/pull/3772",
+      "mergedAt": "2026-07-23T06:18:46Z"
+    },
+    {
+      "repository": "Nanako0129/pilotfish",
+      "number": 19,
+      "title": "fix(policy): stop executor/main-loop tier collapse on Opus fallback",
+      "url": "https://github.com/Nanako0129/pilotfish/pull/19",
+      "mergedAt": "2026-07-23T03:18:31Z"
+    },
+    {
+      "repository": "openclaw/openclaw",
+      "number": 110235,
+      "title": "fix: treat EPERM as alive in isPidAlive",
+      "url": "https://github.com/openclaw/openclaw/pull/110235",
+      "mergedAt": "2026-07-22T20:56:10Z"
+    },
+    {
+      "repository": "OpenWhispr/openwhispr",
+      "number": 1220,
+      "title": "docs: add custom ASR shim proxy example",
+      "url": "https://github.com/OpenWhispr/openwhispr/pull/1220",
+      "mergedAt": "2026-07-20T15:12:01Z"
+    },
+    {
+      "repository": "NousResearch/hermes-agent",
+      "number": 66603,
+      "title": "fix(desktop): stop session.info from overwriting composer model",
+      "url": "https://github.com/NousResearch/hermes-agent/pull/66603",
+      "mergedAt": "2026-07-20T14:40:59Z"
+    },
+    {
+      "repository": "OpenWhispr/openwhispr",
+      "number": 1233,
+      "title": "fix(windows): hide nvidia-smi console windows during GPU detection",
+      "url": "https://github.com/OpenWhispr/openwhispr/pull/1233",
+      "mergedAt": "2026-07-19T19:51:22Z"
+    },
+    {
+      "repository": "OpenWhispr/openwhispr",
+      "number": 1232,
+      "title": "fix(windows): hide console windows for media and paste helpers",
+      "url": "https://github.com/OpenWhispr/openwhispr/pull/1232",
+      "mergedAt": "2026-07-19T19:50:15Z"
+    },
+    {
+      "repository": "OpenWhispr/openwhispr",
+      "number": 1228,
+      "title": "fix(windows): resolve llama-server with where.exe without shell",
+      "url": "https://github.com/OpenWhispr/openwhispr/pull/1228",
+      "mergedAt": "2026-07-19T19:49:25Z"
+    },
+    {
+      "repository": "OpenWhispr/openwhispr",
+      "number": 1234,
+      "title": "fix(windows): hide console windows for AEC, text-monitor, and mic-listener",
+      "url": "https://github.com/OpenWhispr/openwhispr/pull/1234",
+      "mergedAt": "2026-07-19T19:38:50Z"
+    },
+    {
+      "repository": "BYVoid/OpenCC",
+      "number": 1445,
+      "title": "s2t: keep 雇 as a non-default STCharacters candidate alongside 僱 (#906)",
+      "url": "https://github.com/BYVoid/OpenCC/pull/1445",
+      "mergedAt": "2026-07-17T20:29:14Z"
+    },
+    {
+      "repository": "zeabur/cli",
+      "number": 222,
+      "title": "fix(domain): add --domain validation and fix spinner leaks in domain create",
+      "url": "https://github.com/zeabur/cli/pull/222",
+      "mergedAt": "2026-07-16T03:44:49Z"
+    },
+    {
+      "repository": "neomjs/neo",
+      "number": 15198,
+      "title": "test(util): cover Style.compareStyles contract (#15196)",
+      "url": "https://github.com/neomjs/neo/pull/15198",
+      "mergedAt": "2026-07-15T19:52:30Z"
+    },
+    {
+      "repository": "zeabur/cli",
+      "number": 220,
+      "title": "fix: validate domain search query includes TLD",
+      "url": "https://github.com/zeabur/cli/pull/220",
+      "mergedAt": "2026-04-28T05:23:47Z"
+    },
+    {
+      "repository": "zeabur/agent-skills",
+      "number": 50,
+      "title": "fix(update-service): remove outdated variable update caveat",
+      "url": "https://github.com/zeabur/agent-skills/pull/50",
+      "mergedAt": "2026-04-11T10:30:02Z"
+    }
+  ]
+}

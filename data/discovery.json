@@ -1,0 +1,371 @@
+{
+  "checkedAt": "2026-09-19",
+  "catalog": [
+    {
+      "id": "colonist-stats-tracker",
+      "name": "Colonist.io Stats Tracker",
+      "category": "Browser extension",
+      "status": "Published on Chrome Web Store",
+      "description": "A Chrome extension that tracks live dice rolls and resource counts in Colonist.io.",
+      "limits": "Tracks a running Colonist.io game. Read the repository for supported game behavior and installation; it is not an official Colonist product.",
+      "links": [
+        {
+          "label": "Chrome Web Store",
+          "href": "https://chromewebstore.google.com/detail/colonistio-stats-tracker/midjajejbacllkidpmngcffkgncmgndm"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/stantheman0128/chrome-extensions/tree/master/colonist-stats-tracker"
+        }
+      ],
+      "zh": "在 Colonist.io 遊戲中追蹤骰點與資源數量的 Chrome 擴充功能。"
+    },
+    {
+      "id": "line-notify-plus",
+      "name": "Notify+",
+      "category": "Android app",
+      "status": "Published on Google Play",
+      "description": "An Android app that organizes LINE notifications by conversation, with grouping and quick replies.",
+      "limits": "",
+      "links": [
+        {
+          "label": "Google Play",
+          "href": "https://play.google.com/store/apps/details?id=com.stanslab.linenotify"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/stantheman0128/line-notify-plus"
+        },
+        {
+          "label": "Case study",
+          "href": "/work/notify-plus"
+        }
+      ],
+      "zh": "整理 LINE 對話通知的 Android 應用，提供分組與快速回覆。"
+    },
+    {
+      "id": "claude-status-monitor",
+      "name": "Claude Status Monitor",
+      "category": "Browser extension",
+      "status": "Published on Chrome Web Store",
+      "description": "Real-time Claude service status widget on claude.ai — uptime charts, live incidents, and alerts at a glance",
+      "limits": "Shows public Claude service health. It does not monitor the progress of your local Claude Code sessions; use ClaudePulse for that separate task.",
+      "links": [
+        {
+          "label": "Chrome Web Store",
+          "href": "https://chromewebstore.google.com/detail/claude-status-monitor/ocjhnlhllljkehgcfkicipmognjlamdp"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/stantheman0128/chrome-extensions/tree/master/claude-status-monitor"
+        }
+      ],
+      "zh": "在 Claude 網頁上查看公開服務狀態、歷史 uptime 與事件公告。"
+    },
+    {
+      "id": "site-minimal",
+      "name": "Paper Stan and this portfolio",
+      "category": "Web application",
+      "status": "Live",
+      "description": "The full version of this site, with a resident paper-doll guide, an exploration quest, and MY PICTURE that runs away from your cursor",
+      "limits": "The interactive edition and lightweight homepage are two interfaces to this portfolio, not separate commercial products.",
+      "links": [
+        {
+          "label": "Visit the full version",
+          "href": "/interactive"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/stantheman0128/stan-portfolio"
+        },
+        {
+          "label": "Case study",
+          "href": "/work/paper-stan"
+        }
+      ],
+      "zh": "這個個人網站的互動角色與輕量版本，提供作品導覽與公開來源。"
+    },
+    {
+      "id": "antnest-chatbot",
+      "name": "Antnest Chatbot",
+      "category": "Web application",
+      "status": "Production",
+      "description": "An AI customer-service system for a dessert shop, combining LINE and web chat with reservations and an admin dashboard.",
+      "limits": "",
+      "links": [
+        {
+          "label": "Live",
+          "href": "https://antnest-chatbot.vercel.app"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/stantheman0128/antnest-chatbot"
+        },
+        {
+          "label": "Case study",
+          "href": "/work/antnest-chatbot"
+        }
+      ],
+      "zh": "整合 LINE、網頁聊天、預約與後台的甜點店 AI 客服系統。"
+    },
+    {
+      "id": "etf-tracker",
+      "name": "ETF Tracker",
+      "category": "Web application",
+      "status": "Live",
+      "description": "A personal dashboard that tracks Taiwan ETFs, US stocks, and BTC in one place - basically to keep track of my personal ETF",
+      "limits": "A personal portfolio tracking application. This page describes software features, not investment recommendations or verified investment performance.",
+      "links": [
+        {
+          "label": "Live",
+          "href": "https://etf-tracker-seven.vercel.app"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/stantheman0128/etf-tracker"
+        }
+      ],
+      "zh": "把台灣 ETF、美股與比特幣放在同一個畫面的個人追蹤工具。"
+    },
+    {
+      "id": "claudepulse",
+      "name": "ClaudePulse",
+      "category": "Developer tool",
+      "status": "Public Windows tool",
+      "description": "A Windows monitor for multiple Claude Code sessions. Shows a notification when a session is finished or needs further handling",
+      "limits": "Windows implementation inspired by tzangms/claudepulse for macOS. Session status and notifications are distinct from service uptime and account usage limits.",
+      "links": [
+        {
+          "label": "GitHub",
+          "href": "https://github.com/stantheman0128/claudepulse-win"
+        },
+        {
+          "label": "Case study",
+          "href": "/work/claudepulse"
+        }
+      ],
+      "zh": "Windows 上的 Claude Code 多工作階段狀態與完成通知工具。"
+    },
+    {
+      "id": "youtube-precise-time",
+      "name": "YouTube Precise Time",
+      "category": "Browser extension",
+      "status": "Published on Chrome Web Store",
+      "description": "Shows precise YouTube upload time, down to the second, on videos and Shorts. You no longer need to wonder when \"two weeks ago \" was",
+      "limits": "Displays upload timestamps exposed by YouTube. It is not a tool for determining when a video was originally filmed.",
+      "links": [
+        {
+          "label": "Chrome Web Store",
+          "href": "https://chromewebstore.google.com/detail/youtube-precise-time/cakbaflkobhcpnmlcbkbmdaioikjighm"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/stantheman0128/chrome-extensions/tree/master/youtube-video-upload-time"
+        }
+      ],
+      "zh": "查看 YouTube 影片與 Shorts 的精確上傳日期和時間。"
+    },
+    {
+      "id": "course-checker",
+      "name": "Course Checker",
+      "category": "Web application",
+      "status": "Live",
+      "description": "A web app that checks how many more credits I need to graduate",
+      "limits": "A personal credit-planning tool. Graduation eligibility still depends on the official requirements for the relevant department and enrollment year.",
+      "links": [
+        {
+          "label": "Live",
+          "href": "https://course.stan-shih.com"
+        },
+        {
+          "label": "GitHub",
+          "href": "https://github.com/stantheman0128/course"
+        }
+      ],
+      "zh": "檢查畢業所需學分的個人網頁工具，正式資格以學校規定為準。"
+    },
+    {
+      "id": "chatgpt-status-monitor",
+      "name": "Status Monitor for ChatGPT",
+      "category": "Browser extension",
+      "status": "Public GitHub release",
+      "description": "Displays public OpenAI service incidents and uptime in a widget on chatgpt.com. Includes English and Traditional Chinese interface options.",
+      "limits": "Independent extension; not affiliated with OpenAI. Public service health is not your account quota or local session status.",
+      "links": [
+        {
+          "label": "Source and documentation",
+          "href": "https://github.com/stantheman0128/chrome-extensions/tree/master/chatgpt-status-monitor"
+        },
+        {
+          "label": "Downloadable releases",
+          "href": "https://github.com/stantheman0128/chrome-extensions/releases/tag/latest"
+        }
+      ],
+      "zh": "在 ChatGPT 網頁查看 OpenAI 公開服務狀態的非官方擴充功能。"
+    },
+    {
+      "id": "dcard-article-formatter",
+      "name": "Dcard Article Formatter",
+      "category": "Browser extension",
+      "status": "Public GitHub release",
+      "description": "Adds an on-page toggle for paragraph spacing, punctuation and Chinese–Latin text spacing in Dcard articles.",
+      "limits": "Formatting changes affect the local reading view, not the original published article.",
+      "links": [
+        {
+          "label": "Source and documentation",
+          "href": "https://github.com/stantheman0128/chrome-extensions/tree/master/dcard-article-formatter"
+        },
+        {
+          "label": "Downloadable releases",
+          "href": "https://github.com/stantheman0128/chrome-extensions/releases/tag/latest"
+        }
+      ],
+      "zh": "改善 Dcard 文章閱讀排版的擴充功能，不會修改原作者的文章。"
+    },
+    {
+      "id": "glasp-remnants-remover",
+      "name": "Remove Glasp Remnants",
+      "category": "Browser extension",
+      "status": "Public GitHub release",
+      "description": "Removes leftover Glasp interface elements from web pages and watches for newly inserted remnants.",
+      "limits": "A focused browser cleanup utility. Read its requested site permissions before installing.",
+      "links": [
+        {
+          "label": "Source and documentation",
+          "href": "https://github.com/stantheman0128/chrome-extensions/tree/master/glasp-remnants-remover"
+        },
+        {
+          "label": "Downloadable releases",
+          "href": "https://github.com/stantheman0128/chrome-extensions/releases/tag/latest"
+        }
+      ],
+      "zh": "清理頁面上 Glasp 殘留介面元素的瀏覽器小工具。"
+    },
+    {
+      "id": "resource-sentinel",
+      "name": "Resource Sentinel",
+      "category": "Developer tool",
+      "status": "Public source",
+      "description": "Coordinates local coding-agent workloads using resource snapshots, a shared SQLite reservation ledger and command admission wrappers.",
+      "limits": "Admission depends on current measurements and configured headroom. It is not a hard operating-system memory cap; remote workers require their own measurements.",
+      "links": [
+        {
+          "label": "Source and documentation",
+          "href": "https://github.com/stantheman0128/resource-sentinel"
+        }
+      ],
+      "zh": "使用資源量測與共用預約帳本，協調多個 coding agent 的本機工作。"
+    },
+    {
+      "id": "claude-mem-sync",
+      "name": "claude-mem-sync",
+      "category": "Developer tool",
+      "status": "Public source",
+      "description": "Synchronizes a claude-mem database between devices through Supabase Storage and Claude Code session hooks.",
+      "limits": "Requires your own configuration and Supabase project. Memory data leaves the device; review access controls and the source before enabling synchronization.",
+      "links": [
+        {
+          "label": "Source and documentation",
+          "href": "https://github.com/stantheman0128/claude-mem-sync"
+        }
+      ],
+      "zh": "透過 Supabase Storage 同步 claude-mem 記憶資料庫的公開工具。"
+    },
+    {
+      "id": "stan-claude-harness",
+      "name": "Stan Claude Harness",
+      "category": "Developer tool",
+      "status": "Public configuration and documentation",
+      "description": "A collection of Claude Code configuration, custom agents, guard hooks and workflow notes for a personal coding environment.",
+      "limits": "Personal settings are examples to inspect and adapt, not a universal security policy or a one-click safe configuration.",
+      "links": [
+        {
+          "label": "Source and documentation",
+          "href": "https://github.com/stantheman0128/stan-claude-harness"
+        }
+      ],
+      "zh": "公開分享個人 Claude Code 配置、代理人、guard hooks 與工作流程。"
+    },
+    {
+      "id": "oss-contrib-starter",
+      "name": "OSS Contrib Starter",
+      "category": "Learning resource",
+      "status": "Public guide",
+      "description": "A Traditional Chinese introduction to reproducing issues, choosing contribution tasks, writing pull requests and keeping a contribution ledger.",
+      "limits": "The introductory environment is macOS. Project-specific contribution rules take precedence; the guide does not guarantee program acceptance.",
+      "links": [
+        {
+          "label": "Source and documentation",
+          "href": "https://github.com/stantheman0128/oss-contrib-starter"
+        }
+      ],
+      "zh": "繁體中文的開源貢獻入門指南，包含問題重現、選題、PR 與紀錄範本。"
+    }
+  ],
+  "selectedContributions": [
+    {
+      "repository": "apache/kafka",
+      "number": 23154,
+      "url": "https://github.com/apache/kafka/pull/23154",
+      "mergedAt": "2026-09-10T07:11:16Z",
+      "en": "Kept the classic consumer polling during an authentication test so the group handshake could finish under load.",
+      "zh": "修正驗證測試中 classic consumer 未持續 poll 的情況，讓群組握手能在負載下完成。",
+      "lesson": "A test that observes a state may also need to keep the protocol making progress. Separate a timing failure from an authentication failure.",
+      "validation": "The PR records local reproduction of the earlier failure and 300 repetitions by an upstream reviewer after the final refactor. These are historical PR reports, not tests rerun for this website."
+    },
+    {
+      "repository": "ray-project/ray",
+      "number": 65286,
+      "url": "https://github.com/ray-project/ray/pull/65286",
+      "mergedAt": "2026-08-31T20:12:48Z",
+      "en": "Removed Windows-reserved characters from Ray Tune trial directory names and added regression coverage.",
+      "zh": "處理 Ray Tune 試驗目錄名稱中的 Windows 保留字元，並加入回歸測試。",
+      "lesson": "Cross-platform outputs need portable filenames even when they are initially created on another operating system.",
+      "validation": "The PR describes a Windows 11 reproduction and regression tests that fail before the change and pass afterward."
+    },
+    {
+      "repository": "stacklok/toolhive",
+      "number": 6416,
+      "url": "https://github.com/stacklok/toolhive/pull/6416",
+      "mergedAt": "2026-08-25T09:27:07Z",
+      "en": "Unified Unix-socket URL generation and parsing for Windows drive paths and POSIX paths.",
+      "zh": "統一 ToolHive 的 Unix socket URL 產生與解析，處理 Windows 磁碟路徑與 POSIX 路徑。",
+      "lesson": "Test serialization and parsing together. A path that looks absolute on one platform may not be recognized as absolute on another.",
+      "validation": "The PR records focused Go discovery and API tests on Windows; it explicitly does not claim a full repository test run."
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3493,
+      "url": "https://github.com/thedotmack/claude-mem/pull/3493",
+      "mergedAt": "2026-09-11T03:29:31Z",
+      "en": "Normalized OpenRouter conversation history to avoid sending an empty messages array and losing observations.",
+      "zh": "正規化 OpenRouter 對話歷史，避免送出空的 messages 陣列而失去觀測紀錄。",
+      "lesson": "Provider-specific adapters need equivalent validation when a shared normalization step changes.",
+      "validation": "The PR records four focused message-normalization tests and discloses AI-assisted implementation."
+    },
+    {
+      "repository": "OpenWhispr/openwhispr",
+      "number": 2031,
+      "url": "https://github.com/OpenWhispr/openwhispr/pull/2031",
+      "mergedAt": "2026-09-16T00:12:12Z",
+      "en": "Fixed PowerShell archive extraction when a Windows user path contains an apostrophe.",
+      "zh": "修正 Windows 使用者路徑包含單引號時，PowerShell 解壓縮備援流程失敗的問題。",
+      "lesson": "Use literal-path semantics and correct quoting for the target shell. Test a real path containing the character that broke the command.",
+      "validation": "The PR records a real Windows extraction with the primary tar path forced to fail, plus quoting tests; it also documents a remaining Linux-specific test limitation on Windows."
+    }
+  ],
+  "research": [
+    {
+      "name": "Typeless Lab",
+      "description": "A public experiment comparing speech recognition and language-model correction for Traditional Chinese dictation.",
+      "limits": "The README identifies synthetic TTS speech, a small corpus and hardware-specific timing. Reported benchmark results should not be generalized to ordinary live speech.",
+      "url": "https://github.com/stantheman0128/typeless-lab"
+    },
+    {
+      "name": "Vesuvius ink-depth validation",
+      "description": "A public preregistered study of Vesuvius 3D ink labels against an independent scan.",
+      "limits": "A validation study, not a claim of a solved historical-text or mathematics problem.",
+      "url": "https://github.com/stantheman0128/vesuvius-ink3d-depth-validation"
+    }
+  ]
+}

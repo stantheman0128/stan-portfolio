@@ -39,7 +39,7 @@ export function publishedStudies(c) {
 }
 
 export function profileNav() {
-  return '<nav class="identity-nav" aria-label="About and case studies"><a href="/">About Stan</a><a href="/work">Case studies</a><a href="/zh/about" lang="zh-Hant">中文介紹</a></nav>';
+  return '<nav class="identity-nav" aria-label="About and projects"><a href="/">About Stan</a><a href="/work">Case studies</a><a href="/software">Software</a><a href="/open-source">Open source</a><a href="/zh/about" lang="zh-Hant">中文介紹</a></nav>';
 }
 
 const paragraphs = list => (list || []).filter(Boolean).map(p => `<p>${esc(p)}</p>`).join("\n");
@@ -52,7 +52,7 @@ function workList(c, zh = false) {
   return `<ul class="work-list">${publishedStudies(c).map(s => `<li><h3><a href="/work/${esc(s.slug)}">${esc(s.title)}</a></h3><p>${esc(s.summary)}</p><a href="/work/${esc(s.slug)}">${zh ? "閱讀英文案例" : "Read the case study"} →</a></li>`).join("")}</ul>`;
 }
 
-function shell(c, { path, title, description, lang = "en", pageType = "WebPage", alternates = [], article, breadcrumbs, body }) {
+export function shell(c, { path, title, description, lang = "en", pageType = "WebPage", alternates = [], article, breadcrumbs, body }) {
   const p = c.profile || {};
   const zh = lang === "zh-Hant";
   return `<!doctype html>
@@ -61,7 +61,7 @@ function shell(c, { path, title, description, lang = "en", pageType = "WebPage",
 ${seoHead(p, { path, title, desc: description, lang, pageType, alternates, article, breadcrumbs })}
 <style>${styles}</style></head><body>
 <a class="skip" href="#main">${zh ? "跳至主要內容" : "Skip to content"}</a>
-<div class="wrap"><header><nav class="site-nav" aria-label="${zh ? "主要導覽" : "Main navigation"}"><a class="brand" href="/">${esc(displayName(p))}</a><div class="links"><a href="${zh ? "/zh/about" : "/"}">${zh ? "關於我" : "About"}</a><a href="/work">${zh ? "作品案例" : "Case studies"}</a><a href="/#contact">${zh ? "聯絡" : "Contact"}</a></div></nav></header>
+<div class="wrap"><header><nav class="site-nav" aria-label="${zh ? "主要導覽" : "Main navigation"}"><a class="brand" href="/">${esc(displayName(p))}</a><div class="links"><a href="${zh ? "/zh/about" : "/"}">${zh ? "關於我" : "About"}</a><a href="/work">${zh ? "作品案例" : "Case studies"}</a><a href="/software">${zh ? "軟體" : "Software"}</a><a href="${zh ? "/zh/open-source" : "/open-source"}">${zh ? "開源貢獻" : "Open source"}</a><a href="/#contact">${zh ? "聯絡" : "Contact"}</a></div></nav></header>
 <main id="main">${body}</main>
 <footer>${esc(displayName(p))} · ${zh ? "台北，台灣" : esc(p.location || "Taipei, Taiwan")}<br><a href="/">${zh ? "個人網站與作品集" : "Personal website and portfolio"}</a></footer>
 </div></body></html>`;

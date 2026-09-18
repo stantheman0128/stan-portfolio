@@ -49,6 +49,10 @@ export function renderMarkdown(content) {
     "- [About Stan Shih (施博瀚)](https://stan-shih.com/)",
     "- [施博瀚：繁體中文介紹](https://stan-shih.com/zh/about)",
     "- [Case studies](https://stan-shih.com/work)",
+    "- [Published software and tools](https://stan-shih.com/software)",
+    "- [Open-source contributions](https://stan-shih.com/open-source)",
+    "- [施博瀚的開源貢獻](https://stan-shih.com/zh/open-source)",
+    "- [Public research and experiments](https://stan-shih.com/research)",
     ...studies.map(s => `- [${s.title}](https://stan-shih.com/work/${s.slug}): ${s.summary}`), "");
   if (pat && pat.title) {
     out.push(`## ${h.patent || "Patent"}`, "");

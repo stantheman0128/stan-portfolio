@@ -18,6 +18,8 @@ const SITE_NAME = "Stan Shih 施博瀚 — Personal Website";
 const SITE_ALT_NAMES = ["施博瀚個人網站", "Stan Shih Portfolio", "Stan 個人網站"];
 // Public ownership token supplied by Google Search Console on 2026-09-14.
 const GOOGLE_SITE_VERIFICATION = "HOLEWUFHYgv-p5aK1rwKl4Eog6kgFdy2-b8b4SK7efo";
+// Public ownership proof supplied by Bing Webmaster Tools on 2026-09-19.
+const BING_SITE_VERIFICATION = "3BC786B6D03ABA66B2C18E951CF41B11";
 
 function esc(s) {
   return String(s)
@@ -156,6 +158,7 @@ export function seoHead(p, { path = "/", title, desc, lang = "en", pageType = pa
   return [
     `<link rel="canonical" href="${canonical}">`,
     ...(path === "/" ? [`<meta name="google-site-verification" content="${GOOGLE_SITE_VERIFICATION}">`] : []),
+    ...(path === "/" ? [`<meta name="msvalidate.01" content="${BING_SITE_VERIFICATION}">`] : []),
     ...alternates.map(a => `<link rel="alternate" hreflang="${esc(a.lang)}" href="${esc(ORIGIN + a.path)}">`),
     `<meta name="robots" content="index,follow,max-image-preview:large">`,
     `<meta property="og:type" content="website">`,

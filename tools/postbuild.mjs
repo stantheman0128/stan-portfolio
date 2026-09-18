@@ -23,6 +23,9 @@ writeFileSync(join(dist, "data", "content.json"), JSON.stringify(content));
 
 const { renderSite } = await import(new URL("../src/render/renderSite.js", import.meta.url));
 const { editorialPages, sitemapXml } = await import(new URL("../src/render/editorial.js", import.meta.url));
+const { discoveryPages } = await import(new URL("../src/render/discovery.js", import.meta.url));
+const discovery = JSON.parse(readFileSync(join(root, "data", "discovery.json"), "utf8"));
+const evidence = JSON.parse(readFileSync(join(root, "data", "oss-evidence.json"), "utf8"));
 const fw = renderSite(content, "featherweight");
 writeFileSync(join(dist, "index.html"), fw);
 mkdirSync(join(dist, "fast"), { recursive: true });
@@ -31,7 +34,7 @@ writeFileSync(join(dist, "fast", "index.html"), fw);
 // Bake the interactive edition too. Its inline interactions initialize directly;
 // visitors and crawlers no longer need the JS shell's content.json request.
 writeFileSync(join(dist, "interactive.html"), renderSite(content, "minimal"));
-const pages = editorialPages(content);
+const pages = [...editorialPages(content), ...discoveryPages(content, discovery, evidence)];
 for (const page of pages) {
   const output = join(dist, page.path.slice(1) + ".html");
   mkdirSync(dirname(output), { recursive: true });
