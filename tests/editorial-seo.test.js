@@ -50,6 +50,34 @@ describe("searchable identity and case-study pages", () => {
     expect(editorialPages(removed).some(p => p.path === "/work/notify-plus")).toBe(false);
   });
 
+  it("connects software, its maintainer and the visible repository without claiming upstream authorship", () => {
+    for (const slug of ["antnest-chatbot", "claudepulse", "notify-plus"]) {
+      const html = pages.find(p => p.path === `/work/${slug}`).html;
+      const nodes = graph(html);
+      const software = nodes.find(n => n["@type"] === "SoftwareSourceCode");
+      const article = nodes.find(n => n["@type"] === "Article");
+      const page = nodes.find(n => n["@type"] === "WebPage");
+      expect(article.about["@id"]).toBe(software["@id"]);
+      expect(page.about).toEqual(article.about);
+      expect(software.subjectOf["@id"]).toBe(article["@id"]);
+      expect(software.maintainer["@id"]).toBe("https://stan-shih.com/#person");
+      expect(html).toContain(`href="${software.codeRepository}"`);
+      expect(software).not.toHaveProperty("author");
+      expect(software).not.toHaveProperty("creator");
+    }
+    const paper = graph(pages.find(p => p.path === "/work/paper-stan").html);
+    expect(paper.some(n => n["@type"] === "SoftwareSourceCode")).toBe(false);
+    const altered = structuredClone(content);
+    altered.caseStudies.find(s => s.slug === "notify-plus").sources = [];
+    const withoutSource = graph(editorialPages(altered).find(p => p.path === "/work/notify-plus").html);
+    expect(withoutSource.some(n => n["@type"] === "SoftwareSourceCode")).toBe(false);
+    altered.caseStudies.find(s => s.slug === "claudepulse").sources = [{
+      label: "Upstream inspiration", href: "https://github.com/tzangms/claudepulse",
+    }];
+    const upstream = graph(editorialPages(altered).find(p => p.path === "/work/claudepulse").html);
+    expect(upstream.some(n => n["@type"] === "SoftwareSourceCode")).toBe(false);
+  });
+
   it("rejects path traversal and duplicate slugs before writing build files", () => {
     const altered = structuredClone(content);
     altered.caseStudies[0].slug = "../about";

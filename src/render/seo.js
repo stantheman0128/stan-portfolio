@@ -101,13 +101,33 @@ function jsonLd(p, { path, title, desc, lang, pageType, article, breadcrumbs }) 
   };
   const nodes = [person, site, page];
   if (article) {
+    // Describe only the software repository explicitly linked in the visible
+    // case study. A source-file citation (e.g. Paper Stan) is not a repository
+    // identity, and must not make the entire portfolio that component's code.
+    const ownerProfile = publicUrl(p.githubUrl).replace(/\/$/, "");
+    const repository = (article.sources || []).map(s => publicUrl(s.href))
+      .find(url => ownerProfile && url.startsWith(ownerProfile + "/")
+        && /^https:\/\/github\.com\/[^/]+\/[^/?#]+\/?$/.test(url));
+    const softwareId = canonical + "#source-code";
     page.mainEntity = { "@id": canonical + "#article" };
+    if (repository) {
+      page.about = { "@id": softwareId };
+      nodes.push({
+        "@type": "SoftwareSourceCode", "@id": softwareId,
+        name: article.title, description: desc,
+        url: repository, codeRepository: repository,
+        // Maintainer does not claim sole authorship or ownership of upstream.
+        maintainer: { "@id": person["@id"] },
+        subjectOf: { "@id": canonical + "#article" },
+      });
+    }
     nodes.push({
       "@type": "Article", "@id": canonical + "#article", headline: title,
       description: desc, inLanguage: lang, dateModified: article.modified,
       author: { "@id": ORIGIN + "/#person" },
       publisher: { "@id": ORIGIN + "/#person" },
       mainEntityOfPage: { "@id": page["@id"] },
+      ...(repository ? { about: { "@id": softwareId } } : {}),
       ...(article.image ? { image: publicUrl(article.image) } : {}),
       citation: (article.sources || []).map(s => publicUrl(s.href)).filter(Boolean),
     });
