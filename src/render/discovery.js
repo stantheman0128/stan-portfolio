@@ -73,7 +73,7 @@ function notes(c,data){
 function research(c,data){
   const path='/research';
   const body=`<h1>Public research and experiments</h1><p class="intro">Source-linked experiments by ${esc(displayName(c.profile))}.</p><p>Research artifacts are separate from released products. Each project defines its own methods, evidence and limitations.</p><ul class="work-list">${data.research.map(p=>`<li><h2>${link(p.url,p.name)}</h2><p>${esc(p.description)}</p><p>${esc(p.limits)}</p></li>`).join('')}</ul><p>${link('/software','Software directory')} · ${link('/open-source','Open-source contributions')}</p>`;
-  return {path,html:shell(c,{path,title:`Research and experiments — ${displayName(c.profile)}`,description:'Public speech-recognition experiments and ink-depth validation research by Stan Shih, with original sources and stated limitations.',pageType:'CollectionPage',body})};
+  return {path,html:shell(c,{path,title:`Research and experiments — ${displayName(c.profile)}`,description:'Public speech-recognition, ink-depth validation and quantitative research experiments by Stan Shih, with original sources and stated limitations.',pageType:'CollectionPage',body})};
 }
 
 export function discoveryPages(c,data,evidence){

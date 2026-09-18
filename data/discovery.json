@@ -300,6 +300,119 @@
         }
       ],
       "zh": "繁體中文的開源貢獻入門指南，包含問題重現、選題、PR 與紀錄範本。"
+    },
+    {
+      "id": "bedtime-hibernate",
+      "name": "Bedtime Hibernate",
+      "category": "Developer tool",
+      "status": "Public Windows tool",
+      "description": "A Windows tray utility that can hibernate the computer after tracked Claude Code, Codex and Cursor activity becomes idle.",
+      "limits": "Requires Windows hibernation support. Agent activity is inferred from transcript activity and process counters; that is not proof that every task has finished. Installation and runtime behavior were not retested for this directory.",
+      "links": [
+        {
+          "label": "Source and installation",
+          "href": "https://github.com/stantheman0128/bedtime-hibernate"
+        }
+      ],
+      "zh": "觀察 Claude Code、Codex 與 Cursor 活動，在符合閒置條件後讓 Windows 休眠的系統匣工具。"
+    },
+    {
+      "id": "ai-knowledge-tree",
+      "name": "AI Knowledge Tree",
+      "category": "Developer tool",
+      "status": "Public source",
+      "description": "A pipeline that fetches AI news from RSS feeds, extracts structured events with an LLM, removes duplicates and writes Markdown for an Obsidian vault.",
+      "limits": "Requires provider configuration and an API key. Model availability and generated summaries need review; the public code is not a hosted news service.",
+      "links": [
+        {
+          "label": "Source and documentation",
+          "href": "https://github.com/stantheman0128/ai-knowledge-tree"
+        }
+      ],
+      "zh": "把 AI 新聞 RSS 整理成結構化事件、去重，並寫入 Obsidian Markdown 的公開管線。"
+    },
+    {
+      "id": "sealevel-sentinel",
+      "name": "Sealevel Sentinel",
+      "category": "Developer tool",
+      "status": "Public source",
+      "description": "A command-line tool that applies static-analysis rules to Solana Anchor and Rust programs, with an optional language-model reasoning layer.",
+      "limits": "The README documents limits of the rule layer and states that the optional paid API path had not been exercised. A clean result is not a security guarantee; benchmark claims were not rerun for this directory.",
+      "links": [
+        {
+          "label": "Source and documentation",
+          "href": "https://github.com/stantheman0128/sealevel-sentinel"
+        }
+      ],
+      "zh": "針對 Solana Anchor 與 Rust 程式進行規則式靜態檢查，並提供選用模型分析層的命令列工具。"
+    },
+    {
+      "id": "dd-qlist-engine",
+      "name": "DD Q-list Engine",
+      "category": "Developer tool",
+      "status": "Public source and synthetic demo",
+      "description": "A local due-diligence workbench that organizes source documents, drafts question lists through multiple perspectives and supports human review and follow-up rounds.",
+      "limits": "The public repository supplies a synthetic demonstration rather than real client data. Some bundled analyses and reviewer outputs are hand-written examples; live operation requires provider configuration and human review.",
+      "links": [
+        {
+          "label": "Source and documentation",
+          "href": "https://github.com/stantheman0128/the-ultimate-dd-agent"
+        }
+      ],
+      "zh": "整理文件、以多個視角產生盡職調查問題清單，並支援人工審閱與多輪追問的本機工作台。"
+    },
+    {
+      "id": "dca-backtest",
+      "name": "DCA Backtest",
+      "category": "Developer tool",
+      "status": "Public source",
+      "description": "A minimal Streamlit application for exploring dollar-cost averaging backtests.",
+      "limits": "Runs from source with local Python dependencies. Historical simulations are not investment recommendations or evidence of future returns; the calculations were not independently validated for this directory.",
+      "links": [
+        {
+          "label": "Source and run instructions",
+          "href": "https://github.com/stantheman0128/stan-dca-mvp-2"
+        }
+      ],
+      "zh": "以 Streamlit 製作的定期定額回測工具，公開原始碼與本機執行方式。"
+    },
+    {
+      "id": "anote",
+      "name": "Anote — PDF Reader",
+      "category": "Web application",
+      "status": "Live",
+      "description": "A browser PDF reader with page navigation, zoom controls and notes placed beside selected text.",
+      "limits": "",
+      "links": [
+        {
+          "label": "Live",
+          "href": "https://stantheman0128.github.io/pdf-annotator/"
+        },
+        {
+          "label": "Public repository",
+          "href": "https://github.com/stantheman0128/pdf-annotator"
+        }
+      ],
+      "zh": "提供分頁、縮放與文字旁註的瀏覽器 PDF 閱讀器。"
+    },
+    {
+      "id": "guacamole-ai",
+      "name": "Guacamole AI",
+      "category": "Web application",
+      "status": "Public prototype; live availability unverified",
+      "description": "An AI tutoring platform prototype that uses conversational matching and GitHub-based instructor profiles to help learners explore potential teachers.",
+      "limits": "Hosted endpoints could not be reached during the September 19, 2026 check. Running from source requires database, authentication and model-provider configuration; some progress features use demonstration data.",
+      "links": [
+        {
+          "label": "Public source",
+          "href": "https://github.com/stantheman0128/avomole"
+        },
+        {
+          "label": "Setup and implementation notes",
+          "href": "https://github.com/stantheman0128/avomole/blob/master/HANDOFF.md"
+        }
+      ],
+      "zh": "透過對話媒合與 GitHub 講師側寫，協助學習者尋找 AI 家教的公開平台原型。"
     }
   ],
   "selectedContributions": [
@@ -366,6 +479,18 @@
       "description": "A public preregistered study of Vesuvius 3D ink labels against an independent scan.",
       "limits": "A validation study, not a claim of a solved historical-text or mathematics problem.",
       "url": "https://github.com/stantheman0128/vesuvius-ink3d-depth-validation"
+    },
+    {
+      "name": "Autoresearch — Index Strategies",
+      "description": "A public experiment in hypothesis-driven automated research, with strategy evaluation, experiment records and a separate historical validation step.",
+      "limits": "The README describes a limited historical training and validation period and lists broader market-regime testing as unfinished. This directory does not independently validate its financial results or present them as investment advice.",
+      "url": "https://github.com/stantheman0128/autoresearch-index"
+    },
+    {
+      "name": "Financial commentary factor research",
+      "description": "A public research roadmap studying whether Chinese-language financial commentary adds predictive information beyond existing price-and-volume factors.",
+      "limits": "The June 2026 roadmap explicitly marks the core incremental-information test against Alpha101 as unfinished. Existing proof-of-concept results do not establish independent predictive value or verified investment performance.",
+      "url": "https://github.com/stantheman0128/quant/blob/master/ROADMAP.md"
     }
   ]
 }
