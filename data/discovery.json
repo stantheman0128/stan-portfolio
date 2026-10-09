@@ -446,6 +446,26 @@
       "zh": "修正 Windows 使用者路徑包含單引號時，PowerShell 解壓縮備援流程失敗的問題。",
       "lesson": "Use literal-path semantics and correct quoting for the target shell. Test a real path containing the character that broke the command.",
       "validation": "The PR records a real Windows extraction with the primary tar path forced to fail, plus quoting tests; it also documents a remaining Linux-specific test limitation on Windows."
+    },
+    {
+      "repository": "OpenWhispr/openwhispr",
+      "number": 2147,
+      "url": "https://github.com/OpenWhispr/openwhispr/pull/2147",
+      "mergedAt": "2026-10-06T13:30:23Z",
+      "en": "Restored Windows helper downloads when the matching GitHub release tag had moved beyond the first page of releases.",
+      "zh": "修正 Windows 輔助程式的 GitHub release 標籤移到第二頁後，下載流程找不到檔案的問題。",
+      "lesson": "A fresh Windows build could finish with a warning but omit the executable needed for Hold / Push-to-Talk: the prefix lookup read only the first 50 releases. The fix follows the next-page link, with a limit of 20 pages of 100 releases, while preserving exact-tag lookup. This handles older helper releases without pinning every downloader to a single tag.",
+      "validation": "The original PR reports a live Windows 11 lookup returning the missing tag and ZIP asset. Follow-up maintainer commits replaced the initial four-test helper with three tests using mocked HTTPS responses, added a missing-binary packaging check, and adjusted CI compilation. Those follow-up changes are credited to the maintainers. The upstream tests and packaged application were not rerun for this page."
+    },
+    {
+      "repository": "open-slide/open-slide",
+      "number": 539,
+      "url": "https://github.com/open-slide/open-slide/pull/539",
+      "mergedAt": "2026-10-06T08:01:18Z",
+      "en": "Prevented slide copies from creating directory names that differ only by letter case and collide on case-insensitive filesystems.",
+      "zh": "避免複製投影片時產生僅有大小寫不同的目錄名稱，導致移至不區分大小寫的檔案系統時發生衝突。",
+      "lesson": "On ext4, Cover and cover can coexist, so an existence check alone allowed a slide ID that would collide on a case-insensitive filesystem. The fix compares the directory names without regard to case: an explicitly requested conflicting ID is rejected, and an automatically generated copy name advances to the next suffix.",
+      "validation": "The PR reports a focused Node filesystem check on macOS for requested IDs and generated copy names. It explicitly leaves the pnpm test suite, format check and lint unchecked because the author lacked the local pnpm installation. Regression tests were added to slide-ops.test.ts, but neither those suites nor cross-platform runtime behavior were rerun for this page."
     }
   ],
   "research": [
@@ -473,5 +493,6 @@
       "limits": "The June 2026 roadmap explicitly marks the core incremental-information test against Alpha101 as unfinished. Existing proof-of-concept results do not establish independent predictive value or verified investment performance.",
       "url": "https://github.com/stantheman0128/quant/blob/master/ROADMAP.md"
     }
-  ]
+  ],
+  "repairNotesCheckedAt": "2026-10-09"
 }

@@ -53,7 +53,8 @@ export function renderMarkdown(content) {
     "- [Open-source contributions](https://stan-shih.com/open-source)",
     "- [施博瀚的開源貢獻](https://stan-shih.com/zh/open-source)",
     "- [Public research and experiments](https://stan-shih.com/research)",
-    ...studies.map(s => `- [${s.title}](https://stan-shih.com/work/${s.slug}): ${s.summary}`), "");
+    ...studies.flatMap(s => [`- [${s.title}](https://stan-shih.com/work/${s.slug}): ${s.summary}`,
+      ...(s.zhHant ? [`- [${s.zhHant.title}](https://stan-shih.com/zh/work/${s.slug}): ${s.zhHant.summary}`] : [])]), "");
   if (pat && pat.title) {
     out.push(`## ${h.patent || "Patent"}`, "");
     out.push(`**${pat.title}**${pat.ids && pat.ids.length ? ` — ${pat.ids.join(" / ")}` : ""}`);

@@ -434,27 +434,42 @@
       "slug": "claudepulse",
       "itemId": "claudepulse",
       "title": "ClaudePulse for Windows",
-      "subtitle": "A system-tray view of multiple coding-agent sessions",
-      "summary": "A Windows desktop tool that tracks Claude Code sessions and notifies the user when attention is needed.",
-      "modified": "2026-09-14",
+      "subtitle": "Track Claude Code sessions and return to the terminal that needs you",
+      "summary": "ClaudePulse for Windows is Stan Shih’s Windows adaptation of a session-monitoring concept inspired by tzangms’s original macOS ClaudePulse. It uses Claude Code hooks to show local session state and notifications.",
+      "modified": "2026-10-09",
       "sections": [
         {
-          "title": "The product",
+          "title": "Windows adaptation and original project",
           "paragraphs": [
-            "ClaudePulse for Windows puts coding-session status in the system tray. It is inspired by the original macOS ClaudePulse and brings the concept to Windows with session tracking, permission alerts, and notification-to-terminal navigation."
+            "I maintain ClaudePulse for Windows. Its inspiration is the macOS ClaudePulse project by tzangms, whose current README calls it Pulse for Claude Code. The Windows implementation and the original macOS application have separate repositories and setup instructions.",
+            "The Windows tool focuses on Claude Code sessions: a system-tray indicator summarizes activity, while notifications help you return to a session that needs input or permission."
           ]
         },
         {
-          "title": "How it works",
+          "title": "Start with one session",
           "paragraphs": [
-            "A local HTTP listener receives Claude Code hook events. The application maintains each session’s state and updates the tray icon. Notifications are debounced to reduce alerts during intermediate stops, while permission requests can receive immediate attention.",
-            "The hook configurator merges its entries into existing settings rather than replacing the user’s hooks. The implementation uses .NET, Windows tray APIs, and a local session manager."
+            "Open the Windows repository and choose the setup instructions for the version you intend to run. Its source README documents Windows 10/11 and a .NET-based build. Requirements in older release notes can differ from the current source, so check the chosen release rather than assuming every download has the same runtime requirements.",
+            "Launch ClaudePulse, then open a Claude Code session. On first launch, the hook configurator adds its HTTP hooks to the existing Claude Code settings. It is designed to merge its entries without replacing other hooks. Verify that the session appears and changes state while you work before relying on alerts across several terminals."
           ]
         },
         {
-          "title": "The interaction that matters",
+          "title": "Read the tray and notifications",
           "paragraphs": [
-            "An alert is more useful when it leads back to the relevant work. Clicking a notification can bring the corresponding terminal forward. The repository explains the supported environment, installation, hook setup, and the original project that inspired this version."
+            "The README describes blue as Working, orange as Waiting for permission, green as Idle, and gray as Stale after more than ten minutes without activity. The shared icon gives working sessions priority, so a blue icon does not describe every session individually.",
+            "A three-second debounce reduces notifications from intermediate stops; permission requests receive a separate immediate alert. Clicking a notification can bring the corresponding terminal window forward. Check the terminal’s prompt or result when you return."
+          ]
+        },
+        {
+          "title": "What the status can tell you",
+          "paragraphs": [
+            "A local HTTP listener receives Claude Code hook events and updates the session state. If a session is absent or stops updating, first check that ClaudePulse is running and that the Claude Code hooks are configured as described in the repository.",
+            "Idle and Stale are observations of session activity. They do not establish that code is correct, tests passed, or the task achieved its intended result. This tool also does not measure the public Claude service’s uptime or your account quota."
+          ]
+        },
+        {
+          "title": "Related work by the same developer",
+          "paragraphs": [
+            "Notify+ applies a different notification workflow on Android, organizing incoming LINE messages by conversation. The links below lead to that case study and my broader software directory."
           ]
         }
       ],
@@ -462,33 +477,128 @@
         {
           "label": "ClaudePulse for Windows — source, setup, and acknowledgments",
           "href": "https://github.com/stantheman0128/claudepulse-win"
+        },
+        {
+          "label": "Windows releases — check requirements for the selected version",
+          "href": "https://github.com/stantheman0128/claudepulse-win/releases"
+        },
+        {
+          "label": "Original macOS project by tzangms — Pulse for Claude Code",
+          "href": "https://github.com/tzangms/ClaudePulse"
+        },
+        {
+          "label": "Notify+ — another notification tool by Stan Shih",
+          "href": "/work/notify-plus"
+        },
+        {
+          "label": "More software by Stan Shih",
+          "href": "/software"
         }
-      ]
+      ],
+      "zhHant": {
+        "title": "ClaudePulse for Windows：Claude Code 工作階段通知工具",
+        "subtitle": "在 Windows 系統匣查看工作狀態，回到需要處理的終端機",
+        "summary": "ClaudePulse for Windows 由施博瀚 Stan Shih 維護，靈感來自 tzangms 的 macOS ClaudePulse。Windows 版本透過 Claude Code hooks 追蹤本機工作階段，並提供狀態與權限提醒。",
+        "sections": [
+          {
+            "title": "原作與 Windows 版本的關係",
+            "paragraphs": [
+              "我維護的是 ClaudePulse for Windows。原始概念來自 tzangms 的 macOS ClaudePulse；原作目前的 README 使用 Pulse for Claude Code 這個名稱。兩個版本有各自的原始碼與安裝說明。",
+              "Windows 版本把 Claude Code 工作階段狀態放進系統匣，並在需要輸入或核准權限時提供提醒，方便切回對應的終端機。"
+            ]
+          },
+          {
+            "title": "先用一個工作階段確認設定",
+            "paragraphs": [
+              "先開啟 Windows 專案的文件，選擇你要使用的版本與安裝方式。目前原始碼 README 說明 Windows 10/11 與 .NET 建置方式；舊版 release 的需求可能不同，下載前應核對該版本說明。",
+              "啟動 ClaudePulse 後，再開啟 Claude Code 工作階段。首次啟動會把 HTTP hooks 合併進 Claude Code 既有設定，設計上保留其他 hooks。先確認一個工作階段能被列出、並隨操作更新狀態，再用於多個終端機。"
+            ]
+          },
+          {
+            "title": "如何看系統匣與提醒",
+            "paragraphs": [
+              "文件定義藍色為 Working、橙色為等待許可、綠色為 Idle，超過十分鐘沒有活動則標示灰色 Stale。整體圖示優先顯示正在工作的狀態，因此看到藍色不代表每個工作階段都在工作。",
+              "停止提醒有三秒的延遲確認，以減少中間步驟造成的通知；權限請求另有即時提醒。點擊通知可切回對應終端機，仍應查看實際提示或輸出再決定下一步。"
+            ]
+          },
+          {
+            "title": "沒有更新時，先核對什麼",
+            "paragraphs": [
+              "狀態來自本機 HTTP listener 接收的 Claude Code hook 事件。若找不到工作階段或狀態不再更新，先確認 ClaudePulse 正在執行，再依專案文件檢查 hooks 設定。",
+              "Idle 或 Stale 描述的是活動狀態，不能證明程式正確、測試通過或任務已達成。這個工具也不提供 Claude 公開服務 uptime 或帳號額度的量測。"
+            ]
+          },
+          {
+            "title": "同一位開發者的其他通知工具",
+            "paragraphs": [
+              "我也開發 Notify+，用於 Android 上的 LINE 通知整理。它處理的是聊天室訊息；下方連結可閱讀 Notify+ 案例與完整軟體目錄。"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "label": "ClaudePulse Windows 版原始碼與設定說明",
+            "href": "https://github.com/stantheman0128/claudepulse-win"
+          },
+          {
+            "label": "Windows 發布版本與各版本需求",
+            "href": "https://github.com/stantheman0128/claudepulse-win/releases"
+          },
+          {
+            "label": "tzangms 的 macOS 原作：Pulse for Claude Code",
+            "href": "https://github.com/tzangms/ClaudePulse"
+          },
+          {
+            "label": "Notify+：同一位開發者的 Android 通知工具",
+            "href": "/zh/work/notify-plus"
+          },
+          {
+            "label": "施博瀚的完整軟體目錄",
+            "href": "/software"
+          }
+        ]
+      }
     },
     {
       "slug": "notify-plus",
       "itemId": "line-notify-plus",
       "title": "Notify+",
-      "subtitle": "More readable LINE notifications on Android",
-      "summary": "An independently developed Android notification organizer, published on Google Play under Stan Shih.",
-      "modified": "2026-09-14",
+      "subtitle": "Group LINE notifications by conversation on Android",
+      "summary": "Notify+ is an Android app by Stan Shih that reorganizes incoming LINE notifications, with conversation grouping, quick replies and per-chat controls. It is published on Google Play and independently developed.",
+      "modified": "2026-10-09",
       "sections": [
         {
-          "title": "The product",
+          "title": "Choose how a conversation appears",
           "paragraphs": [
-            "Notify+ organizes LINE notifications by conversation. It offers message merging, grouped notifications, quick replies, contact avatars, and per-chat controls. The Google Play listing identifies the developer as Stan Shih."
+            "Notify+ reorganizes LINE notifications already arriving on your phone. Conversation mode stacks messages from one chat into a single notification. The alternative Apple-style grouping keeps individual message notifications grouped by chat. Choose the presentation that is easier for you to scan.",
+            "The Google Play listing also describes quick replies, contact avatars, per-chat controls and a mode that replaces the original notification to reduce duplicate cards."
           ]
         },
         {
-          "title": "Working inside the notification flow",
+          "title": "First use: permissions and a small check",
           "paragraphs": [
-            "The app uses Android notification access to reorganize notifications that arrive on the device. A replacement mode helps avoid showing both an original notification and a reorganized one for the same message. Users can also choose how individual conversations are handled."
+            "Install Notify+ from its Google Play listing, which identifies the developer as Stan Shih. Follow the app’s permission guide to enable notification access so it can read LINE notifications, and notification permission so it can show the reorganized version. Android 12 and earlier do not require a separate notification-posting permission grant.",
+            "Choose a notification style, then check a few incoming messages in one conversation. If both original and reorganized cards appear, review the replacement setting. Per-chat controls let you choose which conversations the app handles."
           ]
         },
         {
-          "title": "Availability and relationship to LINE",
+          "title": "Quick replies and troubleshooting",
           "paragraphs": [
-            "Notify+ is available on Google Play. It is an independent third-party app and is not an official LINE or LY Corporation product. The store listing and public repository provide the current product information and support links."
+            "Quick reply works through the reply action supplied by the original LINE notification. If a reply cannot be sent, open LINE to check the conversation rather than assuming a notification action succeeded.",
+            "For a reproducible issue, note the phone model, Android version, LINE version and the notification style in use. Check the app’s help and public issue tracker; avoid including private conversation text in a public report."
+          ]
+        },
+        {
+          "title": "Privacy and the limits of notification access",
+          "paragraphs": [
+            "Notify+ needs access to notification content to reorganize it. The Google Play listing states that processing happens on the phone without uploading it to a server; the public Android manifest does not request INTERNET permission.",
+            "Its input is the notification delivered by LINE, so this is a notification presentation tool rather than a replacement for the chat application. Notify+ is independently developed and is not affiliated with LINE Corporation or LY Corporation."
+          ]
+        },
+        {
+          "title": "Related work by the same developer",
+          "paragraphs": [
+            "I also maintain ClaudePulse for Windows, which uses notifications to help developers return to a Claude Code session that needs attention. You can explore that separate workflow and my other software through the links below."
           ]
         }
       ],
@@ -498,10 +608,85 @@
           "href": "https://play.google.com/store/apps/details?id=com.stanslab.linenotify"
         },
         {
-          "label": "Notify+ public repository",
+          "label": "Notify+ public source and issue tracker",
           "href": "https://github.com/stantheman0128/line-notify-plus"
+        },
+        {
+          "label": "In-app permission, style, and help text",
+          "href": "https://github.com/stantheman0128/line-notify-plus/blob/master/app/src/main/res/values/strings.xml"
+        },
+        {
+          "label": "ClaudePulse for Windows — another notification workflow",
+          "href": "/work/claudepulse"
+        },
+        {
+          "label": "More software by Stan Shih",
+          "href": "/software"
         }
-      ]
+      ],
+      "zhHant": {
+        "title": "Notify+：Android 的 LINE 通知整理工具",
+        "subtitle": "依聊天室合併訊息，讓連續通知更容易閱讀",
+        "summary": "Notify+ 是施博瀚 Stan Shih 開發的 Android 應用，整理手機收到的 LINE 通知，提供對話分組、快速回覆與個別聊天室控制。已在 Google Play 公開上架，為獨立第三方工具。",
+        "sections": [
+          {
+            "title": "先選適合你的通知方式",
+            "paragraphs": [
+              "Notify+ 整理的是 LINE 已送到手機上的通知。「對話串」模式把同一個聊天室的新訊息堆疊在一則通知中；「Apple 分組」模式保留個別訊息通知，再依聊天室收合。可依你閱讀連續訊息的習慣選擇。",
+              "Google Play 商店介紹也列出快速回覆、聯絡人頭像、個別聊天室控制，以及取代原始通知的模式，方便減少重複的通知卡片。"
+            ]
+          },
+          {
+            "title": "第一次使用：先完成權限，再檢查一個聊天室",
+            "paragraphs": [
+              "從 Google Play 的 Notify+ 頁面安裝，核對開發者為 Stan Shih。依 App 引導開啟「通知存取權限」，讓它讀取 LINE 通知；再完成「通知發送權限」，讓整理後的通知能顯示。Android 12 以下不需要額外授予通知發送權限。",
+              "選好通知風格後，先用一個聊天室的幾則新訊息確認顯示方式。若原始通知與整理後的通知同時出現，可檢查取代原始通知的設定；也能透過個別聊天室控制，選擇要交給 Notify+ 處理的對話。"
+            ]
+          },
+          {
+            "title": "快速回覆失敗時怎麼處理",
+            "paragraphs": [
+              "快速回覆透過 LINE 原始通知提供的回覆動作送出。若無法回覆，請回到 LINE 查看對話，不要只因為點過送出就認定訊息已成功傳送。",
+              "要回報可重現的問題時，記下手機型號、Android 版本、LINE 版本與使用中的通知風格，並查看 App 說明及公開 issue tracker。公開回報時請避免附上私人對話內容。"
+            ]
+          },
+          {
+            "title": "通知存取與隱私界線",
+            "paragraphs": [
+              "重新整理通知需要讀取通知內容。Google Play 頁面說明資料在手機上處理、不上傳伺服器；公開 Android manifest 也未要求 INTERNET 權限。",
+              "Notify+ 的輸入是 LINE 實際送出的通知，功能重點是呈現與整理通知，不能代替 LINE 聊天應用本身。這是獨立開發的第三方工具，與 LINE Corporation、LY Corporation 沒有隸屬關係。"
+            ]
+          },
+          {
+            "title": "還想看同一位開發者的其他作品",
+            "paragraphs": [
+              "我也維護 ClaudePulse for Windows，利用通知提醒開發者回到需要處理的 Claude Code 工作階段。下方可閱讀這個不同的通知使用情境，或查看完整軟體目錄。"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "label": "Notify+ Google Play 商店頁：開發者 Stan Shih",
+            "href": "https://play.google.com/store/apps/details?id=com.stanslab.linenotify"
+          },
+          {
+            "label": "Notify+ 公開原始碼與問題回報",
+            "href": "https://github.com/stantheman0128/line-notify-plus"
+          },
+          {
+            "label": "App 內的權限、通知風格與教學文字",
+            "href": "https://github.com/stantheman0128/line-notify-plus/blob/master/app/src/main/res/values/strings.xml"
+          },
+          {
+            "label": "ClaudePulse for Windows：同一位開發者的工作階段通知工具",
+            "href": "/zh/work/claudepulse"
+          },
+          {
+            "label": "施博瀚的完整軟體目錄",
+            "href": "/software"
+          }
+        ]
+      }
     }
   ]
 }

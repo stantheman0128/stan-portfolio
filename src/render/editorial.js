@@ -1,5 +1,6 @@
 import { esc } from "./util.js";
 import { displayName, ORIGIN, publicUrl, seoHead } from "./seo.js";
+import { outboundScript } from "./outbound.js";
 
 // Extends the existing Featherweight typography and color tokens. These pages
 // are plain HTML, with no client-side fetch required to read the main content.
@@ -21,6 +22,7 @@ p{margin:0 0 1.15rem;max-width:68ch}.intro{font-size:1.25rem;line-height:1.5;col
 .role{color:var(--muted);margin-top:1rem}.identity{display:grid;grid-template-columns:8rem minmax(0,1fr);gap:.65rem 1rem;padding:1.5rem 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}
 .work-list{padding:0;list-style:none}.work-list>li{padding:1.5rem 0;border-bottom:1px solid var(--line)}.work-list p{color:var(--muted);margin-bottom:.25rem}.work-list a{display:inline-flex;align-items:center;min-height:44px}
 .source-links{padding-left:1.25rem}.source-links li{margin:.4rem 0}footer{padding:1.5rem 0 2rem;border-top:1px solid var(--line);font-size:.875rem;color:var(--muted)}
+.project-image{display:block;max-width:100%;max-height:32rem;width:auto;height:auto;margin:1.5rem 0;object-fit:contain}
 @media(max-width:30rem){.profile-intro{grid-template-columns:1fr;gap:1rem}.portrait{width:96px;height:120px}.identity{grid-template-columns:1fr;gap:.25rem}.identity dd{margin-bottom:.75rem}.site-nav .links{gap:1rem}main{padding-top:2rem}}
 `;
 
@@ -49,7 +51,12 @@ const sources = list => `<ul class="source-links">${(list || []).map(s => {
 }).join("")}</ul>`;
 
 function workList(c, zh = false) {
-  return `<ul class="work-list">${publishedStudies(c).map(s => `<li><h3><a href="/work/${esc(s.slug)}">${esc(s.title)}</a></h3><p>${esc(s.summary)}</p><a href="/work/${esc(s.slug)}">${zh ? "閱讀英文案例" : "Read the case study"} →</a></li>`).join("")}</ul>`;
+  return `<ul class="work-list">${publishedStudies(c).map(s => {
+    const translated = zh && s.zhHant;
+    const entry = translated ? s.zhHant : s;
+    const path = `${translated ? '/zh' : ''}/work/${s.slug}`;
+    return `<li><h3><a href="${esc(path)}">${esc(entry.title)}</a></h3><p>${esc(entry.summary)}</p><a href="${esc(path)}">${zh ? (translated ? "閱讀中文指南" : "閱讀英文案例") : "Read the case study"} →</a></li>`;
+  }).join("")}</ul>`;
 }
 
 export function shell(c, { path, title, description, lang = "en", pageType = "WebPage", alternates = [], article, breadcrumbs, body }) {
@@ -64,7 +71,7 @@ ${seoHead(p, { path, title, desc: description, lang, pageType, alternates, artic
 <div class="wrap"><header><nav class="site-nav" aria-label="${zh ? "主要導覽" : "Main navigation"}"><a class="brand" href="/">${esc(displayName(p))}</a><div class="links"><a href="${zh ? "/zh/about" : "/"}">${zh ? "關於我" : "About"}</a><a href="/work">${zh ? "作品案例" : "Case studies"}</a><a href="/software">${zh ? "軟體" : "Software"}</a><a href="${zh ? "/zh/open-source" : "/open-source"}">${zh ? "開源貢獻" : "Open source"}</a><a href="/#contact">${zh ? "聯絡" : "Contact"}</a></div></nav></header>
 <main id="main">${body}</main>
 <footer>${esc(displayName(p))} · ${zh ? "台北，台灣" : esc(p.location || "Taipei, Taiwan")}<br><a href="/">${zh ? "個人網站與作品集" : "Personal website and portfolio"}</a></footer>
-</div></body></html>`;
+</div>${outboundScript(path)}</body></html>`;
 }
 
 function aboutPage(c, zh) {
@@ -94,15 +101,19 @@ export function editorialPages(c) {
   const title = `Case studies — ${displayName(p)}`;
   pages.push({ path: "/work", html: shell(c, { path: "/work", title, description: `AI products, developer tools, and Android apps by ${displayName(p)}. Read how the projects work and explore their public sources.`, body: `<h1>Case studies</h1><p class="intro">AI products, developer tools, and the decisions behind them.</p><p>By <a href="/">${esc(displayName(p))}</a> · ${esc(p.location)}</p>${workList(c)}` }) });
   for (const s of publishedStudies(c)) {
-    const path = "/work/" + s.slug;
+    for (const zh of s.zhHant ? [false, true] : [false]) {
+    const entry = zh ? { ...s, ...s.zhHant, modified: s.modified } : s;
+    const path = (zh ? "/zh/work/" : "/work/") + s.slug;
     const project = c.items.find(i => i.id === s.itemId);
-    const pageTitle = `${s.title} — ${displayName(p)}`;
+    const pageTitle = `${entry.title} — ${displayName(p)}`;
     const body = `<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">/</span><a href="/work">Case studies</a><span aria-hidden="true">/</span><span>${esc(s.title)}</span></nav>
-    <article><header><h1>${esc(s.title)}</h1><p class="intro">${esc(s.subtitle)}</p><p class="meta">By <a rel="author" href="/">${esc(displayName(p))}</a> · Updated <time datetime="${esc(s.modified)}">${esc(s.modified)}</time></p><p>${esc(s.summary)}</p></header>
-    ${s.sections.map(section => `<section><h2>${esc(section.title)}</h2>${paragraphs(section.paragraphs)}</section>`).join("")}
-    <section><h2>Explore the project</h2>${sources(s.sources)}</section></article>
-    <section><h2>About the developer</h2><p>${esc(c.about.short)}</p><a href="/">About Stan Shih 施博瀚 →</a></section>`;
-    pages.push({ path, html: shell(c, { path, title: pageTitle, description: s.summary, article: { ...s, image: project.image }, breadcrumbs: [{ name: "Home", path: "/" }, { name: "Case studies", path: "/work" }, { name: s.title, path }], body }) });
+    <article><header><h1>${esc(entry.title)}</h1><p class="intro">${esc(entry.subtitle)}</p><p class="meta">${zh ? '作者' : 'By'} <a rel="author" href="/">${esc(displayName(p))}</a> · ${zh ? '更新' : 'Updated'} <time datetime="${esc(s.modified)}">${esc(s.modified)}</time></p><p>${esc(entry.summary)}</p>${s.zhHant ? `<a class="language" href="${zh ? '/work/' : '/zh/work/'}${esc(s.slug)}" lang="${zh ? 'en' : 'zh-Hant'}">${zh ? 'Read in English' : '閱讀繁體中文指南'} →</a>` : ''}</header>
+    ${s.zhHant && project.image && publicUrl(project.image) ? `<img class="project-image" src="${esc(publicUrl(project.image))}" alt="${esc(entry.title)}"${project.imageWidth && project.imageHeight ? ` width="${esc(project.imageWidth)}" height="${esc(project.imageHeight)}"` : ''} loading="lazy" decoding="async">` : ''}
+    ${entry.sections.map(section => `<section><h2>${esc(section.title)}</h2>${paragraphs(section.paragraphs)}</section>`).join("")}
+    <section><h2>${zh ? '安裝、原始碼與延伸閱讀' : 'Explore the project'}</h2>${sources(entry.sources)}</section></article>
+    <section><h2>${zh ? '關於開發者' : 'About the developer'}</h2><p>${esc(zh ? c.about.zhHant.paragraphs[0] : c.about.short)}</p><a href="${zh ? '/zh/about' : '/'}">${zh ? '認識施博瀚 Stan Shih' : 'About Stan Shih 施博瀚'} →</a></section>`;
+    pages.push({ path, html: shell(c, { path, title: pageTitle, description: entry.summary, lang: zh ? 'zh-Hant' : 'en', alternates: s.zhHant ? [{ lang: 'en', path: '/work/' + s.slug }, { lang: 'zh-Hant', path: '/zh/work/' + s.slug }] : [], article: { ...entry, image: project.image }, breadcrumbs: [{ name: "Home", path: "/" }, { name: "Case studies", path: "/work" }, { name: entry.title, path }], body }) });
+    }
   }
   return pages;
 }

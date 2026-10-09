@@ -6,7 +6,8 @@ import { dirname, resolve } from 'node:path';
 const origin = 'https://stan-shih.com';
 const paths = ['/', '/zh/about', '/work', '/work/antnest-chatbot',
   '/work/paper-stan', '/work/claudepulse', '/work/notify-plus', '/interactive',
-  '/software', '/open-source', '/zh/open-source', '/notes/windows-open-source-fixes', '/research'];
+  '/software', '/open-source', '/zh/open-source', '/notes/windows-open-source-fixes', '/research',
+  '/zh/work/notify-plus', '/zh/work/claudepulse'];
 const capturedAt = new Date().toISOString();
 
 function attributes(tag) {

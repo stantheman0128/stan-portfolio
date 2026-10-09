@@ -1,11 +1,207 @@
 {
-  "checkedAt": "2026-09-18T18:21:43.782Z",
+  "checkedAt": "2026-10-09T03:02:25.521Z",
   "login": "stantheman0128",
-  "method": "Public authored merged pull requests; excludes repositories owned by the author. Snapshot, not a ranking or a count of all contributions.",
+  "method": "Public authored merged pull requests; excludes repositories owned by stantheman0128 and Cherith1222. Complete 2026-10-09 search snapshot reconstructed from the 2026-10-02 set and nine verified additions, with no removals. Snapshot, not a ranking or a count of all contributions.",
   "searchUrl": "https://github.com/search?q=author%3Astantheman0128+is%3Apr+is%3Amerged+is%3Apublic&type=pullrequests",
-  "pullRequestCount": 75,
-  "repositoryCount": 26,
+  "pullRequestCount": 103,
+  "repositoryCount": 35,
   "pullRequests": [
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1792,
+      "title": "fix(husky): pre-commit parses under dash; pre-push survives a logged-out gh",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1792",
+      "mergedAt": "2026-10-08T01:08:10Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1796,
+      "title": "content(technology): add three images to the 功字裡的那根反斜線 article",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1796",
+      "mergedAt": "2026-10-08T01:08:07Z"
+    },
+    {
+      "repository": "OpenWhispr/openwhispr",
+      "number": 2147,
+      "title": "fix: walk GitHub release pages for prefix tags",
+      "url": "https://github.com/OpenWhispr/openwhispr/pull/2147",
+      "mergedAt": "2026-10-06T13:30:23Z"
+    },
+    {
+      "repository": "open-slide/open-slide",
+      "number": 539,
+      "title": "fix: treat slide ids as taken when only the case differs",
+      "url": "https://github.com/open-slide/open-slide/pull/539",
+      "mergedAt": "2026-10-06T08:01:18Z"
+    },
+    {
+      "repository": "crazy-goat/ScanMePHP",
+      "number": 240,
+      "title": "fix: detect build tools with where on Windows",
+      "url": "https://github.com/crazy-goat/ScanMePHP/pull/240",
+      "mergedAt": "2026-10-03T22:30:17Z"
+    },
+    {
+      "repository": "crazy-goat/ScanMePHP",
+      "number": 239,
+      "title": "fix: build the clib on macOS without nproc",
+      "url": "https://github.com/crazy-goat/ScanMePHP/pull/239",
+      "mergedAt": "2026-10-03T22:21:14Z"
+    },
+    {
+      "repository": "evanharmon1/harmon-devkit",
+      "number": 1238,
+      "title": "fix(claim): normalise trailing newlines on claim record compare",
+      "url": "https://github.com/evanharmon1/harmon-devkit/pull/1238",
+      "mergedAt": "2026-10-03T18:38:27Z"
+    },
+    {
+      "repository": "dp-web4/hestia",
+      "number": 1174,
+      "title": "fix: treat Darwin /private/tmp as a temp root",
+      "url": "https://github.com/dp-web4/hestia/pull/1174",
+      "mergedAt": "2026-10-02T04:29:43Z"
+    },
+    {
+      "repository": "dp-web4/hestia",
+      "number": 1165,
+      "title": "fix: bound member fires on macOS without GNU timeout",
+      "url": "https://github.com/dp-web4/hestia/pull/1165",
+      "mergedAt": "2026-10-02T04:24:08Z"
+    },
+    {
+      "repository": "InsForge/instacloud-cli",
+      "number": 324,
+      "title": "fix: escape Codex MCP urls before writing TOML",
+      "url": "https://github.com/InsForge/instacloud-cli/pull/324",
+      "mergedAt": "2026-10-01T21:28:59Z"
+    },
+    {
+      "repository": "InsForge/instacloud-cli",
+      "number": 325,
+      "title": "fix: restrict audit log permissions to the owner",
+      "url": "https://github.com/InsForge/instacloud-cli/pull/325",
+      "mergedAt": "2026-10-01T20:49:08Z"
+    },
+    {
+      "repository": "InsForge/instacloud-cli",
+      "number": 323,
+      "title": "fix: keep password prompts from echoing typed characters",
+      "url": "https://github.com/InsForge/instacloud-cli/pull/323",
+      "mergedAt": "2026-10-01T20:29:21Z"
+    },
+    {
+      "repository": "apache/datafusion-comet",
+      "number": 5302,
+      "title": "fix: reject casts involving non-default collated strings",
+      "url": "https://github.com/apache/datafusion-comet/pull/5302",
+      "mergedAt": "2026-10-01T00:32:04Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3306,
+      "title": "fix(windows): self-heal Git Bash hooks when worker.pid is stale (#3224)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3306",
+      "mergedAt": "2026-09-30T22:05:43Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3508,
+      "title": "fix(observer): surface cumulative token usage on session completion (Related to #3497)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3508",
+      "mergedAt": "2026-09-30T21:57:34Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3529,
+      "title": "fix(windows): hide worker daemon spawn instead of Node detached (#3521)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3529",
+      "mergedAt": "2026-09-30T09:57:56Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3316,
+      "title": "feat(hooks): env opt-out for PreToolUse/PostToolUse (#3106)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3316",
+      "mergedAt": "2026-09-30T09:46:41Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3321,
+      "title": "fix(windows): resolve PATH binaries via where.exe argv",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3321",
+      "mergedAt": "2026-09-30T09:44:46Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3311,
+      "title": "fix(project-name): stabilize non-git subdir project keys (closes #3194)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3311",
+      "mergedAt": "2026-09-30T09:39:21Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3310,
+      "title": "fix(context): exclude subagent observations from SessionStart injection (#3274)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3310",
+      "mergedAt": "2026-09-30T09:21:16Z"
+    },
+    {
+      "repository": "thedotmack/claude-mem",
+      "number": 3309,
+      "title": "fix(worker): stop Windows listen-socket inheritance and reclaim dead spawn locks (#3300)",
+      "url": "https://github.com/thedotmack/claude-mem/pull/3309",
+      "mergedAt": "2026-09-30T08:44:10Z"
+    },
+    {
+      "repository": "citation-style-language/styles",
+      "number": 8353,
+      "title": "Fix wiley-vch-books in press for uncertain issued dates",
+      "url": "https://github.com/citation-style-language/styles/pull/8353",
+      "mergedAt": "2026-09-30T07:20:31Z"
+    },
+    {
+      "repository": "managarm/managarm",
+      "number": 1661,
+      "title": "eir/arm, thor/arm: set TCR_EL1 SH fields to Inner Shareable",
+      "url": "https://github.com/managarm/managarm/pull/1661",
+      "mergedAt": "2026-09-29T13:05:41Z"
+    },
+    {
+      "repository": "pfrankov/git-copy-history",
+      "number": 14,
+      "title": "fix: copy history when the source path contains spaces",
+      "url": "https://github.com/pfrankov/git-copy-history/pull/14",
+      "mergedAt": "2026-09-28T20:32:19Z"
+    },
+    {
+      "repository": "dp-web4/hestia",
+      "number": 1105,
+      "title": "fix: lock member fires on macOS without flock",
+      "url": "https://github.com/dp-web4/hestia/pull/1105",
+      "mergedAt": "2026-09-26T07:53:17Z"
+    },
+    {
+      "repository": "tobychui/arozos",
+      "number": 304,
+      "title": "fix: treat Darwin ps %mem sum as a percent",
+      "url": "https://github.com/tobychui/arozos/pull/304",
+      "mergedAt": "2026-09-23T11:28:04Z"
+    },
+    {
+      "repository": "yvgude/lean-ctx",
+      "number": 1838,
+      "title": "fix: run postinstall onboard without shell path expansion",
+      "url": "https://github.com/yvgude/lean-ctx/pull/1838",
+      "mergedAt": "2026-09-23T07:58:10Z"
+    },
+    {
+      "repository": "evanharmon1/harmon-devkit",
+      "number": 1144,
+      "title": "fix: let test-integrate-codex pass the settle timestamp on macOS",
+      "url": "https://github.com/evanharmon1/harmon-devkit/pull/1144",
+      "mergedAt": "2026-09-22T23:30:37Z"
+    },
     {
       "repository": "OpenWhispr/openwhispr",
       "number": 2031,

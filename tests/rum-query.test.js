@@ -57,14 +57,18 @@ describe("fetchRumStats", () => {
     vi.unstubAllGlobals();
   });
 
-  it("runs four SQL queries and rounds rows, including the recent feed", async () => {
+  it("runs separated timing and outbound SQL queries, keeping clicks out of visit results", async () => {
     const stats = await fetchRumStats("token", 1);
-    expect(fetch).toHaveBeenCalledTimes(4);
+    expect(fetch).toHaveBeenCalledTimes(5);
     expect(stats.days).toBe(1);
     expect(stats.overall[0].ttfb_p50).toBe(40);
     expect(stats.vitals[0].ttfb_p50).toBe(40);
     expect(stats.byCountry[0].ttfb_p50).toBe(40);
     expect(stats.recent[0].ttfb_p50).toBe(40);
+    expect(stats.outbound).toBeDefined();
+    const queries = fetch.mock.calls.map(([, options]) => options.body);
+    expect(queries.filter(q => q.includes("blob5 = ''"))).toHaveLength(4);
+    expect(queries.filter(q => q.includes("blob5 = 'outbound-v1'"))).toHaveLength(1);
   });
 
   it("keeps string timestamps intact while rounding latency doubles", async () => {

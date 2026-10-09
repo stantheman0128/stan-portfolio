@@ -34,7 +34,7 @@ describe("searchable identity and case-study pages", () => {
       const html = pages.find(p => p.path === `/work/${s.slug}`).html;
       expect(html).toContain('<a rel="author" href="/">');
       expect(html).toContain('id="main"');
-      expect(html).not.toContain('fetch(');
+      expect(html).not.toMatch(/fetch\([^)]*content\.json/);
       for (const section of s.sections) expect(html).toContain(section.title);
       const article = graph(html).find(n => n["@type"] === "Article");
       expect(article.author["@id"]).toBe("https://stan-shih.com/#person");
@@ -84,6 +84,24 @@ describe("searchable identity and case-study pages", () => {
     expect(() => editorialPages(altered)).toThrow(/slugs/);
     altered.caseStudies[0].slug = altered.caseStudies[1].slug;
     expect(() => editorialPages(altered)).toThrow(/slugs/);
+  });
+
+  it("publishes reciprocal language variants with self canonicals and shared authorship", () => {
+    for (const slug of ['notify-plus', 'claudepulse']) {
+      for (const prefix of ['', '/zh']) {
+        const path = `${prefix}/work/${slug}`;
+        const html = pages.find(p => p.path === path)?.html;
+        expect(html).toContain(`rel="canonical" href="https://stan-shih.com${path}"`);
+        expect(html).toContain(`hreflang="en" href="https://stan-shih.com/work/${slug}"`);
+        expect(html).toContain(`hreflang="zh-Hant" href="https://stan-shih.com/zh/work/${slug}"`);
+        expect(html).toContain(`<html lang="${prefix ? 'zh-Hant' : 'en'}">`);
+        expect(graph(html).find(n => n['@type'] === 'Article').author['@id']).toBe('https://stan-shih.com/#person');
+      }
+      expect(pages.find(p => p.path === '/zh/about').html).toContain(`href="/zh/work/${slug}"`);
+    }
+    const removed = structuredClone(content);
+    removed.items = removed.items.filter(i => i.id !== 'line-notify-plus');
+    expect(editorialPages(removed).some(p => p.path === '/zh/work/notify-plus')).toBe(false);
   });
 
   it("escapes CMS-authored text in HTML and JSON-LD", () => {
