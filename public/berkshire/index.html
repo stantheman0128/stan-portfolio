@@ -1,0 +1,130 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#ffffff"><title>Berkshire 資料庫即時進度</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff;color:#111827;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
+.wrap{max-width:1500px;margin:0 auto;padding:28px 40px}
+.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #e5e7eb;padding-bottom:16px}
+h1{font-size:38px;margin:0}.sub{color:#6b7280;font-size:19px;margin-top:6px;font-variant-numeric:tabular-nums}
+.st{font-size:22px;font-weight:700}.ok{color:#16a34a}.bad{color:#dc2626}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:26px;margin:28px 0}
+.card{text-align:center;position:relative}.card h2{font-size:23px;margin:0 0 10px}
+.ring{position:relative;width:100%;max-width:250px;margin:0 auto}.ring svg{width:100%;display:block}
+.ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pct{font-size:29px;font-weight:800}
+.cnt{font-size:23px;font-weight:800;margin-top:10px}
+.old{color:#6b7280;font-size:16px;margin-top:4px}
+.meter{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;color:#6b7280;font-size:15px}
+.disk{width:22px;height:22px;border-radius:50%;border:2px solid #9ca3af;position:relative;animation:spin linear infinite;animation-play-state:paused}
+.disk:after{content:"";position:absolute;left:50%;top:1px;width:3px;height:9px;margin-left:-1.5px;background:#dc2626;border-radius:2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* odometer */
+.odo{display:inline-flex;line-height:1.15em;height:1.15em;overflow:hidden;font-variant-numeric:tabular-nums;vertical-align:bottom}
+.odo .col{display:inline-block;height:1.15em;overflow:hidden}
+.odo .strip{display:flex;flex-direction:column;transition-property:transform;transition-timing-function:cubic-bezier(.3,.7,.3,1)}
+.odo .strip span,.odo .fix{height:1.15em;display:block;text-align:center}
+.odo .col,.odo .fix{width:.62em}.odo .fix.sep{width:.32em}
+/* activity */
+.act{border-top:2px solid #e5e7eb;border-bottom:2px solid #e5e7eb;padding:18px 0;margin-bottom:22px}
+.act h3{margin:0 0 12px;font-size:21px}
+.astats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:14px}
+.k{color:#6b7280;font-size:17px}.v{font-size:30px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
+.nextbar{height:12px;background:#e8edf3;border-radius:6px;overflow:hidden;margin-top:8px}.nextbar div{height:100%;background:#2563eb;width:0}
+canvas{width:100%;height:70px;display:block;background:#f8fafc;border-radius:8px}
+.legend{display:flex;gap:18px;color:#6b7280;font-size:14px;margin-top:6px}.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px}
+.foot{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+.tick{color:#9ca3af;font-size:14px;margin-top:14px;text-align:right;font-variant-numeric:tabular-nums}
+.banner{display:none;margin:16px 0 0;padding:12px 16px;border-radius:10px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;font-size:17px;font-weight:600}
+.banner.on{display:block}.banner small{display:block;font-weight:400;color:#7f1d1d;margin-top:2px;font-size:14px}
+.loading{grid-column:1/-1;text-align:center;color:#6b7280;font-size:18px;padding:40px 0}
+.stale .grid,.stale .act,.stale .foot{opacity:.45;transition:opacity .3s}
+@media (max-width:720px){
+ .wrap{padding:16px 14px calc(16px + env(safe-area-inset-bottom))}
+ .hd{flex-direction:column;align-items:flex-start;gap:8px;padding-bottom:12px}
+ h1{font-size:25px}.sub{font-size:15px}.st{font-size:18px}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 12px;margin:18px 0}
+ .card h2{font-size:16px;margin-bottom:6px}.pct{font-size:18px}.cnt{font-size:15px;margin-top:6px}
+ .old{font-size:13px}.meter{font-size:12px;gap:5px}.disk{width:16px;height:16px}
+ .act h3{font-size:18px}.astats,.foot{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .k{font-size:13px}.v{font-size:20px}.legend{flex-wrap:wrap;gap:8px 12px;font-size:12px}canvas{height:56px}
+}
+</style></head><body><div class="wrap">
+<div class="hd"><div><h1>Berkshire 資料庫即時進度</h1><div class="sub" id="now">—</div></div><div class="st" id="st">—</div></div>
+<div class="banner" id="ban">● 離線，重新連線中…<small id="bansub">資料來源暫時連不上，頁面會自動重試。</small></div>
+<div class="grid" id="grid"><div class="loading">連線中…</div></div>
+<div class="act"><h3>請求活動（最近 60 秒）</h3>
+ <div class="astats">
+  <div><div class="k">最近 60 秒完成</div><div class="v" id="n60">—</div></div>
+  <div><div class="k">平均間隔</div><div class="v" id="gap">—</div></div>
+  <div><div class="k">上一筆完成</div><div class="v" id="lastago">—</div></div>
+  <div><div class="k">下一筆預計</div><div class="v" id="nextin">—</div><div class="nextbar"><div id="nb"></div></div></div>
+ </div>
+ <canvas id="tl"></canvas>
+ <div class="legend"><span>← 60 秒前</span><span><i style="background:#2563eb"></i>股票分鐘K</span><span><i style="background:#f59e0b"></i>台指期</span><span><i style="background:#16a34a"></i>ADR</span><span style="margin-left:auto">現在 →</span></div>
+</div>
+<div class="foot">
+ <div><div class="k">最近 60 分鐘完成（上限 5,950）</div><div class="v" id="rate">—</div></div>
+ <div><div class="k">分鐘K預計補完</div><div class="v" id="eta">—</div></div>
+ <div><div class="k">剩餘請求</div><div class="v" id="rem">—</div></div>
+ <div><div class="k">硬碟</div><div class="v" id="disk">—</div></div>
+</div><div class="tick" id="tick"></div></div>
+<script>
+const R=100,C=2*Math.PI*R,f=n=>n.toLocaleString('en-US');
+const COL={TaiwanStockKBar:'#2563eb',TaiwanFuturesKBar:'#f59e0b',USStockPriceMinute:'#16a34a'};
+const SRC='https://tightness-bride-armoire.ngrok-free.dev/progress.json';
+let D=null,last=0,skew=0,built=false,fails=0,busy=false,timer=null;const odos={};
+function Odo(el){this.el=el;this.cols=[];this.txt='';}
+Odo.prototype.set=function(s,dur){
+  if(s.length!==this.txt.length){this.el.innerHTML='';this.cols=[];
+    for(const ch of s){if(/\d/.test(ch)){const c=document.createElement('span');c.className='col';const st=document.createElement('div');st.className='strip';
+      for(let i=0;i<10;i++){const d=document.createElement('span');d.textContent=i;st.appendChild(d)}c.appendChild(st);this.el.appendChild(c);this.cols.push(st)}
+      else{const x=document.createElement('span');x.className='fix'+(/[,.]/.test(ch)?' sep':'');x.textContent=ch;this.el.appendChild(x);this.cols.push(null)}}}
+  [...s].forEach((ch,i)=>{const st=this.cols[i];if(st){st.style.transitionDuration=dur+'s';st.style.transform=`translateY(-${(+ch)*10}%)`}});
+  this.txt=s;}
+function build(items){const g=document.getElementById('grid');
+  g.innerHTML=items.map(x=>`<div class="card"><h2>${x.label}</h2><div class="ring"><svg viewBox="0 0 240 240">
+  <circle cx="120" cy="120" r="${R}" fill="none" stroke="#e8edf3" stroke-width="24"/>
+  <circle id="arc-${x.ds}" cx="120" cy="120" r="${R}" fill="none" stroke="#2563eb" stroke-width="24" stroke-dasharray="0 ${C}" transform="rotate(-90 120 120)" style="transition:stroke-dasharray .8s"/></svg>
+  <div class="ctr"><div class="pct"><span class="odo" id="p-${x.ds}"></span><span>%</span></div></div></div>
+  <div class="cnt"><span class="odo" id="c-${x.ds}"></span> / ${f(x.total)}</div><div class="old" id="o-${x.ds}"></div>
+  <div class="meter"><div class="disk" id="d-${x.ds}"></div><span id="s-${x.ds}"></span></div></div>`).join('');
+  items.forEach(x=>{odos['p'+x.ds]=new Odo(document.getElementById('p-'+x.ds));odos['c'+x.ds]=new Odo(document.getElementById('c-'+x.ds))});built=true}
+async function tick(){if(busy)return;busy=true;const ac=new AbortController(),to=setTimeout(()=>ac.abort(),8000);try{const r=await fetch(SRC+'?t='+Date.now(),{headers:{'ngrok-skip-browser-warning':'1'},cache:'no-store',mode:'cors',signal:ac.signal});
+ if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();if(!j||!Array.isArray(j.items))throw new Error('bad data');D=j;online();
+ skew=Date.now()/1000-D.server_ts; if(!built)build(D.items);
+ document.getElementById('now').textContent=D.now+'（台北時間）';
+ const s=document.getElementById('st');s.textContent=D.alive?'● 下載中':'● 已停止';s.className='st '+(D.alive?'ok':'bad');
+ D.items.forEach(x=>{const p=x.total?x.done/x.total:0,col=p>=1?'#16a34a':(p>0?'#2563eb':'#9ca3af');
+  const pm=(D.per_min[x.ds]||0); const dur=pm?Math.min(1.6,Math.max(.25,60/pm*.9)):1;
+  odos['p'+x.ds].set((p*100).toFixed(4),dur);odos['c'+x.ds].set(f(x.done),dur);
+  document.getElementById('p-'+x.ds).parentNode.style.color=col;
+  const a=document.getElementById('arc-'+x.ds);a.setAttribute('stroke',col);a.setAttribute('stroke-dasharray',`${C*p} ${C}`);
+  document.getElementById('o-'+x.ds).textContent=p>=1?'完成':(x.oldest&&p>0?'已回到 '+x.oldest.slice(0,7).replace('-','/'):'尚未開始');
+  const dk=document.getElementById('d-'+x.ds);
+  if(pm){dk.style.animationDuration=(240/pm).toFixed(2)+'s';dk.style.animationPlayState='running'}else dk.style.animationPlayState='paused';
+  document.getElementById('s-'+x.ds).textContent=pm?`每分鐘 ${pm} 筆`:(p>=1?'已完成':'等待中')});
+ document.getElementById('rate').textContent=f(D.rate);document.getElementById('eta').textContent=D.eta;
+ document.getElementById('rem').textContent=f(D.remaining);document.getElementById('disk').textContent=f(D.disk_mb)+' MB';
+ document.getElementById('n60').textContent=f(D.n60)+' 筆';
+ document.getElementById('gap').textContent=D.n60?(60/D.n60).toFixed(3)+' 秒':'—';last=Date.now();
+}catch(e){offline(e)}finally{clearTimeout(to);busy=false}}
+function online(){if(fails){fails=0;sched()}document.getElementById('ban').classList.remove('on');document.body.classList.remove('stale')}
+function offline(e){fails++;const s=document.getElementById('st');s.textContent='● 離線，重新連線中';s.className='st bad';
+ document.getElementById('ban').classList.add('on');document.body.classList.add('stale');
+ document.getElementById('bansub').textContent=(D?'目前顯示的是最後一次取得的數字。':'尚未取得資料。')+'已重試 '+fails+' 次，'+(fails>=5?'每 5 秒':'每秒')+'自動重試。';
+ if(!built)document.getElementById('grid').innerHTML='<div class="loading">資料來源暫時離線，自動重試中…</div>';if(fails===5)sched()}
+function sched(){clearInterval(timer);timer=null;if(document.hidden)return;timer=setInterval(tick,fails>=5?5000:1000)}
+document.addEventListener('visibilitychange',()=>{if(document.hidden){clearInterval(timer);timer=null}else{tick();sched()}});
+const cv=document.getElementById('tl'),cx=cv.getContext('2d');
+function frame(){if(D){const now=Date.now()/1000-skew;
+  const ago=D.last_ts?now-D.last_ts:null,gap=D.n60?60/D.n60:null;
+  document.getElementById('lastago').textContent=ago!=null?ago.toFixed(3)+' 秒前':'—';
+  if(gap&&ago!=null){const ph=(ago%gap)/gap;document.getElementById('nextin').textContent='約 '+(gap-ago%gap).toFixed(3)+' 秒後';document.getElementById('nb').style.width=(ph*100)+'%'}
+  const w=cv.clientWidth,h=cv.clientHeight;if(cv.width!==w*2){cv.width=w*2;cv.height=h*2}
+  cx.setTransform(2,0,0,2,0,0);cx.clearRect(0,0,w,h);
+  for(const [d,t] of D.recent){const x=w-(now-t)/60*w;if(x<0)continue;cx.fillStyle=COL[d]||'#6b7280';cx.globalAlpha=.75;cx.fillRect(x-1.5,8,3,h-16)}
+  cx.globalAlpha=1;document.getElementById('tick').textContent='資料上次更新 '+((Date.now()-last)/1000).toFixed(3)+' 秒前'}
+ requestAnimationFrame(frame)}
+tick();sched();requestAnimationFrame(frame);
+</script></body></html>
