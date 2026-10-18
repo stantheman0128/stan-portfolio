@@ -27,14 +27,11 @@ h1{font-size:clamp(20px,calc(var(--u)*2.3),56px);margin:0;line-height:1.15}
 .cnt{font-size:clamp(14px,calc(var(--u)*1.45),34px);font-weight:800;margin-top:.35em;white-space:nowrap}
 .cnt .tot{color:var(--mut);font-weight:700}
 .old{color:var(--mut);font-size:clamp(12px,calc(var(--u)*1.0),24px);margin-top:.15em}
-.meter{display:flex;align-items:center;justify-content:center;gap:.5em;margin-top:.3em;color:var(--mut);font-size:clamp(12px,calc(var(--u)*.95),22px);white-space:nowrap;contain:layout paint}
-.sw{position:relative;width:4.3em;height:4.66em;flex:none;contain:strict}
-.sw svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.sw .wedge{position:absolute;left:21.875%;top:44.6%;width:56.25%;height:51.9%;border-radius:50%;opacity:.25}
-.sw .hand{position:absolute;left:50%;top:59.6%;width:5%;height:0;margin-left:-2.5%;will-change:transform}
-.sw .hand i{position:absolute;left:0;width:100%;bottom:-.25em;height:1.2em;border-radius:3px}
-.sw .hub{position:absolute;left:50%;top:59.6%;width:10%;height:9.2%;margin:-4.6% 0 0 -5%;border-radius:50%}
-.mt{text-align:left;line-height:1.3;width:11.5em}.mt b{display:block;font-size:1.5em;font-weight:800;color:#111827;height:1.3em;contain:strict;overflow:hidden}.mt span{display:block;height:1.3em;contain:strict;overflow:hidden}
+.nxw{margin-top:.2em;color:var(--mut);font-size:clamp(12px,calc(var(--u)*1.0),24px);height:1.35em;width:100%;contain:layout paint;display:flex;justify-content:center}
+.nx{display:block;font-weight:500;height:1.35em;width:13em;contain:strict;white-space:nowrap;overflow:hidden;text-align:center}
+.tmr{will-change:stroke-dashoffset}
+.orb{position:absolute;inset:0;will-change:transform;pointer-events:none}
+.orb i{position:absolute;left:50%;top:2.92%;width:3.6%;height:3.6%;margin:-1.8% 0 0 -1.8%;border-radius:50%}
 /* odometer */
 .odo{contain:layout paint;display:inline-flex;height:1.15em;line-height:1.15em;overflow:hidden;vertical-align:bottom}
 .odo .col{display:inline-block;height:1.15em;overflow:hidden;width:.62em}
@@ -62,7 +59,7 @@ canvas{contain:strict;width:100%;height:clamp(36px,7vh,110px);display:block;back
  h1{font-size:25px}.sub{font-size:15px}.st{font-size:18px}.tick{font-size:12px}
  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 12px;margin:18px 0}
  .ring{flex:none;height:40vw}
- .card h2{font-size:16px}.cnt{font-size:15px}.old{font-size:13px}.meter{font-size:12px}.sw{width:3.6em;height:3.9em}.mt{width:10.5em}.mt b{font-size:1.3em}
+ .card h2{font-size:16px}.cnt{font-size:15px}.old{font-size:13px}.nxw{font-size:12px}
  .act{padding-top:14px;margin-bottom:14px}.act h3{font-size:18px}
  .astats,.foot{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.foot{padding-top:14px}
  .k{font-size:13px}.v{font-size:20px}.legend{gap:8px 12px;font-size:12px}canvas{height:56px}
@@ -90,7 +87,7 @@ canvas{contain:strict;width:100%;height:clamp(36px,7vh,110px);display:block;back
 </div></div>
 <script>
 const BASE='https://tightness-bride-armoire.ngrok-free.dev',HDR={'ngrok-skip-browser-warning':'1'};
-const R=100,C=2*Math.PI*R,PC=2*Math.PI*7.5,f=n=>n.toLocaleString('en-US');
+const R=94,C=2*Math.PI*R,TR=113,TC=2*Math.PI*TR,f=n=>n.toLocaleString('en-US');
 const COL={TaiwanStockKBar:'#2563eb',TaiwanFuturesKBar:'#f59e0b',USStockPriceMinute:'#16a34a',TaiwanStockPriceAdj:'#8b5cf6',TaiwanStockPriceTick:'#9ca3af'};
 const cof=ds=>COL[ds]||'#6b7280';
 let D=null,last=0,skew=0,built=false,fails=0;const odos={},S={},TX={};
@@ -109,16 +106,14 @@ Odo.prototype.set=function(V){if(!(V>=0))V=0;const n=Math.floor(V),fr=V-n,s=this
   if(Math.abs(p-this.pos[i])>.0005){this.pos[i]=p;this.cols[i].style.transform=`translateY(${(-p*100/11).toFixed(3)}%)`}}};
 function build(items){const g=document.getElementById('grid');
  g.innerHTML=items.map(x=>{const c=cof(x.ds);return `<div class="card"><h2><i style="background:${c}"></i>${x.label}</h2><div class="ring"><div class="rbox"><svg viewBox="0 0 240 240">
-  <circle cx="120" cy="120" r="${R}" fill="none" stroke="#e8edf3" stroke-width="24"/>
-  <circle id="arc-${x.ds}" cx="120" cy="120" r="${R}" fill="none" stroke="${c}" stroke-width="24" stroke-dasharray="0 ${C}" transform="rotate(-90 120 120)"/></svg>
+  <circle cx="120" cy="120" r="${TR}" fill="none" stroke="${c}" stroke-opacity=".28" stroke-width="4" stroke-dasharray="1.6 4.32"/>
+  <circle class="tmr" id="t-${x.ds}" cx="120" cy="120" r="${TR}" fill="none" stroke="${c}" stroke-opacity=".6" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="${TC} ${TC}" stroke-dashoffset="${TC}" transform="rotate(-90 120 120)"/>
+  <circle cx="120" cy="120" r="${R}" fill="none" stroke="#e8edf3" stroke-width="22"/>
+  <circle id="arc-${x.ds}" cx="120" cy="120" r="${R}" fill="none" stroke="${c}" stroke-width="22" stroke-dasharray="0 ${C}" transform="rotate(-90 120 120)"/></svg>
+  <div class="orb" id="d-${x.ds}"><i style="background:${c};box-shadow:0 0 6px 2px ${c}99,0 0 2px ${c}"></i></div>
   <div class="ctr"><div class="pct" style="color:${x.ds==='TaiwanStockPriceTick'?'#9ca3af':c}"><span class="odo" id="p-${x.ds}"></span><span>%</span></div></div></div></div>
   <div class="cnt"><span class="odo" id="c-${x.ds}"></span><span class="tot"> / ${f(x.total)}</span></div><div class="old" id="o-${x.ds}"></div>
-  <div class="meter"><div class="sw" aria-hidden="true"><svg viewBox="0 0 48 52">
-   <rect x="20" y="1.5" width="8" height="5" rx="1.5" fill="${c}"/><rect x="22.5" y="5.5" width="3" height="5" fill="${c}"/>
-   <rect x="37" y="9" width="6" height="3.6" rx="1.2" fill="${c}" transform="rotate(45 40 10.8)"/>
-   <circle cx="24" cy="31" r="18.5" fill="#fff" stroke="${c}" stroke-width="3.5"/><line x1="24" y1="14.5" x2="24" y2="17.6" transform="rotate(0 24 31)" stroke="#9ca3af" stroke-width="1.6" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(30 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(60 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="14.5" x2="24" y2="17.6" transform="rotate(90 24 31)" stroke="#9ca3af" stroke-width="1.6" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(120 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(150 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="14.5" x2="24" y2="17.6" transform="rotate(180 24 31)" stroke="#9ca3af" stroke-width="1.6" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(210 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(240 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="14.5" x2="24" y2="17.6" transform="rotate(270 24 31)" stroke="#9ca3af" stroke-width="1.6" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(300 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(330 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/></svg>
-   <div class="wedge" id="w-${x.ds}"></div><div class="hand" id="h-${x.ds}"><i style="background:${c}"></i></div><div class="hub" style="background:${c}"></div></div>
-   <div class="mt"><b id="n-${x.ds}">—</b><span id="s-${x.ds}"></span></div></div></div>`}).join('');
+  <div class="nxw"><b class="nx" id="n-${x.ds}"></b></div></div>`}).join('');
  items.forEach(x=>{odos['p'+x.ds]=new Odo(document.getElementById('p-'+x.ds),4,false);odos['c'+x.ds]=new Odo(document.getElementById('c-'+x.ds),0,true)});built=true}
 function render(j){if(!j||!Array.isArray(j.items))return;D=j;online();
  skew=Date.now()/1000-D.server_ts;if(!built)build(D.items);
@@ -183,10 +178,10 @@ function frame(ts){const dt=pt?Math.min(.1,(ts-pt)/1000):0;pt=ts;
    const p=o.total?o.disp/o.total:0;odos['c'+x.ds].set(o.disp);odos['p'+x.ds].set(p*1e6);
    const dash=(C*p).toFixed(1);if(o.dash!==dash){o.dash=dash;document.getElementById('arc-'+x.ds).setAttribute('stroke-dasharray',dash+' '+C)}
    const done=o.c>=o.total&&o.total>0,sp=done?1:(live?ph:0);
-   const deg=(sp*360).toFixed(1);if(o.deg!==deg){o.deg=deg;(o.he||(o.he=document.getElementById('h-'+x.ds))).style.transform='rotate('+deg+'deg)'}
-   const wd=Math.round(sp*120);if(o.wd!==wd){o.wd=wd;(o.we||(o.we=document.getElementById('w-'+x.ds))).style.background=`conic-gradient(${cof(x.ds)} ${wd*3}deg,transparent 0)`}
-   if(txt){const rt=o.pm>=20?`每分鐘 ${o.pm} 筆`:(o.ph?`每小時 ${f(o.ph)} 筆`:'');
-    setT('n-'+x.ds,done?'已完成':(live?(left>0?'下一筆 '+left.toFixed(1)+' 秒':'下一筆 即將'):'等待中'));setT('s-'+x.ds,done?'100%':(live?rt:'尚未開始'))}}
+   const deg=(sp*360).toFixed(1);if(o.deg!==deg){o.deg=deg;(o.te||(o.te=document.getElementById('t-'+x.ds))).style.strokeDashoffset=(TC*(1-sp)).toFixed(2);
+    const dd=o.de||(o.de=document.getElementById('d-'+x.ds));dd.style.transform='rotate('+deg+'deg)';dd.style.opacity=(live||done)?1:0}
+   if(txt){const rt=o.pm>=20?`${o.pm}/分`:(o.ph?`${f(o.ph)}/時`:'');
+    setT('n-'+x.ds,done?'已完成':(live?'下一筆 '+(left>=1?Math.ceil(left)+'s':(left>0?'<1s':'即將'))+' · '+rt:'等待中'))}}
   const ago=D.last_ts?now-D.last_ts:null,gap=D.n60?60/D.n60:null;
   if(txt){setT('lastago',ago!=null?ago.toFixed(3)+' 秒前':'—');if(gap&&ago!=null)setT('nextin','約 '+(gap-ago%gap).toFixed(3)+' 秒後');
    setT('tick','資料上次更新 '+((Date.now()-last)/1000).toFixed(1)+' 秒前')}
