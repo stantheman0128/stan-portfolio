@@ -1,56 +1,68 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
-<meta name="theme-color" content="#ffffff"><title>Berkshire 資料庫即時進度</title>
+<meta name="theme-color" content="#ffffff">
+<title>Berkshire 資料庫即時進度</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#fff;color:#111827;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif}
-.wrap{max-width:1500px;margin:0 auto;padding:28px 40px}
-.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #e5e7eb;padding-bottom:16px}
-h1{font-size:38px;margin:0}.sub{color:#6b7280;font-size:19px;margin-top:6px;font-variant-numeric:tabular-nums}
-.st{font-size:22px;font-weight:700}.ok{color:#16a34a}.bad{color:#dc2626}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:26px;margin:28px 0}
-.card{text-align:center;position:relative}.card h2{font-size:23px;margin:0 0 10px}
-.ring{position:relative;width:100%;max-width:250px;margin:0 auto}.ring svg{width:100%;display:block}
-.ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.pct{font-size:29px;font-weight:800}
-.cnt{font-size:23px;font-weight:800;margin-top:10px}
-.old{color:#6b7280;font-size:16px;margin-top:4px}
-.meter{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;color:#6b7280;font-size:15px}
-.disk{width:22px;height:22px;border-radius:50%;border:2px solid #9ca3af;position:relative;animation:spin linear infinite;animation-play-state:paused}
-.disk:after{content:"";position:absolute;left:50%;top:1px;width:3px;height:9px;margin-left:-1.5px;background:#dc2626;border-radius:2px}
-@keyframes spin{to{transform:rotate(360deg)}}
+*{box-sizing:border-box}
+:root{--u:min(1vw,1.78vh);--mut:#6b7280;--line:#e5e7eb}
+html,body{margin:0;height:100%}
+body{background:#fff;color:#111827;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow:hidden}
+.wrap{height:100vh;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:calc(var(--u)*1.1);padding:calc(var(--u)*1.4) calc(var(--u)*2.4);max-width:2400px;margin:0 auto}
+.hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--line);padding-bottom:calc(var(--u)*.8)}
+h1{font-size:clamp(20px,calc(var(--u)*2.3),56px);margin:0;line-height:1.15}
+.sub{color:var(--mut);font-size:clamp(13px,calc(var(--u)*1.15),26px);margin-top:.2em}
+.rt{text-align:right}.st{font-size:clamp(15px,calc(var(--u)*1.45),32px);font-weight:700}.ok{color:#16a34a}.bad{color:#dc2626}
+.tick{color:#9ca3af;font-size:clamp(12px,calc(var(--u)*.9),20px);margin-top:.25em}
+/* donuts */
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:calc(var(--u)*1.6);min-height:0}
+.card{display:flex;flex-direction:column;align-items:center;min-height:0;text-align:center}
+.card h2{font-size:clamp(14px,calc(var(--u)*1.45),34px);margin:0 0 .3em;display:flex;align-items:center;gap:.4em;white-space:nowrap}
+.card h2 i{width:.6em;height:.6em;border-radius:50%;display:inline-block;flex:none}
+.ring{flex:1 1 auto;min-height:0;width:100%;container-type:size;display:flex;align-items:center;justify-content:center}
+.rbox{position:relative;width:min(100cqw,100cqh);height:min(100cqw,100cqh)}
+.rbox svg{width:100%;height:100%;display:block}
+.ctr{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.pct{font-size:calc(min(100cqw,100cqh)*.125);font-weight:800;display:flex;align-items:baseline}
+.cnt{font-size:clamp(14px,calc(var(--u)*1.45),34px);font-weight:800;margin-top:.35em;white-space:nowrap}
+.cnt .tot{color:var(--mut);font-weight:700}
+.old{color:var(--mut);font-size:clamp(12px,calc(var(--u)*1.0),24px);margin-top:.15em}
+.meter{display:flex;align-items:center;justify-content:center;gap:.45em;margin-top:.25em;color:var(--mut);font-size:clamp(12px,calc(var(--u)*.95),22px);white-space:nowrap}
+.meter svg{width:1.5em;height:1.5em;flex:none}
 /* odometer */
-.odo{display:inline-flex;line-height:1.15em;height:1.15em;overflow:hidden;font-variant-numeric:tabular-nums;vertical-align:bottom}
-.odo .col{display:inline-block;height:1.15em;overflow:hidden}
-.odo .strip{display:flex;flex-direction:column;transition-property:transform;transition-timing-function:cubic-bezier(.3,.7,.3,1)}
+.odo{display:inline-flex;height:1.15em;line-height:1.15em;overflow:hidden;vertical-align:bottom}
+.odo .col{display:inline-block;height:1.15em;overflow:hidden;width:.62em}
+.odo .strip{display:flex;flex-direction:column;will-change:transform}
 .odo .strip span,.odo .fix{height:1.15em;display:block;text-align:center}
-.odo .col,.odo .fix{width:.62em}.odo .fix.sep{width:.32em}
+.odo .fix{width:.62em}.odo .fix.sep{width:.3em}
 /* activity */
-.act{border-top:2px solid #e5e7eb;border-bottom:2px solid #e5e7eb;padding:18px 0;margin-bottom:22px}
-.act h3{margin:0 0 12px;font-size:21px}
-.astats{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:14px}
-.k{color:#6b7280;font-size:17px}.v{font-size:30px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}
-.nextbar{height:12px;background:#e8edf3;border-radius:6px;overflow:hidden;margin-top:8px}.nextbar div{height:100%;background:#2563eb;width:0}
-canvas{width:100%;height:70px;display:block;background:#f8fafc;border-radius:8px}
-.legend{display:flex;gap:18px;color:#6b7280;font-size:14px;margin-top:6px}.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px}
-.foot{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
-.tick{color:#9ca3af;font-size:14px;margin-top:14px;text-align:right;font-variant-numeric:tabular-nums}
-.banner{display:none;margin:16px 0 0;padding:12px 16px;border-radius:10px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;font-size:17px;font-weight:600}
-.banner.on{display:block}.banner small{display:block;font-weight:400;color:#7f1d1d;margin-top:2px;font-size:14px}
-.loading{grid-column:1/-1;text-align:center;color:#6b7280;font-size:18px;padding:40px 0}
+.act{border-top:2px solid var(--line);padding-top:calc(var(--u)*.9)}
+.act h3{margin:0 0 .4em;font-size:clamp(14px,calc(var(--u)*1.3),30px)}
+.astats,.foot{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:calc(var(--u)*1.4)}
+.k{color:var(--mut);font-size:clamp(12px,calc(var(--u)*1.0),24px)}
+.v{font-size:clamp(17px,calc(var(--u)*1.85),44px);font-weight:800;margin-top:.1em;white-space:nowrap}
+.nextbar{height:clamp(6px,calc(var(--u)*.6),14px);background:#e8edf3;border-radius:6px;overflow:hidden;margin-top:.3em}.nextbar div{height:100%;background:#2563eb;width:0}
+canvas{width:100%;height:clamp(36px,7vh,110px);display:block;background:#f8fafc;border-radius:8px;margin-top:calc(var(--u)*.7)}
+.legend{display:flex;gap:1.2em;color:var(--mut);font-size:clamp(12px,calc(var(--u)*.9),20px);margin-top:.35em;flex-wrap:wrap}.legend i{display:inline-block;width:.75em;height:.75em;border-radius:2px;margin-right:.35em}
+.foot{border-top:2px solid var(--line);padding-top:calc(var(--u)*.9)}
+.banner{display:none;position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:10;max-width:92vw;padding:10px 16px;border-radius:10px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;font-size:clamp(14px,calc(var(--u)*1.2),24px);font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,.08)}
+.banner.on{display:block}.banner small{display:block;font-weight:400;color:#7f1d1d;margin-top:2px;font-size:.82em}
+.loading{grid-column:1/-1;align-self:center;text-align:center;color:var(--mut);font-size:clamp(15px,calc(var(--u)*1.4),30px)}
 .stale .grid,.stale .act,.stale .foot{opacity:.45;transition:opacity .3s}
-@media (max-width:720px){
- .wrap{padding:16px 14px calc(16px + env(safe-area-inset-bottom))}
- .hd{flex-direction:column;align-items:flex-start;gap:8px;padding-bottom:12px}
- h1{font-size:25px}.sub{font-size:15px}.st{font-size:18px}
+@media (max-width:760px){
+ body{overflow:auto}
+ .wrap{height:auto;display:block;padding:16px 14px calc(16px + env(safe-area-inset-bottom))}
+ .hd{flex-direction:column;align-items:flex-start;gap:6px;padding-bottom:12px}.rt{text-align:left}
+ h1{font-size:25px}.sub{font-size:15px}.st{font-size:18px}.tick{font-size:12px}
  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 12px;margin:18px 0}
- .card h2{font-size:16px;margin-bottom:6px}.pct{font-size:18px}.cnt{font-size:15px;margin-top:6px}
- .old{font-size:13px}.meter{font-size:12px;gap:5px}.disk{width:16px;height:16px}
- .act h3{font-size:18px}.astats,.foot{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
- .k{font-size:13px}.v{font-size:20px}.legend{flex-wrap:wrap;gap:8px 12px;font-size:12px}canvas{height:56px}
+ .ring{flex:none;height:40vw}
+ .card h2{font-size:16px}.cnt{font-size:15px}.old{font-size:13px}.meter{font-size:12px}
+ .act{padding-top:14px;margin-bottom:14px}.act h3{font-size:18px}
+ .astats,.foot{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.foot{padding-top:14px}
+ .k{font-size:13px}.v{font-size:20px}.legend{gap:8px 12px;font-size:12px}canvas{height:56px}
 }
 </style></head><body><div class="wrap">
-<div class="hd"><div><h1>Berkshire 資料庫即時進度</h1><div class="sub" id="now">—</div></div><div class="st" id="st">—</div></div>
+<div class="hd"><div><h1>Berkshire 資料庫即時進度</h1><div class="sub" id="now">—</div></div><div class="rt"><div class="st" id="st">—</div><div class="tick" id="tick"></div></div></div>
 <div class="banner" id="ban">● 離線，重新連線中…<small id="bansub">資料來源暫時連不上，頁面會自動重試。</small></div>
 <div class="grid" id="grid"><div class="loading">連線中…</div></div>
 <div class="act"><h3>請求活動（最近 60 秒）</h3>
@@ -61,53 +73,55 @@ canvas{width:100%;height:70px;display:block;background:#f8fafc;border-radius:8px
   <div><div class="k">下一筆預計</div><div class="v" id="nextin">—</div><div class="nextbar"><div id="nb"></div></div></div>
  </div>
  <canvas id="tl"></canvas>
- <div class="legend"><span>← 60 秒前</span><span><i style="background:#2563eb"></i>股票分鐘K</span><span><i style="background:#f59e0b"></i>台指期</span><span><i style="background:#16a34a"></i>ADR</span><span style="margin-left:auto">現在 →</span></div>
+ <div class="legend"><span>← 60 秒前</span><span><i style="background:#2563eb"></i>股票分鐘K</span><span><i style="background:#f59e0b"></i>台指期</span><span><i style="background:#16a34a"></i>ADR</span><span><i style="background:#8b5cf6"></i>還權日線</span><span><i style="background:#9ca3af"></i>逐筆（下一步）</span><span style="margin-left:auto">現在 →</span></div>
 </div>
 <div class="foot">
  <div><div class="k">最近 60 分鐘完成（上限 5,950）</div><div class="v" id="rate">—</div></div>
  <div><div class="k">分鐘K預計補完</div><div class="v" id="eta">—</div></div>
  <div><div class="k">剩餘請求</div><div class="v" id="rem">—</div></div>
  <div><div class="k">硬碟</div><div class="v" id="disk">—</div></div>
-</div><div class="tick" id="tick"></div></div>
+</div></div>
 <script>
-const R=100,C=2*Math.PI*R,f=n=>n.toLocaleString('en-US');
-const COL={TaiwanStockKBar:'#2563eb',TaiwanFuturesKBar:'#f59e0b',USStockPriceMinute:'#16a34a'};
 const BASE='https://tightness-bride-armoire.ngrok-free.dev',HDR={'ngrok-skip-browser-warning':'1'};
-let D=null,last=0,skew=0,built=false,fails=0;const odos={};
-function Odo(el){this.el=el;this.cols=[];this.txt='';}
-Odo.prototype.set=function(s,dur){
-  if(s.length!==this.txt.length){this.el.innerHTML='';this.cols=[];
-    for(const ch of s){if(/\d/.test(ch)){const c=document.createElement('span');c.className='col';const st=document.createElement('div');st.className='strip';
-      for(let i=0;i<10;i++){const d=document.createElement('span');d.textContent=i;st.appendChild(d)}c.appendChild(st);this.el.appendChild(c);this.cols.push(st)}
-      else{const x=document.createElement('span');x.className='fix'+(/[,.]/.test(ch)?' sep':'');x.textContent=ch;this.el.appendChild(x);this.cols.push(null)}}}
-  [...s].forEach((ch,i)=>{const st=this.cols[i];if(st){st.style.transitionDuration=dur+'s';st.style.transform=`translateY(-${(+ch)*10}%)`}});
-  this.txt=s;}
+const R=100,C=2*Math.PI*R,MR=9,MC=2*Math.PI*MR,f=n=>n.toLocaleString('en-US');
+const COL={TaiwanStockKBar:'#2563eb',TaiwanFuturesKBar:'#f59e0b',USStockPriceMinute:'#16a34a',TaiwanStockPriceAdj:'#8b5cf6',TaiwanStockPriceTick:'#9ca3af'};
+const cof=ds=>COL[ds]||'#6b7280';
+let D=null,last=0,skew=0,built=false,fails=0;const odos={},S={};
+// ---- continuous odometer: value V (float); last digit rolls with the fraction, higher digits carry like a real meter
+function Odo(el,dec,commas){this.el=el;this.dec=dec;this.commas=commas;this.tpl='';this.cols=[];this.pos=[]}
+Odo.prototype.fmt=function(n){let s=String(n);if(this.dec){s=s.padStart(this.dec+1,'0');return s.slice(0,-this.dec)+'.'+s.slice(-this.dec)}return this.commas?Number(s).toLocaleString('en-US'):s};
+Odo.prototype.set=function(V){if(!(V>=0))V=0;const n=Math.floor(V),fr=V-n,s=this.fmt(n);
+ const tpl=s.replace(/\d/g,'d');if(tpl!==this.tpl){this.el.innerHTML='';this.cols=[];this.pos=[];
+  for(const ch of s){if(/\d/.test(ch)){const c=document.createElement('span');c.className='col';const st=document.createElement('div');st.className='strip';
+    for(let i=0;i<11;i++){const d=document.createElement('span');d.textContent=i%10;st.appendChild(d)}c.appendChild(st);this.el.appendChild(c);this.cols.push(st);this.pos.push(-1)}
+   else{const x=document.createElement('span');x.className='fix'+(/[,.]/.test(ch)?' sep':'');x.textContent=ch;this.el.appendChild(x)}}this.tpl=tpl}
+ const digs=s.replace(/\D/g,'');const L=digs.length;
+ for(let i=0;i<L;i++){const k=L-1-i;let p=+digs[i];
+  if(k===0)p+=fr;else{const m=Math.pow(10,k),rem=(n%m)+fr;if(rem>m-1)p+=rem-(m-1)}
+  if(Math.abs(p-this.pos[i])>.0005){this.pos[i]=p;this.cols[i].style.transform=`translateY(${(-p*100/11).toFixed(3)}%)`}}};
 function build(items){const g=document.getElementById('grid');
-  g.innerHTML=items.map(x=>`<div class="card"><h2>${x.label}</h2><div class="ring"><svg viewBox="0 0 240 240">
+ g.innerHTML=items.map(x=>{const c=cof(x.ds);return `<div class="card"><h2><i style="background:${c}"></i>${x.label}</h2><div class="ring"><div class="rbox"><svg viewBox="0 0 240 240">
   <circle cx="120" cy="120" r="${R}" fill="none" stroke="#e8edf3" stroke-width="24"/>
-  <circle id="arc-${x.ds}" cx="120" cy="120" r="${R}" fill="none" stroke="#2563eb" stroke-width="24" stroke-dasharray="0 ${C}" transform="rotate(-90 120 120)" style="transition:stroke-dasharray .8s"/></svg>
-  <div class="ctr"><div class="pct"><span class="odo" id="p-${x.ds}"></span><span>%</span></div></div></div>
-  <div class="cnt"><span class="odo" id="c-${x.ds}"></span> / ${f(x.total)}</div><div class="old" id="o-${x.ds}"></div>
-  <div class="meter"><div class="disk" id="d-${x.ds}"></div><span id="s-${x.ds}"></span></div></div>`).join('');
-  items.forEach(x=>{odos['p'+x.ds]=new Odo(document.getElementById('p-'+x.ds));odos['c'+x.ds]=new Odo(document.getElementById('c-'+x.ds))});built=true}
+  <circle id="arc-${x.ds}" cx="120" cy="120" r="${R}" fill="none" stroke="${c}" stroke-width="24" stroke-dasharray="0 ${C}" transform="rotate(-90 120 120)"/></svg>
+  <div class="ctr"><div class="pct" style="color:${x.ds==='TaiwanStockPriceTick'?'#9ca3af':c}"><span class="odo" id="p-${x.ds}"></span><span>%</span></div></div></div></div>
+  <div class="cnt"><span class="odo" id="c-${x.ds}"></span><span class="tot"> / ${f(x.total)}</span></div><div class="old" id="o-${x.ds}"></div>
+  <div class="meter"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="${MR}" fill="none" stroke="#e5e7eb" stroke-width="3"/><circle id="m-${x.ds}" cx="12" cy="12" r="${MR}" fill="none" stroke="${c}" stroke-width="3" stroke-dasharray="0 ${MC}" transform="rotate(-90 12 12)" stroke-linecap="round"/></svg><span id="s-${x.ds}"></span></div></div>`}).join('');
+ items.forEach(x=>{odos['p'+x.ds]=new Odo(document.getElementById('p-'+x.ds),4,false);odos['c'+x.ds]=new Odo(document.getElementById('c-'+x.ds),0,true)});built=true}
 function render(j){if(!j||!Array.isArray(j.items))return;D=j;online();
- skew=Date.now()/1000-D.server_ts; if(!built)build(D.items);
+ skew=Date.now()/1000-D.server_ts;if(!built)build(D.items);
  document.getElementById('now').textContent=D.now+'（台北時間）';
  const s=document.getElementById('st');s.textContent=D.alive?'● 下載中':'● 已停止';s.className='st '+(D.alive?'ok':'bad');
- D.items.forEach(x=>{const p=x.total?x.done/x.total:0,col=p>=1?'#16a34a':(p>0?'#2563eb':'#9ca3af');
-  const pm=(D.per_min[x.ds]||0); const dur=pm?Math.min(1.6,Math.max(.25,60/pm*.9)):1;
-  odos['p'+x.ds].set((p*100).toFixed(4),dur);odos['c'+x.ds].set(f(x.done),dur);
-  document.getElementById('p-'+x.ds).parentNode.style.color=col;
-  const a=document.getElementById('arc-'+x.ds);a.setAttribute('stroke',col);a.setAttribute('stroke-dasharray',`${C*p} ${C}`);
-  document.getElementById('o-'+x.ds).textContent=p>=1?'完成':(x.oldest&&p>0?'已回到 '+x.oldest.slice(0,7).replace('-','/'):'尚未開始');
-  const dk=document.getElementById('d-'+x.ds);
-  if(pm){dk.style.animationDuration=(240/pm).toFixed(2)+'s';dk.style.animationPlayState='running'}else dk.style.animationPlayState='paused';
-  document.getElementById('s-'+x.ds).textContent=pm?`每分鐘 ${pm} 筆`:(p>=1?'已完成':'等待中')});
+ D.items.forEach(x=>{const pm=(D.per_min||{})[x.ds]||0,ph=(D.per_hr||{})[x.ds]||0,o=S[x.ds]||(S[x.ds]={disp:null});
+  o.c=Math.max(o.c||0,x.done);o.total=x.total;o.r=pm>=20?pm/60:ph/3600;o.last=(D.last_ds||{})[x.ds]||null;o.pm=pm;o.ph=ph;
+  o.fast=o.r>=.5;o.recv=D.server_ts;o.E=Math.max(o.r>0?1/o.r:0,(D.gap_ds||{})[x.ds]||0);
+  if(!D.alive)o.r=0;
+  const p=x.total?x.done/x.total:0;
+  document.getElementById('o-'+x.ds).textContent=p>=1?'完成':(x.oldest&&p>0?'已回到 '+x.oldest.slice(0,7).replace('-','/'):'尚未開始')});
  document.getElementById('rate').textContent=f(D.rate);document.getElementById('eta').textContent=D.eta;
  document.getElementById('rem').textContent=f(D.remaining);document.getElementById('disk').textContent=f(D.disk_mb)+' MB';
  document.getElementById('n60').textContent=f(D.n60)+' 筆';
- document.getElementById('gap').textContent=D.n60?(60/D.n60).toFixed(3)+' 秒':'—';last=Date.now();}
-// one long-lived stream (fetch + ReadableStream: EventSource cannot send the ngrok header); poll every 10 s if streaming fails
+ document.getElementById('gap').textContent=D.n60?(60/D.n60).toFixed(3)+' 秒':'—';last=Date.now()}
+// ---- stream (fetch + ReadableStream; EventSource cannot send the ngrok header); poll every 10 s if streaming fails
 let ctl=null,retryT=null,pollT=null,sFails=0,backoff=1000;
 function applyMsg(m){if(m.rc){if(!D)return;const lo=m.server_ts-61;m.recent=(D.recent||[]).filter(e=>e[1]<m.rw&&e[1]>=lo).concat(m.rc);delete m.rc;delete m.rw}render(m)}
 function drop(){const c=ctl;ctl=null;if(c)c.abort();clearTimeout(retryT);retryT=null}
@@ -138,15 +152,34 @@ function offline(e){fails++;const s=document.getElementById('st');s.textContent=
  document.getElementById('bansub').textContent=(D?'目前顯示的是最後一次取得的數字。':'尚未取得資料。')+'已重試 '+fails+' 次，自動重新連線中。';
  if(!built)document.getElementById('grid').innerHTML='<div class="loading">資料來源暫時離線，自動重試中…</div>'}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){drop();stopPoll()}else{sFails=0;backoff=1000;stream()}});
-const cv=document.getElementById('tl'),cx=cv.getContext('2d');
-function frame(){if(D){const now=Date.now()/1000-skew;
+// ---- animation: interpolate each dataset toward its next item from its measured rate (never backwards; hold <=.95 if late)
+const cv=document.getElementById('tl'),cx=cv.getContext('2d');let pt=0,lastTxt=0;
+function frame(ts){const dt=pt?Math.min(.25,(ts-pt)/1000):0;pt=ts;
+ if(D){const now=Date.now()/1000-skew,txt=ts-lastTxt>100;if(txt)lastTxt=ts;
+  for(const x of D.items){const o=S[x.ds];if(!o)continue;let tgt=o.c,ph=0;
+   let left=0;
+   if(o.c<o.total&&o.r>0){
+    if(o.fast){const q=Math.max(0,(now-o.recv)*o.r);tgt=o.c+Math.min(q,o.r*1.2);ph=q%1;left=(1-ph)/o.r}
+    else if(o.last&&o.E>0){const q=Math.max(0,(now-o.last)/o.E);tgt=o.c+(q<.8?q:.8+.15*(1-Math.exp(-(q-.8)/.15)));ph=Math.min(1,q);left=o.E-(now-o.last)}}
+   tgt=Math.min(tgt,o.total);
+   if(o.disp==null||tgt-o.disp>5)o.disp=tgt;else if(tgt>o.disp)o.disp+= (tgt-o.disp)*Math.min(1,dt*7);
+   const p=o.total?o.disp/o.total:0;
+   odos['c'+x.ds].set(o.disp);odos['p'+x.ds].set(p*1e6);
+   const dash=(C*p).toFixed(2);if(o.dash!==dash){o.dash=dash;document.getElementById('arc-'+x.ds).setAttribute('stroke-dasharray',`${dash} ${C}`)}
+   const done=o.c>=o.total&&o.total>0,mp=done?1:Math.min(1,ph);const md=(MC*mp).toFixed(2);
+   if(o.md!==md){o.md=md;document.getElementById('m-'+x.ds).setAttribute('stroke-dasharray',`${md} ${MC}`)}
+   if(txt){
+    const rt=o.pm>=20?`每分鐘 ${o.pm} 筆`:(o.ph?`每小時 ${f(o.ph)} 筆`:'');
+    document.getElementById('s-'+x.ds).textContent=done?'已完成':(o.r>0?`${rt} · 下一筆 ${left>0?left.toFixed(1)+' 秒':'即將'}`:'等待中')}}
   const ago=D.last_ts?now-D.last_ts:null,gap=D.n60?60/D.n60:null;
-  document.getElementById('lastago').textContent=ago!=null?ago.toFixed(3)+' 秒前':'—';
-  if(gap&&ago!=null){const ph=(ago%gap)/gap;document.getElementById('nextin').textContent='約 '+(gap-ago%gap).toFixed(3)+' 秒後';document.getElementById('nb').style.width=(ph*100)+'%'}
-  const w=cv.clientWidth,h=cv.clientHeight;if(cv.width!==w*2){cv.width=w*2;cv.height=h*2}
-  cx.setTransform(2,0,0,2,0,0);cx.clearRect(0,0,w,h);
-  for(const [d,t] of D.recent){const x=w-(now-t)/60*w;if(x<0)continue;cx.fillStyle=COL[d]||'#6b7280';cx.globalAlpha=.75;cx.fillRect(x-1.5,8,3,h-16)}
-  cx.globalAlpha=1;document.getElementById('tick').textContent='資料上次更新 '+((Date.now()-last)/1000).toFixed(3)+' 秒前'}
+  if(txt){document.getElementById('lastago').textContent=ago!=null?ago.toFixed(3)+' 秒前':'—';
+   if(gap&&ago!=null)document.getElementById('nextin').textContent='約 '+(gap-ago%gap).toFixed(3)+' 秒後';
+   document.getElementById('tick').textContent='資料上次更新 '+((Date.now()-last)/1000).toFixed(3)+' 秒前'}
+  if(gap&&ago!=null)document.getElementById('nb').style.width=((ago%gap)/gap*100)+'%';
+  const w=cv.clientWidth,h=cv.clientHeight,dpr=Math.min(2,window.devicePixelRatio||1);if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+  cx.setTransform(dpr,0,0,dpr,0,0);cx.clearRect(0,0,w,h);cx.globalAlpha=.75;
+  for(const [d,t] of D.recent||[]){const xx=w-(now-t)/60*w;if(xx<0)continue;cx.fillStyle=cof(d);cx.fillRect(xx-1.5,6,3,h-12)}
+  cx.globalAlpha=1}
  requestAnimationFrame(frame)}
 stream();requestAnimationFrame(frame);
 </script></body></html>
