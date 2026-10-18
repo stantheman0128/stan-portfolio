@@ -72,8 +72,8 @@ canvas{width:100%;height:70px;display:block;background:#f8fafc;border-radius:8px
 <script>
 const R=100,C=2*Math.PI*R,f=n=>n.toLocaleString('en-US');
 const COL={TaiwanStockKBar:'#2563eb',TaiwanFuturesKBar:'#f59e0b',USStockPriceMinute:'#16a34a'};
-const SRC='https://tightness-bride-armoire.ngrok-free.dev/progress.json';
-let D=null,last=0,skew=0,built=false,fails=0,busy=false,timer=null;const odos={};
+const BASE='https://tightness-bride-armoire.ngrok-free.dev',HDR={'ngrok-skip-browser-warning':'1'};
+let D=null,last=0,skew=0,built=false,fails=0;const odos={};
 function Odo(el){this.el=el;this.cols=[];this.txt='';}
 Odo.prototype.set=function(s,dur){
   if(s.length!==this.txt.length){this.el.innerHTML='';this.cols=[];
@@ -90,8 +90,7 @@ function build(items){const g=document.getElementById('grid');
   <div class="cnt"><span class="odo" id="c-${x.ds}"></span> / ${f(x.total)}</div><div class="old" id="o-${x.ds}"></div>
   <div class="meter"><div class="disk" id="d-${x.ds}"></div><span id="s-${x.ds}"></span></div></div>`).join('');
   items.forEach(x=>{odos['p'+x.ds]=new Odo(document.getElementById('p-'+x.ds));odos['c'+x.ds]=new Odo(document.getElementById('c-'+x.ds))});built=true}
-async function tick(){if(busy)return;busy=true;const ac=new AbortController(),to=setTimeout(()=>ac.abort(),8000);try{const r=await fetch(SRC+'?t='+Date.now(),{headers:{'ngrok-skip-browser-warning':'1'},cache:'no-store',mode:'cors',signal:ac.signal});
- if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();if(!j||!Array.isArray(j.items))throw new Error('bad data');D=j;online();
+function render(j){if(!j||!Array.isArray(j.items))return;D=j;online();
  skew=Date.now()/1000-D.server_ts; if(!built)build(D.items);
  document.getElementById('now').textContent=D.now+'（台北時間）';
  const s=document.getElementById('st');s.textContent=D.alive?'● 下載中':'● 已停止';s.className='st '+(D.alive?'ok':'bad');
@@ -107,15 +106,38 @@ async function tick(){if(busy)return;busy=true;const ac=new AbortController(),to
  document.getElementById('rate').textContent=f(D.rate);document.getElementById('eta').textContent=D.eta;
  document.getElementById('rem').textContent=f(D.remaining);document.getElementById('disk').textContent=f(D.disk_mb)+' MB';
  document.getElementById('n60').textContent=f(D.n60)+' 筆';
- document.getElementById('gap').textContent=D.n60?(60/D.n60).toFixed(3)+' 秒':'—';last=Date.now();
-}catch(e){offline(e)}finally{clearTimeout(to);busy=false}}
-function online(){if(fails){fails=0;sched()}document.getElementById('ban').classList.remove('on');document.body.classList.remove('stale')}
+ document.getElementById('gap').textContent=D.n60?(60/D.n60).toFixed(3)+' 秒':'—';last=Date.now();}
+// one long-lived stream (fetch + ReadableStream: EventSource cannot send the ngrok header); poll every 10 s if streaming fails
+let ctl=null,retryT=null,pollT=null,sFails=0,backoff=1000;
+function applyMsg(m){if(m.rc){if(!D)return;const lo=m.server_ts-61;m.recent=(D.recent||[]).filter(e=>e[1]<m.rw&&e[1]>=lo).concat(m.rc);delete m.rc;delete m.rw}render(m)}
+function drop(){const c=ctl;ctl=null;if(c)c.abort();clearTimeout(retryT);retryT=null}
+async function stream(){drop();if(document.hidden)return;const ac=new AbortController();ctl=ac;let got=false,wd=null;const t0=Date.now();
+ try{const r=await fetch(BASE+'/progress.stream',{headers:HDR,cache:'no-store',mode:'cors',signal:ac.signal});
+  if(!r.ok||!r.body||!(r.headers.get('content-type')||'').includes('event-stream'))throw new Error('HTTP '+r.status);
+  const rd=r.body.getReader(),dec=new TextDecoder();let buf='',seen=Date.now();
+  wd=setInterval(()=>{if(Date.now()-seen>10000)ac.abort()},2000);
+  for(;;){const {value,done}=await rd.read();if(done)break;seen=Date.now();buf+=dec.decode(value,{stream:true}).replace(/\r/g,'');let i;
+   while((i=buf.indexOf('\n\n'))>=0){const blk=buf.slice(0,i);buf=buf.slice(i+2);let ev='message',data='';
+    for(const ln of blk.split('\n')){if(ln.startsWith('event:'))ev=ln.slice(6).trim();else if(ln.startsWith('data:'))data+=ln.slice(5).trim()}
+    if(!data||ev!=='message')continue;try{applyMsg(JSON.parse(data))}catch(e){continue}
+    if(!got){got=true;sFails=0;backoff=1000;stopPoll()}}}
+ }catch(e){}finally{clearInterval(wd)}
+ if(ac!==ctl||document.hidden)return;ctl=null;
+ if(got&&Date.now()-t0>5000){retryT=setTimeout(stream,300);return}
+ sFails++;if(!pollT)offline();
+ if(sFails>=3){startPoll();retryT=setTimeout(stream,60000)}else{retryT=setTimeout(stream,backoff);backoff=Math.min(backoff*2,30000)}}
+async function poll(){const ac=new AbortController(),to=setTimeout(()=>ac.abort(),8000);
+ try{const r=await fetch(BASE+'/progress.json?t='+Date.now(),{headers:HDR,cache:'no-store',mode:'cors',signal:ac.signal});
+  if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();if(!j||!Array.isArray(j.items))throw new Error('bad data');render(j)}
+ catch(e){offline(e)}finally{clearTimeout(to)}}
+function startPoll(){if(pollT)return;poll();pollT=setInterval(poll,10000)}
+function stopPoll(){clearInterval(pollT);pollT=null}
+function online(){fails=0;document.getElementById('ban').classList.remove('on');document.body.classList.remove('stale')}
 function offline(e){fails++;const s=document.getElementById('st');s.textContent='● 離線，重新連線中';s.className='st bad';
  document.getElementById('ban').classList.add('on');document.body.classList.add('stale');
- document.getElementById('bansub').textContent=(D?'目前顯示的是最後一次取得的數字。':'尚未取得資料。')+'已重試 '+fails+' 次，'+(fails>=5?'每 5 秒':'每秒')+'自動重試。';
- if(!built)document.getElementById('grid').innerHTML='<div class="loading">資料來源暫時離線，自動重試中…</div>';if(fails===5)sched()}
-function sched(){clearInterval(timer);timer=null;if(document.hidden)return;timer=setInterval(tick,fails>=5?5000:1000)}
-document.addEventListener('visibilitychange',()=>{if(document.hidden){clearInterval(timer);timer=null}else{tick();sched()}});
+ document.getElementById('bansub').textContent=(D?'目前顯示的是最後一次取得的數字。':'尚未取得資料。')+'已重試 '+fails+' 次，自動重新連線中。';
+ if(!built)document.getElementById('grid').innerHTML='<div class="loading">資料來源暫時離線，自動重試中…</div>'}
+document.addEventListener('visibilitychange',()=>{if(document.hidden){drop();stopPoll()}else{sFails=0;backoff=1000;stream()}});
 const cv=document.getElementById('tl'),cx=cv.getContext('2d');
 function frame(){if(D){const now=Date.now()/1000-skew;
   const ago=D.last_ts?now-D.last_ts:null,gap=D.n60?60/D.n60:null;
@@ -126,5 +148,5 @@ function frame(){if(D){const now=Date.now()/1000-skew;
   for(const [d,t] of D.recent){const x=w-(now-t)/60*w;if(x<0)continue;cx.fillStyle=COL[d]||'#6b7280';cx.globalAlpha=.75;cx.fillRect(x-1.5,8,3,h-16)}
   cx.globalAlpha=1;document.getElementById('tick').textContent='資料上次更新 '+((Date.now()-last)/1000).toFixed(3)+' 秒前'}
  requestAnimationFrame(frame)}
-tick();sched();requestAnimationFrame(frame);
+stream();requestAnimationFrame(frame);
 </script></body></html>
