@@ -27,12 +27,18 @@ h1{font-size:clamp(20px,calc(var(--u)*2.3),56px);margin:0;line-height:1.15}
 .cnt{font-size:clamp(14px,calc(var(--u)*1.45),34px);font-weight:800;margin-top:.35em;white-space:nowrap}
 .cnt .tot{color:var(--mut);font-weight:700}
 .old{color:var(--mut);font-size:clamp(12px,calc(var(--u)*1.0),24px);margin-top:.15em}
-.meter{display:flex;align-items:center;justify-content:center;gap:.45em;margin-top:.25em;color:var(--mut);font-size:clamp(12px,calc(var(--u)*.95),22px);white-space:nowrap}
-.meter svg{width:1.5em;height:1.5em;flex:none}
+.meter{display:flex;align-items:center;justify-content:center;gap:.5em;margin-top:.3em;color:var(--mut);font-size:clamp(12px,calc(var(--u)*.95),22px);white-space:nowrap;contain:layout paint}
+.sw{position:relative;width:4.3em;height:4.66em;flex:none;contain:strict}
+.sw svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.sw .wedge{position:absolute;left:21.875%;top:44.6%;width:56.25%;height:51.9%;border-radius:50%;opacity:.25}
+.sw .hand{position:absolute;left:50%;top:59.6%;width:5%;height:0;margin-left:-2.5%;will-change:transform}
+.sw .hand i{position:absolute;left:0;width:100%;bottom:-.25em;height:1.2em;border-radius:3px}
+.sw .hub{position:absolute;left:50%;top:59.6%;width:10%;height:9.2%;margin:-4.6% 0 0 -5%;border-radius:50%}
+.mt{text-align:left;line-height:1.3;width:11.5em}.mt b{display:block;font-size:1.5em;font-weight:800;color:#111827;height:1.3em;contain:strict;overflow:hidden}.mt span{display:block;height:1.3em;contain:strict;overflow:hidden}
 /* odometer */
-.odo{display:inline-flex;height:1.15em;line-height:1.15em;overflow:hidden;vertical-align:bottom}
+.odo{contain:layout paint;display:inline-flex;height:1.15em;line-height:1.15em;overflow:hidden;vertical-align:bottom}
 .odo .col{display:inline-block;height:1.15em;overflow:hidden;width:.62em}
-.odo .strip{display:flex;flex-direction:column;will-change:transform}
+.odo .strip{display:block;white-space:pre;line-height:1.15em;text-align:center}.odo .col:nth-last-child(-n+2) .strip{will-change:transform}
 .odo .strip span,.odo .fix{height:1.15em;display:block;text-align:center}
 .odo .fix{width:.62em}.odo .fix.sep{width:.3em}
 /* activity */
@@ -41,8 +47,8 @@ h1{font-size:clamp(20px,calc(var(--u)*2.3),56px);margin:0;line-height:1.15}
 .astats,.foot{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:calc(var(--u)*1.4)}
 .k{color:var(--mut);font-size:clamp(12px,calc(var(--u)*1.0),24px)}
 .v{font-size:clamp(17px,calc(var(--u)*1.85),44px);font-weight:800;margin-top:.1em;white-space:nowrap}
-.nextbar{height:clamp(6px,calc(var(--u)*.6),14px);background:#e8edf3;border-radius:6px;overflow:hidden;margin-top:.3em}.nextbar div{height:100%;background:#2563eb;width:0}
-canvas{width:100%;height:clamp(36px,7vh,110px);display:block;background:#f8fafc;border-radius:8px;margin-top:calc(var(--u)*.7)}
+.nextbar{height:clamp(6px,calc(var(--u)*.6),14px);background:#e8edf3;border-radius:6px;overflow:hidden;margin-top:.3em}.nextbar div{height:100%;background:#2563eb;width:100%;transform-origin:0 50%;transform:scaleX(0);will-change:transform}
+canvas{contain:strict;width:100%;height:clamp(36px,7vh,110px);display:block;background:#f8fafc;border-radius:8px;margin-top:calc(var(--u)*.7)}
 .legend{display:flex;gap:1.2em;color:var(--mut);font-size:clamp(12px,calc(var(--u)*.9),20px);margin-top:.35em;flex-wrap:wrap}.legend i{display:inline-block;width:.75em;height:.75em;border-radius:2px;margin-right:.35em}
 .foot{border-top:2px solid var(--line);padding-top:calc(var(--u)*.9)}
 .banner{display:none;position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:10;max-width:92vw;padding:10px 16px;border-radius:10px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;font-size:clamp(14px,calc(var(--u)*1.2),24px);font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,.08)}
@@ -56,11 +62,12 @@ canvas{width:100%;height:clamp(36px,7vh,110px);display:block;background:#f8fafc;
  h1{font-size:25px}.sub{font-size:15px}.st{font-size:18px}.tick{font-size:12px}
  .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 12px;margin:18px 0}
  .ring{flex:none;height:40vw}
- .card h2{font-size:16px}.cnt{font-size:15px}.old{font-size:13px}.meter{font-size:12px}
+ .card h2{font-size:16px}.cnt{font-size:15px}.old{font-size:13px}.meter{font-size:12px}.sw{width:3.6em;height:3.9em}.mt{width:10.5em}.mt b{font-size:1.3em}
  .act{padding-top:14px;margin-bottom:14px}.act h3{font-size:18px}
  .astats,.foot{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.foot{padding-top:14px}
  .k{font-size:13px}.v{font-size:20px}.legend{gap:8px 12px;font-size:12px}canvas{height:56px}
 }
+#lastago,#nextin{height:1.25em;contain:strict;overflow:hidden}.tick{height:1.3em;contain:strict}.rt{min-width:14em}
 </style></head><body><div class="wrap">
 <div class="hd"><div><h1>Berkshire 資料庫即時進度</h1><div class="sub" id="now">—</div></div><div class="rt"><div class="st" id="st">—</div><div class="tick" id="tick"></div></div></div>
 <div class="banner" id="ban">● 離線，重新連線中…<small id="bansub">資料來源暫時連不上，頁面會自動重試。</small></div>
@@ -83,17 +90,18 @@ canvas{width:100%;height:clamp(36px,7vh,110px);display:block;background:#f8fafc;
 </div></div>
 <script>
 const BASE='https://tightness-bride-armoire.ngrok-free.dev',HDR={'ngrok-skip-browser-warning':'1'};
-const R=100,C=2*Math.PI*R,MR=9,MC=2*Math.PI*MR,f=n=>n.toLocaleString('en-US');
+const R=100,C=2*Math.PI*R,PC=2*Math.PI*7.5,f=n=>n.toLocaleString('en-US');
 const COL={TaiwanStockKBar:'#2563eb',TaiwanFuturesKBar:'#f59e0b',USStockPriceMinute:'#16a34a',TaiwanStockPriceAdj:'#8b5cf6',TaiwanStockPriceTick:'#9ca3af'};
 const cof=ds=>COL[ds]||'#6b7280';
-let D=null,last=0,skew=0,built=false,fails=0;const odos={},S={};
+let D=null,last=0,skew=0,built=false,fails=0;const odos={},S={},TX={};
+function setT(id,v){if(TX[id]!==v){TX[id]=v;const e=document.getElementById(id);if(e)e.textContent=v}}
 // ---- continuous odometer: value V (float); last digit rolls with the fraction, higher digits carry like a real meter
 function Odo(el,dec,commas){this.el=el;this.dec=dec;this.commas=commas;this.tpl='';this.cols=[];this.pos=[]}
 Odo.prototype.fmt=function(n){let s=String(n);if(this.dec){s=s.padStart(this.dec+1,'0');return s.slice(0,-this.dec)+'.'+s.slice(-this.dec)}return this.commas?Number(s).toLocaleString('en-US'):s};
 Odo.prototype.set=function(V){if(!(V>=0))V=0;const n=Math.floor(V),fr=V-n,s=this.fmt(n);
  const tpl=s.replace(/\d/g,'d');if(tpl!==this.tpl){this.el.innerHTML='';this.cols=[];this.pos=[];
   for(const ch of s){if(/\d/.test(ch)){const c=document.createElement('span');c.className='col';const st=document.createElement('div');st.className='strip';
-    for(let i=0;i<11;i++){const d=document.createElement('span');d.textContent=i%10;st.appendChild(d)}c.appendChild(st);this.el.appendChild(c);this.cols.push(st);this.pos.push(-1)}
+    st.textContent='0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n0';c.appendChild(st);this.el.appendChild(c);this.cols.push(st);this.pos.push(-1)}
    else{const x=document.createElement('span');x.className='fix'+(/[,.]/.test(ch)?' sep':'');x.textContent=ch;this.el.appendChild(x)}}this.tpl=tpl}
  const digs=s.replace(/\D/g,'');const L=digs.length;
  for(let i=0;i<L;i++){const k=L-1-i;let p=+digs[i];
@@ -105,22 +113,25 @@ function build(items){const g=document.getElementById('grid');
   <circle id="arc-${x.ds}" cx="120" cy="120" r="${R}" fill="none" stroke="${c}" stroke-width="24" stroke-dasharray="0 ${C}" transform="rotate(-90 120 120)"/></svg>
   <div class="ctr"><div class="pct" style="color:${x.ds==='TaiwanStockPriceTick'?'#9ca3af':c}"><span class="odo" id="p-${x.ds}"></span><span>%</span></div></div></div></div>
   <div class="cnt"><span class="odo" id="c-${x.ds}"></span><span class="tot"> / ${f(x.total)}</span></div><div class="old" id="o-${x.ds}"></div>
-  <div class="meter"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="${MR}" fill="none" stroke="#e5e7eb" stroke-width="3"/><circle id="m-${x.ds}" cx="12" cy="12" r="${MR}" fill="none" stroke="${c}" stroke-width="3" stroke-dasharray="0 ${MC}" transform="rotate(-90 12 12)" stroke-linecap="round"/></svg><span id="s-${x.ds}"></span></div></div>`}).join('');
+  <div class="meter"><div class="sw" aria-hidden="true"><svg viewBox="0 0 48 52">
+   <rect x="20" y="1.5" width="8" height="5" rx="1.5" fill="${c}"/><rect x="22.5" y="5.5" width="3" height="5" fill="${c}"/>
+   <rect x="37" y="9" width="6" height="3.6" rx="1.2" fill="${c}" transform="rotate(45 40 10.8)"/>
+   <circle cx="24" cy="31" r="18.5" fill="#fff" stroke="${c}" stroke-width="3.5"/><line x1="24" y1="14.5" x2="24" y2="17.6" transform="rotate(0 24 31)" stroke="#9ca3af" stroke-width="1.6" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(30 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(60 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="14.5" x2="24" y2="17.6" transform="rotate(90 24 31)" stroke="#9ca3af" stroke-width="1.6" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(120 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(150 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="14.5" x2="24" y2="17.6" transform="rotate(180 24 31)" stroke="#9ca3af" stroke-width="1.6" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(210 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(240 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="14.5" x2="24" y2="17.6" transform="rotate(270 24 31)" stroke="#9ca3af" stroke-width="1.6" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(300 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/><line x1="24" y1="15.8" x2="24" y2="17.6" transform="rotate(330 24 31)" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/></svg>
+   <div class="wedge" id="w-${x.ds}"></div><div class="hand" id="h-${x.ds}"><i style="background:${c}"></i></div><div class="hub" style="background:${c}"></div></div>
+   <div class="mt"><b id="n-${x.ds}">—</b><span id="s-${x.ds}"></span></div></div></div>`}).join('');
  items.forEach(x=>{odos['p'+x.ds]=new Odo(document.getElementById('p-'+x.ds),4,false);odos['c'+x.ds]=new Odo(document.getElementById('c-'+x.ds),0,true)});built=true}
 function render(j){if(!j||!Array.isArray(j.items))return;D=j;online();
  skew=Date.now()/1000-D.server_ts;if(!built)build(D.items);
- document.getElementById('now').textContent=D.now+'（台北時間）';
+ setT('now',D.now+'（台北時間）');
  const s=document.getElementById('st');s.textContent=D.alive?'● 下載中':'● 已停止';s.className='st '+(D.alive?'ok':'bad');
  D.items.forEach(x=>{const pm=(D.per_min||{})[x.ds]||0,ph=(D.per_hr||{})[x.ds]||0,o=S[x.ds]||(S[x.ds]={disp:null});
   o.c=Math.max(o.c||0,x.done);o.total=x.total;o.r=pm>=20?pm/60:ph/3600;o.last=(D.last_ds||{})[x.ds]||null;o.pm=pm;o.ph=ph;
   o.fast=o.r>=.5;o.recv=D.server_ts;o.E=Math.max(o.r>0?1/o.r:0,(D.gap_ds||{})[x.ds]||0);
   if(!D.alive)o.r=0;
   const p=x.total?x.done/x.total:0;
-  document.getElementById('o-'+x.ds).textContent=p>=1?'完成':(x.oldest&&p>0?'已回到 '+x.oldest.slice(0,7).replace('-','/'):'尚未開始')});
- document.getElementById('rate').textContent=f(D.rate);document.getElementById('eta').textContent=D.eta;
- document.getElementById('rem').textContent=f(D.remaining);document.getElementById('disk').textContent=f(D.disk_mb)+' MB';
- document.getElementById('n60').textContent=f(D.n60)+' 筆';
- document.getElementById('gap').textContent=D.n60?(60/D.n60).toFixed(3)+' 秒':'—';last=Date.now()}
+  setT('o-'+x.ds,p>=1?'完成':(x.oldest&&p>0?'已回到 '+x.oldest.slice(0,7).replace('-','/'):'尚未開始'))});
+ setT('rate',f(D.rate));setT('eta',D.eta);setT('rem',f(D.remaining));setT('disk',f(D.disk_mb)+' MB');
+ setT('n60',f(D.n60)+' 筆');setT('gap',D.n60?(60/D.n60).toFixed(3)+' 秒':'—');last=Date.now()}
 // ---- stream (fetch + ReadableStream; EventSource cannot send the ngrok header); poll every 10 s if streaming fails
 let ctl=null,retryT=null,pollT=null,sFails=0,backoff=1000;
 function applyMsg(m){if(m.rc){if(!D)return;const lo=m.server_ts-61;m.recent=(D.recent||[]).filter(e=>e[1]<m.rw&&e[1]>=lo).concat(m.rc);delete m.rc;delete m.rw}render(m)}
@@ -152,34 +163,37 @@ function offline(e){fails++;const s=document.getElementById('st');s.textContent=
  document.getElementById('bansub').textContent=(D?'目前顯示的是最後一次取得的數字。':'尚未取得資料。')+'已重試 '+fails+' 次，自動重新連線中。';
  if(!built)document.getElementById('grid').innerHTML='<div class="loading">資料來源暫時離線，自動重試中…</div>'}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){drop();stopPoll()}else{sFails=0;backoff=1000;stream()}});
-// ---- animation: interpolate each dataset toward its next item from its measured rate (never backwards; hold <=.95 if late)
-const cv=document.getElementById('tl'),cx=cv.getContext('2d');let pt=0,lastTxt=0;
-function frame(ts){const dt=pt?Math.min(.25,(ts-pt)/1000):0;pt=ts;
- if(D){const now=Date.now()/1000-skew,txt=ts-lastTxt>100;if(txt)lastTxt=ts;
-  for(const x of D.items){const o=S[x.ds];if(!o)continue;let tgt=o.c,ph=0;
-   let left=0;
-   if(o.c<o.total&&o.r>0){
-    if(o.fast){const q=Math.max(0,(now-o.recv)*o.r);tgt=o.c+Math.min(q,o.r*1.2);ph=q%1;left=(1-ph)/o.r}
-    else if(o.last&&o.E>0){const q=Math.max(0,(now-o.last)/o.E);tgt=o.c+(q<.8?q:.8+.15*(1-Math.exp(-(q-.8)/.15)));ph=Math.min(1,q);left=o.E-(now-o.last)}}
-   tgt=Math.min(tgt,o.total);
-   if(o.disp==null||tgt-o.disp>5)o.disp=tgt;else if(tgt>o.disp)o.disp+= (tgt-o.disp)*Math.min(1,dt*7);
-   const p=o.total?o.disp/o.total:0;
-   odos['c'+x.ds].set(o.disp);odos['p'+x.ds].set(p*1e6);
-   const dash=(C*p).toFixed(2);if(o.dash!==dash){o.dash=dash;document.getElementById('arc-'+x.ds).setAttribute('stroke-dasharray',`${dash} ${C}`)}
-   const done=o.c>=o.total&&o.total>0,mp=done?1:Math.min(1,ph);const md=(MC*mp).toFixed(2);
-   if(o.md!==md){o.md=md;document.getElementById('m-'+x.ds).setAttribute('stroke-dasharray',`${md} ${MC}`)}
-   if(txt){
-    const rt=o.pm>=20?`每分鐘 ${o.pm} 筆`:(o.ph?`每小時 ${f(o.ph)} 筆`:'');
-    document.getElementById('s-'+x.ds).textContent=done?'已完成':(o.r>0?`${rt} · 下一筆 ${left>0?left.toFixed(1)+' 秒':'即將'}`:'等待中')}}
+// ---- animation: one rAF loop, transform/attribute writes only, no layout reads; text throttled to 10/s
+// fast datasets (>=0.5/s): velocity follower toward c+(now-recv)*r (no stop-go at each 1 s snapshot);
+// slow/bursty ones: creep toward the next item over the measured expected wait, ease-hold near .95 if late. Never backwards.
+const cv=document.getElementById('tl'),cx=cv.getContext('2d');let pt=0,lastTxt=0,cw=0,ch=0,dpr=1;
+function sizeCv(){const r=cv.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);cw=r.width;ch=r.height;cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr)}
+new ResizeObserver(sizeCv).observe(cv);sizeCv();
+const nb=document.getElementById('nb');
+function frame(ts){const dt=pt?Math.min(.1,(ts-pt)/1000):0;pt=ts;
+ if(D){const now=Date.now()/1000-skew,txt=ts-lastTxt>=100;if(txt)lastTxt=ts;
+  for(const x of D.items){const o=S[x.ds];if(!o)continue;let ph=0,left=0;const live=o.c<o.total&&o.r>0;
+   if(o.disp==null)o.disp=o.c;
+   if(live&&o.fast){const q=Math.max(0,now-o.recv)*o.r,est=o.c+Math.min(q,o.r*3);
+    const v=Math.min(3*o.r,Math.max(0,o.r+(est-o.disp)*.9));o.disp+=v*dt;if(o.disp<o.c-5)o.disp=o.c;ph=q%1;left=(1-ph)/o.r}
+   else if(live&&o.last&&o.E>0){const q=Math.max(0,(now-o.last)/o.E),tgt=o.c+(q<.8?q:.8+.15*(1-Math.exp(-(q-.8)/.15)));
+    if(tgt-o.disp>5)o.disp=tgt;else if(tgt>o.disp)o.disp+=(tgt-o.disp)*Math.min(1,dt*6);ph=Math.min(1,q);left=o.E-(now-o.last)}
+   else if(o.c>o.disp)o.disp+=(o.c-o.disp)*Math.min(1,dt*6);
+   if(o.disp>o.total)o.disp=o.total;
+   const p=o.total?o.disp/o.total:0;odos['c'+x.ds].set(o.disp);odos['p'+x.ds].set(p*1e6);
+   const dash=(C*p).toFixed(1);if(o.dash!==dash){o.dash=dash;document.getElementById('arc-'+x.ds).setAttribute('stroke-dasharray',dash+' '+C)}
+   const done=o.c>=o.total&&o.total>0,sp=done?1:(live?ph:0);
+   const deg=(sp*360).toFixed(1);if(o.deg!==deg){o.deg=deg;(o.he||(o.he=document.getElementById('h-'+x.ds))).style.transform='rotate('+deg+'deg)'}
+   const wd=Math.round(sp*120);if(o.wd!==wd){o.wd=wd;(o.we||(o.we=document.getElementById('w-'+x.ds))).style.background=`conic-gradient(${cof(x.ds)} ${wd*3}deg,transparent 0)`}
+   if(txt){const rt=o.pm>=20?`每分鐘 ${o.pm} 筆`:(o.ph?`每小時 ${f(o.ph)} 筆`:'');
+    setT('n-'+x.ds,done?'已完成':(live?(left>0?'下一筆 '+left.toFixed(1)+' 秒':'下一筆 即將'):'等待中'));setT('s-'+x.ds,done?'100%':(live?rt:'尚未開始'))}}
   const ago=D.last_ts?now-D.last_ts:null,gap=D.n60?60/D.n60:null;
-  if(txt){document.getElementById('lastago').textContent=ago!=null?ago.toFixed(3)+' 秒前':'—';
-   if(gap&&ago!=null)document.getElementById('nextin').textContent='約 '+(gap-ago%gap).toFixed(3)+' 秒後';
-   document.getElementById('tick').textContent='資料上次更新 '+((Date.now()-last)/1000).toFixed(3)+' 秒前'}
-  if(gap&&ago!=null)document.getElementById('nb').style.width=((ago%gap)/gap*100)+'%';
-  const w=cv.clientWidth,h=cv.clientHeight,dpr=Math.min(2,window.devicePixelRatio||1);if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
-  cx.setTransform(dpr,0,0,dpr,0,0);cx.clearRect(0,0,w,h);cx.globalAlpha=.75;
-  for(const [d,t] of D.recent||[]){const xx=w-(now-t)/60*w;if(xx<0)continue;cx.fillStyle=cof(d);cx.fillRect(xx-1.5,6,3,h-12)}
-  cx.globalAlpha=1}
+  if(txt){setT('lastago',ago!=null?ago.toFixed(3)+' 秒前':'—');if(gap&&ago!=null)setT('nextin','約 '+(gap-ago%gap).toFixed(3)+' 秒後');
+   setT('tick','資料上次更新 '+((Date.now()-last)/1000).toFixed(1)+' 秒前')}
+  if(gap&&ago!=null)nb.style.transform='scaleX('+((ago%gap)/gap).toFixed(4)+')';
+  if(cw>0){cx.setTransform(dpr,0,0,dpr,0,0);cx.clearRect(0,0,cw,ch);cx.globalAlpha=.75;const by={};
+   for(const e of D.recent||[]){const xx=cw-(now-e[1])/60*cw;if(xx<0||xx>cw+2)continue;(by[e[0]]||(by[e[0]]=[])).push(xx)}
+   for(const k in by){cx.fillStyle=cof(k);cx.beginPath();for(const xx of by[k])cx.rect(xx-1.5,6,3,ch-12);cx.fill()}cx.globalAlpha=1}}
  requestAnimationFrame(frame)}
 stream();requestAnimationFrame(frame);
 </script></body></html>
