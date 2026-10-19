@@ -77,13 +77,13 @@ canvas{contain:strict;width:100%;height:clamp(36px,7vh,110px);display:block;back
   <div><div class="k">下一筆預計</div><div class="v" id="nextin">—</div><div class="nextbar"><div id="nb"></div></div></div>
  </div>
  <canvas id="tl"></canvas>
- <div class="legend"><span>← 60 秒前</span><span><i style="background:#2563eb"></i>股票分鐘K</span><span><i style="background:#f59e0b"></i>台指期</span><span><i style="background:#16a34a"></i>ADR</span><span><i style="background:#8b5cf6"></i>還權日線</span><span><i style="background:#9ca3af"></i>逐筆（下一步）</span><span style="margin-left:auto">現在 →</span></div>
+ <div class="legend"><span>← 60 秒前</span><span><i style="background:#2563eb"></i>股票分鐘K</span><span><i style="background:#f59e0b"></i>台指期</span><span><i style="background:#16a34a"></i>ADR</span><span><i style="background:#8b5cf6"></i>還權日線</span><span><i style="background:#9ca3af"></i>逐筆成交</span><span style="margin-left:auto">現在 →</span></div>
 </div>
 <div class="foot">
  <div><div class="k">最近 60 分鐘完成（上限 5,950）</div><div class="v" id="rate">—</div></div>
  <div><div class="k">預計全部完成</div><div class="v" id="eta">—</div></div>
  <div><div class="k">剩餘請求</div><div class="v" id="rem">—</div></div>
- <div><div class="k">硬碟</div><div class="v" id="disk">—</div></div>
+ <div><div class="k">硬碟 已用 / 總量</div><div class="v" id="disk">—</div><div class="k" id="dsub" style="margin-top:.15em">—</div></div>
 </div></div>
 <script>
 const BASE='https://tightness-bride-armoire.ngrok-free.dev',HDR={'ngrok-skip-browser-warning':'1'};
@@ -135,7 +135,8 @@ function apply(j){D=j;skew=Date.now()/1000-j.server_ts;if(!built)build(j.items);
   const p=x.total?x.done/x.total:0;
   setT('o-'+x.ds,p>=1?'完成':(x.oldest&&p>0?'已回到 '+x.oldest.slice(0,7).replace('-','/'):'尚未開始'))});
  mode=!j.alive?'stopped':(live?'live':(stall?'stall':'idle'));
- setT('rate',f(j.rate));setT('disk',f(j.disk_mb)+' MB');
+ setT('rate',f(j.rate));const G=2**30;if(j.disk_total_bytes){setT('disk',`${Math.round(j.disk_used_bytes/G)} / ${Math.round(j.disk_total_bytes/G)} GB · ${Math.round(j.disk_used_bytes/j.disk_total_bytes*100)}%`);
+  setT('dsub','FinMind 資料 '+((j.data_bytes||j.disk_mb*2**20)/G).toFixed(1)+' GB')}else{setT('disk',f(j.disk_mb)+' MB');setT('dsub','FinMind 資料')}
  online();lastOk=Date.now();status()}
 function status(){const s=document.getElementById('st');
  const M={live:['● 下載中','ok'],stall:['● 暫停中（5 分鐘內沒有新進度）','warn'],stopped:['● 已停止','bad'],idle:['● 待命中','ok'],offline:['● 離線，重新連線中','bad'],init:['● 連線中','']}[mode];
