@@ -12,7 +12,7 @@ body{background:#fff;color:#111827;font-family:"Noto Sans TC","PingFang TC","Mic
 .hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--line);padding-bottom:calc(var(--u)*.8)}
 h1{font-size:clamp(20px,calc(var(--u)*2.3),56px);margin:0;line-height:1.15}
 .sub{color:var(--mut);font-size:clamp(13px,calc(var(--u)*1.15),26px);margin-top:.2em}
-.rt{text-align:right}.st{font-size:clamp(15px,calc(var(--u)*1.45),32px);font-weight:700}.ok{color:#16a34a}.bad{color:#dc2626}
+.rt{text-align:right}.st{font-size:clamp(15px,calc(var(--u)*1.45),32px);font-weight:700}.ok{color:#16a34a}.bad{color:#dc2626}.warn{color:#d97706}
 .tick{color:#9ca3af;font-size:clamp(12px,calc(var(--u)*.9),20px);margin-top:.25em}
 /* donuts */
 .grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:calc(var(--u)*1.6);min-height:0}
@@ -64,12 +64,12 @@ canvas{contain:strict;width:100%;height:clamp(36px,7vh,110px);display:block;back
  .astats,.foot{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.foot{padding-top:14px}
  .k{font-size:13px}.v{font-size:20px}.legend{gap:8px 12px;font-size:12px}canvas{height:56px}
 }
-#lastago,#nextin{height:1.25em;contain:strict;overflow:hidden}.tick{height:1.3em;contain:strict}.rt{min-width:14em}
+#lastago,#nextin{height:1.25em;contain:strict;overflow:hidden}.tick{height:1.3em;contain:strict;white-space:nowrap}.rt{min-width:14em}
 </style></head><body><div class="wrap">
 <div class="hd"><div><h1>Berkshire 資料庫即時進度</h1><div class="sub" id="now">—</div></div><div class="rt"><div class="st" id="st">—</div><div class="tick" id="tick"></div></div></div>
-<div class="banner" id="ban">● 離線，重新連線中…<small id="bansub">資料來源暫時連不上，頁面會自動重試。</small></div>
+<div class="banner" id="ban">● 離線，稍後自動重試<small id="bansub">資料來源暫時連不上，頁面會自動重試。</small></div>
 <div class="grid" id="grid"><div class="loading">連線中…</div></div>
-<div class="act"><h3>請求活動（最近 60 秒）</h3>
+<div class="act"><h3>請求活動（最近 60 秒 · 依平均速度推算）</h3>
  <div class="astats">
   <div><div class="k">最近 60 秒完成</div><div class="v" id="n60">—</div></div>
   <div><div class="k">平均間隔</div><div class="v" id="gap">—</div></div>
@@ -81,17 +81,26 @@ canvas{contain:strict;width:100%;height:clamp(36px,7vh,110px);display:block;back
 </div>
 <div class="foot">
  <div><div class="k">最近 60 分鐘完成（上限 5,950）</div><div class="v" id="rate">—</div></div>
- <div><div class="k">分鐘K預計補完</div><div class="v" id="eta">—</div></div>
+ <div><div class="k">預計全部完成</div><div class="v" id="eta">—</div></div>
  <div><div class="k">剩餘請求</div><div class="v" id="rem">—</div></div>
  <div><div class="k">硬碟</div><div class="v" id="disk">—</div></div>
 </div></div>
 <script>
 const BASE='https://tightness-bride-armoire.ngrok-free.dev',HDR={'ngrok-skip-browser-warning':'1'};
-const R=94,C=2*Math.PI*R,TR=113,TC=2*Math.PI*TR,f=n=>n.toLocaleString('en-US');
+// ---- sync model: GET /progress.json once on load, then every 5 min (no stream). Between syncs every count is
+// extrapolated locally at the recent average rate (per_hr from the API = completions in the last 60 min, else the
+// delta between the last two syncs; the mean of both when both exist), capped at the dataset total and at 1.5 sync intervals past the last sync.
+// A sync that comes in ahead is eased up to over ~2 s; one that comes in behind holds the display. Never backwards.
+const SYNC=300000,MAXX=450,TAU=1.5,TIMEOUT=15000;
+const R=94,C=2*Math.PI*R,TR=113,TC=2*Math.PI*TR,f=n=>Math.round(n).toLocaleString('en-US');
 const COL={TaiwanStockKBar:'#2563eb',TaiwanFuturesKBar:'#f59e0b',USStockPriceMinute:'#16a34a',TaiwanStockPriceAdj:'#8b5cf6',TaiwanStockPriceTick:'#9ca3af'};
 const cof=ds=>COL[ds]||'#6b7280';
-let D=null,last=0,skew=0,built=false,fails=0;const odos={},S={},TX={};
+let D=null,skew=0,built=false,fails=0,lastOk=0,nextAt=0,timer=null,inflight=false,hiddenAt=0,mode='init';const odos={},S={},TX={};let ev=[];
 function setT(id,v){if(TX[id]!==v){TX[id]=v;const e=document.getElementById(id);if(e)e.textContent=v}}
+const TZ='Asia/Taipei',_fp=(o)=>{const F=new Intl.DateTimeFormat('en-GB',Object.assign({timeZone:TZ,hour12:false},o));return ms=>{const p={};for(const x of F.formatToParts(new Date(ms)))p[x.type]=x.value;return p}};
+const _full=_fp({year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
+const hm=ms=>{const p=_full(ms);return p.hour+':'+p.minute},mdhm=ms=>{const p=_full(ms);return p.month+'/'+p.day+' '+p.hour+':'+p.minute};
+const ymdhms=ms=>{const p=_full(ms);return `${p.year}/${p.month}/${p.day} ${p.hour}:${p.minute}:${p.second}`};
 // ---- continuous odometer: value V (float); last digit rolls with the fraction, higher digits carry like a real meter
 function Odo(el,dec,commas){this.el=el;this.dec=dec;this.commas=commas;this.tpl='';this.cols=[];this.pos=[]}
 Odo.prototype.fmt=function(n){let s=String(n);if(this.dec){s=s.padStart(this.dec+1,'0');return s.slice(0,-this.dec)+'.'+s.slice(-this.dec)}return this.commas?Number(s).toLocaleString('en-US'):s};
@@ -115,80 +124,69 @@ function build(items){const g=document.getElementById('grid');
   <div class="cnt"><span class="odo" id="c-${x.ds}"></span><span class="tot"> / ${f(x.total)}</span></div><div class="old" id="o-${x.ds}"></div>
   <div class="nxw"><b class="nx" id="n-${x.ds}"></b></div></div>`}).join('');
  items.forEach(x=>{odos['p'+x.ds]=new Odo(document.getElementById('p-'+x.ds),4,false);odos['c'+x.ds]=new Odo(document.getElementById('c-'+x.ds),0,true)});built=true}
-function render(j){if(!j||!Array.isArray(j.items))return;D=j;online();
- skew=Date.now()/1000-D.server_ts;if(!built)build(D.items);
- setT('now',D.now+'（台北時間）');
- const s=document.getElementById('st');s.textContent=D.alive?'● 下載中':'● 已停止';s.className='st '+(D.alive?'ok':'bad');
- D.items.forEach(x=>{const pm=(D.per_min||{})[x.ds]||0,ph=(D.per_hr||{})[x.ds]||0,o=S[x.ds]||(S[x.ds]={disp:null});
-  o.c=Math.max(o.c||0,x.done);o.total=x.total;o.r=pm>=20?pm/60:ph/3600;o.last=(D.last_ds||{})[x.ds]||null;o.pm=pm;o.ph=ph;
-  o.fast=o.r>=.5;o.recv=D.server_ts;o.E=Math.max(o.r>0?1/o.r:0,(D.gap_ds||{})[x.ds]||0);
-  if(!D.alive)o.r=0;
+function apply(j){D=j;skew=Date.now()/1000-j.server_ts;if(!built)build(j.items);
+ const st=j.server_ts;let live=0,stall=0;
+ j.items.forEach(x=>{let o=S[x.ds];const first=!o;if(first)o=S[x.ds]={disp:x.done,c:x.done,t:st,acc:0};
+  const ph=(j.per_hr||{})[x.ds]||0,last=(j.last_ds||{})[x.ds]||0,inc=x.done<x.total;let r=ph/3600;
+  if(!first&&st>o.t+30){const dr=Math.max(0,(x.done-o.c)/(st-o.t));r=r>0&&dr>0?(r+dr)/2:(r||dr);o.stall=inc&&x.done<=o.c&&(ph>0||o.r>0)}
+  else if(first)o.stall=inc&&ph>0&&last>0&&st-last>600;
+  o.c=x.done;o.t=st;o.total=x.total;o.ph=ph;o.fin=!inc&&x.total>0;
+  o.r=(j.alive&&inc&&!o.stall)?r:0;if(o.r>0)live++;if(o.stall)stall++;
   const p=x.total?x.done/x.total:0;
   setT('o-'+x.ds,p>=1?'完成':(x.oldest&&p>0?'已回到 '+x.oldest.slice(0,7).replace('-','/'):'尚未開始'))});
- setT('rate',f(D.rate));setT('eta',D.eta);setT('rem',f(D.remaining));setT('disk',f(D.disk_mb)+' MB');
- setT('n60',f(D.n60)+' 筆');setT('gap',D.n60?(60/D.n60).toFixed(3)+' 秒':'—');last=Date.now()}
-// ---- stream (fetch + ReadableStream; EventSource cannot send the ngrok header); poll every 10 s if streaming fails
-let ctl=null,retryT=null,pollT=null,sFails=0,backoff=1000;
-function applyMsg(m){if(m.rc){if(!D)return;const lo=m.server_ts-61;m.recent=(D.recent||[]).filter(e=>e[1]<m.rw&&e[1]>=lo).concat(m.rc);delete m.rc;delete m.rw}render(m)}
-function drop(){const c=ctl;ctl=null;if(c)c.abort();clearTimeout(retryT);retryT=null}
-async function stream(){drop();if(document.hidden)return;const ac=new AbortController();ctl=ac;let got=false,wd=null;const t0=Date.now();
- try{const r=await fetch(BASE+'/progress.stream',{headers:HDR,cache:'no-store',mode:'cors',signal:ac.signal});
-  if(!r.ok||!r.body||!(r.headers.get('content-type')||'').includes('event-stream'))throw new Error('HTTP '+r.status);
-  const rd=r.body.getReader(),dec=new TextDecoder();let buf='',seen=Date.now();
-  wd=setInterval(()=>{if(Date.now()-seen>10000)ac.abort()},2000);
-  for(;;){const {value,done}=await rd.read();if(done)break;seen=Date.now();buf+=dec.decode(value,{stream:true}).replace(/\r/g,'');let i;
-   while((i=buf.indexOf('\n\n'))>=0){const blk=buf.slice(0,i);buf=buf.slice(i+2);let ev='message',data='';
-    for(const ln of blk.split('\n')){if(ln.startsWith('event:'))ev=ln.slice(6).trim();else if(ln.startsWith('data:'))data+=ln.slice(5).trim()}
-    if(!data||ev!=='message')continue;try{applyMsg(JSON.parse(data))}catch(e){continue}
-    if(!got){got=true;sFails=0;backoff=1000;stopPoll()}}}
- }catch(e){}finally{clearInterval(wd)}
- if(ac!==ctl||document.hidden)return;ctl=null;
- if(got&&Date.now()-t0>5000){retryT=setTimeout(stream,300);return}
- sFails++;if(!pollT)offline();
- if(sFails>=3){startPoll();retryT=setTimeout(stream,60000)}else{retryT=setTimeout(stream,backoff);backoff=Math.min(backoff*2,30000)}}
-async function poll(){const ac=new AbortController(),to=setTimeout(()=>ac.abort(),8000);
- try{const r=await fetch(BASE+'/progress.json?t='+Date.now(),{headers:HDR,cache:'no-store',mode:'cors',signal:ac.signal});
-  if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();if(!j||!Array.isArray(j.items))throw new Error('bad data');render(j)}
- catch(e){offline(e)}finally{clearTimeout(to)}}
-function startPoll(){if(pollT)return;poll();pollT=setInterval(poll,10000)}
-function stopPoll(){clearInterval(pollT);pollT=null}
+ mode=!j.alive?'stopped':(live?'live':(stall?'stall':'idle'));
+ setT('rate',f(j.rate));setT('disk',f(j.disk_mb)+' MB');
+ online();lastOk=Date.now();status()}
+function status(){const s=document.getElementById('st');
+ const M={live:['● 下載中','ok'],stall:['● 暫停中（5 分鐘內沒有新進度）','warn'],stopped:['● 已停止','bad'],idle:['● 待命中','ok'],offline:['● 離線，重新連線中','bad'],init:['● 連線中','']}[mode];
+ if(s.textContent!==M[0])s.textContent=M[0];s.className='st '+M[1]}
 function online(){fails=0;document.getElementById('ban').classList.remove('on');document.body.classList.remove('stale')}
-function offline(e){fails++;const s=document.getElementById('st');s.textContent='● 離線，重新連線中';s.className='st bad';
- document.getElementById('ban').classList.add('on');document.body.classList.add('stale');
- document.getElementById('bansub').textContent=(D?'目前顯示的是最後一次取得的數字。':'尚未取得資料。')+'已重試 '+fails+' 次，自動重新連線中。';
+function offline(){mode='offline';status();document.getElementById('ban').classList.add('on');document.body.classList.add('stale');
+ document.getElementById('bansub').textContent=(D?'畫面停在上次同步的數字，暫停推算。':'尚未取得資料。')+'已重試 '+fails+' 次，'+Math.round((nextAt-Date.now())/1000)+' 秒後再試。';
  if(!built)document.getElementById('grid').innerHTML='<div class="loading">資料來源暫時離線，自動重試中…</div>'}
-document.addEventListener('visibilitychange',()=>{if(document.hidden){drop();stopPoll()}else{sFails=0;backoff=1000;stream()}});
-// ---- animation: one rAF loop, transform/attribute writes only, no layout reads; text throttled to 10/s
-// fast datasets (>=0.5/s): velocity follower toward c+(now-recv)*r (no stop-go at each 1 s snapshot);
-// slow/bursty ones: creep toward the next item over the measured expected wait, ease-hold near .95 if late. Never backwards.
+function schedule(ms){clearTimeout(timer);timer=null;nextAt=Date.now()+ms;if(!document.hidden)timer=setTimeout(sync,ms)}
+async function sync(){clearTimeout(timer);timer=null;if(inflight)return;inflight=true;
+ const ac=new AbortController(),to=setTimeout(()=>ac.abort(),TIMEOUT);let ok=false;
+ try{const r=await fetch(BASE+'/progress.json',{headers:HDR,cache:'no-store',mode:'cors',signal:ac.signal});
+  if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();if(!j||!Array.isArray(j.items))throw new Error('bad data');apply(j);ok=true}
+ catch(e){fails++}finally{clearTimeout(to);inflight=false}
+ if(ok)schedule(SYNC);else{schedule(Math.min(SYNC,30000*Math.pow(2,fails-1)));offline()}}   // 30 s, 60 s, 120 s, 240 s, then 5 min
+document.addEventListener('visibilitychange',()=>{if(document.hidden){hiddenAt=Date.now();clearTimeout(timer);timer=null}
+ else{const n=Date.now();if((hiddenAt&&n-hiddenAt>=SYNC)||n>=nextAt)sync();else schedule(nextAt-n)}});
+// ---- animation: one rAF loop, transform/attribute writes only, text throttled to 10/s
 const cv=document.getElementById('tl'),cx=cv.getContext('2d');let pt=0,lastTxt=0,cw=0,ch=0,dpr=1;
 function sizeCv(){const r=cv.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);cw=r.width;ch=r.height;cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr)}
 new ResizeObserver(sizeCv).observe(cv);sizeCv();
 const nb=document.getElementById('nb');
-function frame(ts){const dt=pt?Math.min(.1,(ts-pt)/1000):0;pt=ts;
- if(D){const now=Date.now()/1000-skew,txt=ts-lastTxt>=100;if(txt)lastTxt=ts;
-  for(const x of D.items){const o=S[x.ds];if(!o)continue;let ph=0,left=0;const live=o.c<o.total&&o.r>0;
-   if(o.disp==null)o.disp=o.c;
-   if(live&&o.fast){const q=Math.max(0,now-o.recv)*o.r,est=o.c+Math.min(q,o.r*3);
-    const v=Math.min(3*o.r,Math.max(0,o.r+(est-o.disp)*.9));o.disp+=v*dt;if(o.disp<o.c-5)o.disp=o.c;ph=q%1;left=(1-ph)/o.r}
-   else if(live&&o.last&&o.E>0){const q=Math.max(0,(now-o.last)/o.E),tgt=o.c+(q<.8?q:.8+.15*(1-Math.exp(-(q-.8)/.15)));
-    if(tgt-o.disp>5)o.disp=tgt;else if(tgt>o.disp)o.disp+=(tgt-o.disp)*Math.min(1,dt*6);ph=Math.min(1,q);left=o.E-(now-o.last)}
-   else if(o.c>o.disp)o.disp+=(o.c-o.disp)*Math.min(1,dt*6);
-   if(o.disp>o.total)o.disp=o.total;
+function frame(ts){const dt=pt?Math.min(.1,(ts-pt)/1000):0;pt=ts;const wall=Date.now(),cnow=wall/1000;
+ if(D){const now=cnow-skew,txt=ts-lastTxt>=100,run=mode!=='offline';if(txt)lastTxt=ts;let rTot=0,rem=0,minLeft=null,minP=0;
+  for(const x of D.items){const o=S[x.ds];if(!o)continue;let ph=0,left=0;
+   const age=Math.max(0,now-o.t),ext=run&&o.r>0&&age<MAXX,tgt=Math.min(o.total,o.c+(run?o.r*Math.min(age,MAXX):0));
+   if(run){const v=Math.max(0,(ext&&tgt<o.total?o.r:0)+(tgt-o.disp)/TAU);o.disp=Math.min(o.total,o.disp+v*dt)}
+   const hold=ext&&tgt<o.disp-.5,live=ext&&!hold&&o.disp<o.total;
+   if(live){rTot+=o.r;o.acc+=o.r*dt;let k=0;while(o.acc>=1&&k<50){o.acc-=1;k++;ev.push([x.ds,cnow])}if(o.acc>=1)o.acc%=1;
+    ph=o.acc;left=(1-ph)/o.r;if(minLeft==null||left<minLeft){minLeft=left;minP=ph}}
+   if(o.disp<o.total)rem+=o.total-o.disp;
    const p=o.total?o.disp/o.total:0;odos['c'+x.ds].set(o.disp);odos['p'+x.ds].set(p*1e6);
    const dash=(C*p).toFixed(1);if(o.dash!==dash){o.dash=dash;document.getElementById('arc-'+x.ds).setAttribute('stroke-dasharray',dash+' '+C)}
-   const done=o.c>=o.total&&o.total>0,sp=done?1:(live?ph:0);
+   const sp=o.fin?1:(live?ph:0);
    const deg=(sp*360).toFixed(1);if(o.deg!==deg){o.deg=deg;(o.te||(o.te=document.getElementById('t-'+x.ds))).style.strokeDashoffset=(TC*(1-sp)).toFixed(2);
-    const dd=o.de||(o.de=document.getElementById('d-'+x.ds));dd.style.transform='rotate('+deg+'deg)';dd.style.opacity=(live||done)?1:0}
-   if(txt){const rt=o.pm>=20?`${o.pm}/分`:(o.ph?`${f(o.ph)}/時`:'');
-    setT('n-'+x.ds,done?'已完成':(live?'下一筆 '+(left>=1?Math.ceil(left)+'s':(left>0?'<1s':'即將'))+' · '+rt:'等待中'))}}
-  const ago=D.last_ts?now-D.last_ts:null,gap=D.n60?60/D.n60:null;
-  if(txt){setT('lastago',ago!=null?ago.toFixed(3)+' 秒前':'—');if(gap&&ago!=null)setT('nextin','約 '+(gap-ago%gap).toFixed(3)+' 秒後');
-   setT('tick','資料上次更新 '+((Date.now()-last)/1000).toFixed(1)+' 秒前')}
-  if(gap&&ago!=null)nb.style.transform='scaleX('+((ago%gap)/gap).toFixed(4)+')';
+    const dd=o.de||(o.de=document.getElementById('d-'+x.ds));dd.style.transform='rotate('+deg+'deg)';dd.style.opacity=(live||o.fin)?1:0}
+   if(txt){const rt=o.ph?`${f(o.ph)}/時`:(o.r?`${f(o.r*3600)}/時`:'');
+    setT('n-'+x.ds,o.fin&&o.disp>=o.total?'已完成':(live?'下一筆 '+(left>=1?Math.ceil(left)+'s':'<1s')+' · '+rt:(hold?'與實際數字校正中':o.stall?'暫停中':(mode==='offline'&&o.c<o.total?'離線':'等待中'))))}}
+  while(ev.length&&ev[0][1]<cnow-61)ev.shift();
+  const n60=ev.filter(e=>e[1]>=cnow-60).length,lastE=ev.length?ev[ev.length-1][1]:null,ago=lastE!=null?cnow-lastE:null;
+  if(txt){setT('n60',rTot?f(n60)+' 筆':'0 筆');setT('gap',rTot?(1/rTot).toFixed(3)+' 秒':'—');
+   setT('lastago',ago!=null?ago.toFixed(1)+' 秒前':'—');setT('nextin',minLeft!=null?'約 '+minLeft.toFixed(1)+' 秒後':'—');
+   setT('rem',f(rem));setT('eta',rTot&&rem>0?mdhm(wall+rem/rTot*1000):(rem>0?'—（暫停）':'已完成'));
+   setT('now',ymdhms(wall)+'（台北時間）');
+   const tag=mode==='offline'?`離線，${Math.max(0,Math.round((nextAt-wall)/1000))} 秒後重試`:(mode==='stall'?'沒有新進度，暫停推算':(mode==='stopped'?'下載程式已停止':(rTot?'數字為推算':'')));
+   setT('tick','上次同步 '+hm(lastOk)+'（台北）'+(tag?' · '+tag:''))}
+  if(minLeft!=null)nb.style.transform='scaleX('+minP.toFixed(4)+')';else nb.style.transform='scaleX(0)';
   if(cw>0){cx.setTransform(dpr,0,0,dpr,0,0);cx.clearRect(0,0,cw,ch);cx.globalAlpha=.75;const by={};
-   for(const e of D.recent||[]){const xx=cw-(now-e[1])/60*cw;if(xx<0||xx>cw+2)continue;(by[e[0]]||(by[e[0]]=[])).push(xx)}
+   for(const e of ev){const xx=cw-(cnow-e[1])/60*cw;if(xx<0||xx>cw+2)continue;(by[e[0]]||(by[e[0]]=[])).push(xx)}
    for(const k in by){cx.fillStyle=cof(k);cx.beginPath();for(const xx of by[k])cx.rect(xx-1.5,6,3,ch-12);cx.fill()}cx.globalAlpha=1}}
+ else if(TX.now===undefined||ts-lastTxt>=500){lastTxt=ts;setT('now',ymdhms(wall)+'（台北時間）')}
  requestAnimationFrame(frame)}
-stream();requestAnimationFrame(frame);
+sync();requestAnimationFrame(frame);
 </script></body></html>
