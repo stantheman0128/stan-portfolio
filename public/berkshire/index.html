@@ -77,12 +77,12 @@ canvas{contain:strict;width:100%;height:clamp(36px,7vh,110px);display:block;back
   <div><div class="k">下一筆預計</div><div class="v" id="nextin">—</div><div class="nextbar"><div id="nb"></div></div></div>
  </div>
  <canvas id="tl"></canvas>
- <div class="legend"><span>← 60 秒前</span><span><i style="background:#2563eb"></i>股票分鐘K</span><span><i style="background:#f59e0b"></i>台指期</span><span><i style="background:#16a34a"></i>ADR</span><span><i style="background:#8b5cf6"></i>還權日線</span><span><i style="background:#9ca3af"></i>逐筆成交</span><span style="margin-left:auto">現在 →</span></div>
+ <div class="legend"><span>← 60 秒前</span><span><i style="background:#2563eb"></i>77 檔分鐘K等</span><span><i style="background:#f59e0b"></i>77 檔逐筆</span><span><i style="background:#8b5cf6"></i>A 早期補齊</span><span><i style="background:#16a34a"></i>B 全市場分鐘K</span><span><i style="background:#db2777"></i>C 全市場逐筆</span><span style="margin-left:auto">現在 →</span></div>
 </div>
 <div class="foot">
  <div><div class="k">最近 60 分鐘完成（上限 5,950）</div><div class="v" id="rate">—</div></div>
- <div><div class="k">預計全部完成</div><div class="v" id="eta">—</div></div>
- <div><div class="k">剩餘請求</div><div class="v" id="rem">—</div></div>
+ <div><div class="k" id="curk">目前階段預計完成</div><div class="v" id="ceta">—</div><div class="k" id="crem" style="margin-top:.15em">—</div></div>
+ <div><div class="k">預計全部完成</div><div class="v" id="eta">—</div><div class="k" id="rem" style="margin-top:.15em">—</div></div>
  <div><div class="k">硬碟 已用 / 總量</div><div class="v" id="disk">—</div><div class="k" id="dsub" style="margin-top:.15em">—</div></div>
 </div></div>
 <script>
@@ -93,7 +93,7 @@ const BASE='https://tightness-bride-armoire.ngrok-free.dev',HDR={'ngrok-skip-bro
 // A sync that comes in ahead is eased up to over ~2 s; one that comes in behind holds the display. Never backwards.
 const SYNC=300000,MAXX=450,TAU=1.5,TIMEOUT=15000;
 const R=94,C=2*Math.PI*R,TR=113,TC=2*Math.PI*TR,f=n=>Math.round(n).toLocaleString('en-US');
-const COL={TaiwanStockKBar:'#2563eb',TaiwanFuturesKBar:'#f59e0b',USStockPriceMinute:'#16a34a',TaiwanStockPriceAdj:'#8b5cf6',TaiwanStockPriceTick:'#9ca3af'};
+const COL={P1:'#2563eb',P2:'#f59e0b',A:'#8b5cf6',B:'#16a34a',C:'#db2777'};
 const cof=ds=>COL[ds]||'#6b7280';
 let D=null,skew=0,built=false,fails=0,lastOk=0,nextAt=0,timer=null,inflight=false,hiddenAt=0,mode='init';const odos={},S={},TX={};let ev=[];
 function setT(id,v){if(TX[id]!==v){TX[id]=v;const e=document.getElementById(id);if(e)e.textContent=v}}
@@ -120,8 +120,8 @@ function build(items){const g=document.getElementById('grid');
   <circle cx="120" cy="120" r="${R}" fill="none" stroke="#e8edf3" stroke-width="22"/>
   <circle id="arc-${x.ds}" cx="120" cy="120" r="${R}" fill="none" stroke="${c}" stroke-width="22" stroke-dasharray="0 ${C}" transform="rotate(-90 120 120)"/></svg>
   <div class="orb" id="d-${x.ds}"><i style="background:${c};box-shadow:0 0 6px 2px ${c}99,0 0 2px ${c}"></i></div>
-  <div class="ctr"><div class="pct" style="color:${x.ds==='TaiwanStockPriceTick'?'#9ca3af':c}"><span class="odo" id="p-${x.ds}"></span><span>%</span></div></div></div></div>
-  <div class="cnt"><span class="odo" id="c-${x.ds}"></span><span class="tot"> / ${f(x.total)}</span></div><div class="old" id="o-${x.ds}"></div>
+  <div class="ctr"><div class="pct" style="color:${c}"><span class="odo" id="p-${x.ds}"></span><span>%</span></div></div></div></div>
+  <div class="cnt"><span class="odo" id="c-${x.ds}"></span><span class="tot" id="tt-${x.ds}"></span></div><div class="old" id="o-${x.ds}" title="${x.note||''}"></div><div class="old" id="e-${x.ds}"></div>
   <div class="nxw"><b class="nx" id="n-${x.ds}"></b></div></div>`}).join('');
  items.forEach(x=>{odos['p'+x.ds]=new Odo(document.getElementById('p-'+x.ds),4,false);odos['c'+x.ds]=new Odo(document.getElementById('c-'+x.ds),0,true)});built=true}
 function apply(j){D=j;skew=Date.now()/1000-j.server_ts;if(!built)build(j.items);
@@ -130,10 +130,10 @@ function apply(j){D=j;skew=Date.now()/1000-j.server_ts;if(!built)build(j.items);
   const ph=(j.per_hr||{})[x.ds]||0,last=(j.last_ds||{})[x.ds]||0,inc=x.done<x.total;let r=ph/3600;
   if(!first&&st>o.t+30){const dr=Math.max(0,(x.done-o.c)/(st-o.t));r=r>0&&dr>0?(r+dr)/2:(r||dr);o.stall=inc&&x.done<=o.c&&(ph>0||o.r>0)}
   else if(first)o.stall=inc&&ph>0&&last>0&&st-last>600;
-  o.c=x.done;o.t=st;o.total=x.total;o.ph=ph;o.fin=!inc&&x.total>0;
+  o.c=x.done;o.t=st;o.total=x.total;o.ph=ph;o.fin=!inc&&x.total>0;o.label=x.label;setT('tt-'+x.ds,' / '+(x.est?'約 ':'')+f(x.total)+(x.est?'（估）':''));
   o.r=(j.alive&&inc&&!o.stall)?r:0;if(o.r>0)live++;if(o.stall)stall++;
   const p=x.total?x.done/x.total:0;
-  setT('o-'+x.ds,p>=1?'完成':(x.oldest&&p>0?'已回到 '+x.oldest.slice(0,7).replace('-','/'):'尚未開始'))});
+  setT('o-'+x.ds,p>=1?'完成':(x.oldest&&p>0?'已回到 '+x.oldest.slice(0,7).replace('-','/'):(x.done>0?'進行中':'排隊中')))});
  mode=!j.alive?'stopped':(live?'live':(stall?'stall':'idle'));
  setT('rate',f(j.rate));const G=2**30;if(j.disk_total_bytes){setT('disk',`${Math.round(j.disk_used_bytes/G)} / ${Math.round(j.disk_total_bytes/G)} GB · ${Math.round(j.disk_used_bytes/j.disk_total_bytes*100)}%`);
   setT('dsub','FinMind 資料 '+((j.data_bytes||j.disk_mb*2**20)/G).toFixed(1)+' GB')}else{setT('disk',f(j.disk_mb)+' MB');setT('dsub','FinMind 資料')}
@@ -160,14 +160,14 @@ function sizeCv(){const r=cv.getBoundingClientRect();dpr=Math.min(2,window.devic
 new ResizeObserver(sizeCv).observe(cv);sizeCv();
 const nb=document.getElementById('nb');
 function frame(ts){const dt=pt?Math.min(.1,(ts-pt)/1000):0;pt=ts;const wall=Date.now(),cnow=wall/1000;
- if(D){const now=cnow-skew,txt=ts-lastTxt>=100,run=mode!=='offline';if(txt)lastTxt=ts;let rTot=0,rem=0,minLeft=null,minP=0;
+ if(D){const now=cnow-skew,txt=ts-lastTxt>=100,run=mode!=='offline';if(txt)lastTxt=ts;let rTot=0,rem=0,minLeft=null,minP=0,curK=null;
   for(const x of D.items){const o=S[x.ds];if(!o)continue;let ph=0,left=0;
    const age=Math.max(0,now-o.t),ext=run&&o.r>0&&age<MAXX,tgt=Math.min(o.total,o.c+(run?o.r*Math.min(age,MAXX):0));
    if(run){const v=Math.max(0,(ext&&tgt<o.total?o.r:0)+(tgt-o.disp)/TAU);o.disp=Math.min(o.total,o.disp+v*dt)}
    const hold=ext&&tgt<o.disp-.5,live=ext&&!hold&&o.disp<o.total;
    if(live){rTot+=o.r;o.acc+=o.r*dt;let k=0;while(o.acc>=1&&k<50){o.acc-=1;k++;ev.push([x.ds,cnow])}if(o.acc>=1)o.acc%=1;
     ph=o.acc;left=(1-ph)/o.r;if(minLeft==null||left<minLeft){minLeft=left;minP=ph}}
-   if(o.disp<o.total)rem+=o.total-o.disp;
+   if(o.disp<o.total){rem+=o.total-o.disp;if(curK==null)curK=x.ds}o.cum=rem;
    const p=o.total?o.disp/o.total:0;odos['c'+x.ds].set(o.disp);odos['p'+x.ds].set(p*1e6);
    const dash=(C*p).toFixed(1);if(o.dash!==dash){o.dash=dash;document.getElementById('arc-'+x.ds).setAttribute('stroke-dasharray',dash+' '+C)}
    const sp=o.fin?1:(live?ph:0);
@@ -179,7 +179,10 @@ function frame(ts){const dt=pt?Math.min(.1,(ts-pt)/1000):0;pt=ts;const wall=Date
   const n60=ev.filter(e=>e[1]>=cnow-60).length,lastE=ev.length?ev[ev.length-1][1]:null,ago=lastE!=null?cnow-lastE:null;
   if(txt){setT('n60',rTot?f(n60)+' 筆':'0 筆');setT('gap',rTot?(1/rTot).toFixed(3)+' 秒':'—');
    setT('lastago',ago!=null?ago.toFixed(1)+' 秒前':'—');setT('nextin',minLeft!=null?'約 '+minLeft.toFixed(1)+' 秒後':'—');
-   setT('rem',f(rem));setT('eta',rTot&&rem>0?mdhm(wall+rem/rTot*1000):(rem>0?'—（暫停）':'已完成'));
+   setT('rem','剩 '+f(rem)+' 次');setT('eta',rTot&&rem>0?mdhm(wall+rem/rTot*1000):(rem>0?'—（暫停）':'已完成'));
+   for(const x of D.items){const o=S[x.ds];if(!o)continue;setT('e-'+x.ds,o.fin&&o.disp>=o.total?'':(rTot?'預計 '+mdhm(wall+o.cum/rTot*1000):'預計 —'))}
+   const co=curK&&S[curK];setT('curk',co?'目前階段（'+co.label+'）完成':'目前階段');
+   setT('ceta',co?(rTot?mdhm(wall+co.cum/rTot*1000):'—（暫停）'):'已完成');setT('crem',co?'剩 '+f(co.total-co.disp)+' 次':'—');
    setT('now',ymdhms(wall)+'（台北時間）');
    const tag=mode==='offline'?`離線，${Math.max(0,Math.round((nextAt-wall)/1000))} 秒後重試`:(mode==='stall'?'沒有新進度，暫停推算':(mode==='stopped'?'下載程式已停止':(rTot?'數字為推算':'')));
    setT('tick','上次同步 '+hm(lastOk)+'（台北）'+(tag?' · '+tag:''))}
