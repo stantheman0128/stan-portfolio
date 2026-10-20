@@ -2,28 +2,40 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#ffffff">
+<meta name="build" content="20261020-uifix1">
+<meta http-equiv="Cache-Control" content="no-store">
 <title>Berkshire 資料庫即時進度</title>
 <style>
 *{box-sizing:border-box}
-:root{--u:min(1vw,1.78vh);--mut:#6b7280;--line:#e5e7eb}
+:root{--u:min(1vw,1.78vh);--g:calc(var(--u)*1.6);--mut:#6b7280;--line:#e5e7eb}
 html,body{margin:0;height:100%}
 body{background:#fff;color:#111827;font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;font-variant-numeric:tabular-nums;overflow:hidden}
-.wrap{height:100vh;height:100dvh;display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;gap:calc(var(--u)*1.1);padding:calc(var(--u)*1.4) calc(var(--u)*2.4);max-width:2400px;margin:0 auto}
+.wrap{height:100vh;height:100dvh;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto;gap:calc(var(--u)*1.1);padding:calc(var(--u)*1.4) calc(var(--u)*2.4);max-width:2400px;margin:0 auto}
 .hd{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid var(--line);padding-bottom:calc(var(--u)*.8)}
 h1{font-size:clamp(20px,calc(var(--u)*2.3),56px);margin:0;line-height:1.15}
 .sub{color:var(--mut);font-size:clamp(13px,calc(var(--u)*1.15),26px);margin-top:.2em}
 .rt{text-align:right}.st{font-size:clamp(15px,calc(var(--u)*1.45),32px);font-weight:700}.ok{color:#16a34a}.bad{color:#dc2626}.warn{color:#d97706}
 .tick{color:#9ca3af;font-size:clamp(12px,calc(var(--u)*.9),20px);margin-top:.25em}
+.strow{display:flex;align-items:center;justify-content:flex-end;gap:.6em}
+.rf{font:inherit;font-size:clamp(13px,calc(var(--u)*1.1),24px);font-weight:700;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:999px;padding:.3em .9em;cursor:pointer;display:inline-flex;align-items:center;gap:.35em;-webkit-tap-highlight-color:transparent}
+.rf:hover{background:#dbeafe}.rf:disabled{opacity:.6;cursor:default}.rf b{display:inline-block;font-weight:800}.rf.spin b{animation:sp .8s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.es{display:flex;flex-wrap:wrap;align-items:baseline;gap:.4em 2.2em;background:#fdf2f8;border:1px solid #fbcfe8;border-radius:12px;padding:.45em .9em;font-size:clamp(13px,calc(var(--u)*1.15),26px)}
+.es .k{font-size:.85em}.es b{font-size:1.35em;font-weight:800;color:#9d174d;white-space:nowrap}.es b.all{color:#111827}.es .tz{color:var(--mut);font-size:.8em;font-weight:500}
+.es .nav{margin-left:auto;display:none;gap:.4em;align-items:center;color:var(--mut);font-size:.85em}.es .nav.on{display:flex}
+.es .nav button{font:inherit;font-size:1.1em;line-height:1;width:1.9em;height:1.9em;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;color:#374151}.es .nav button:disabled{opacity:.35;cursor:default}
 /* donuts */
-.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:calc(var(--u)*1.6);min-height:0}
-.card{display:flex;flex-direction:column;align-items:center;min-height:0;text-align:center}
+.grid{display:grid;grid-auto-flow:column;grid-template-rows:minmax(0,1fr);grid-auto-columns:max(210px,calc((100% - 4*var(--g))/5));gap:var(--g);min-height:0;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;touch-action:pan-x pan-y;scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent;padding-bottom:8px}
+.grid::-webkit-scrollbar{height:8px}.grid::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px}.grid::-webkit-scrollbar-track{background:transparent}
+.card{display:flex;flex-direction:column;align-items:center;min-height:0;min-width:0;text-align:center;scroll-snap-align:start;border-radius:12px;padding:0 6px;overflow:hidden}
+.card.cur{background:linear-gradient(#fdf2f8,#fff 60%)}
 .card h2{font-size:clamp(14px,calc(var(--u)*1.45),34px);margin:0 0 .3em;display:flex;align-items:center;gap:.4em;white-space:nowrap}
 .card h2 i{width:.6em;height:.6em;border-radius:50%;display:inline-block;flex:none}
 .ring{flex:1 1 auto;min-height:0;width:100%;container-type:size;display:flex;align-items:center;justify-content:center}
 .rbox{position:relative;width:min(100cqw,100cqh);height:min(100cqw,100cqh)}
 .rbox svg{width:100%;height:100%;display:block}
 .ctr{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-.pct{font-size:calc(min(100cqw,100cqh)*.125);font-weight:800;display:flex;align-items:baseline}
+.pct{font-size:calc(min(100cqw,100cqh)*.105);font-weight:800;display:flex;align-items:baseline;white-space:nowrap}
+.pct .odo{flex:none}.pdone{display:none;line-height:1.15em}.pct.fin .odo{display:none}.pct.fin .pdone{display:inline}.pct.fin{font-size:calc(min(100cqw,100cqh)*.16)}
 .cnt{font-size:clamp(14px,calc(var(--u)*1.45),34px);font-weight:800;margin-top:.35em;white-space:nowrap}
 .cnt .tot{color:var(--mut);font-weight:700}
 .old{color:var(--mut);font-size:clamp(12px,calc(var(--u)*1.0),24px);margin-top:.15em}
@@ -57,17 +69,18 @@ canvas{contain:strict;width:100%;height:clamp(36px,7vh,110px);display:block;back
  .wrap{height:auto;display:block;padding:16px 14px calc(16px + env(safe-area-inset-bottom))}
  .hd{flex-direction:column;align-items:flex-start;gap:6px;padding-bottom:12px}.rt{text-align:left}
  h1{font-size:25px}.sub{font-size:15px}.st{font-size:18px}.tick{font-size:12px}
- .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 12px;margin:18px 0}
+ .grid{grid-auto-columns:46vw;gap:12px;margin:14px 0 18px}.es{margin-top:12px;gap:4px 16px}.strow{justify-content:flex-start}
  .ring{flex:none;height:40vw}
  .card h2{font-size:16px}.cnt{font-size:15px}.old{font-size:13px}.nxw{font-size:12px}
  .act{padding-top:14px;margin-bottom:14px}.act h3{font-size:18px}
  .astats,.foot{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.foot{padding-top:14px}
  .k{font-size:13px}.v{font-size:20px}.legend{gap:8px 12px;font-size:12px}canvas{height:56px}
 }
-#lastago,#nextin{height:1.25em;contain:strict;overflow:hidden}.tick{height:1.3em;contain:strict;white-space:nowrap}.rt{min-width:14em}
+#lastago,#nextin{height:1.25em;contain:strict;overflow:hidden}.tick{height:1.3em;contain:strict;white-space:nowrap}.rt{min-width:14em}.v .tz{font-size:.55em;color:var(--mut);font-weight:600;margin-left:.2em}
 </style></head><body><div class="wrap">
-<div class="hd"><div><h1>Berkshire 資料庫即時進度</h1><div class="sub" id="now">—</div></div><div class="rt"><div class="st" id="st">—</div><div class="tick" id="tick"></div></div></div>
+<div class="hd"><div><h1>Berkshire 資料庫即時進度</h1><div class="sub" id="now">—</div></div><div class="rt"><div class="strow"><div class="st" id="st">—</div><button class="rf" id="refresh" type="button" title="重新抓取最新數字（不用硬性重整）"><b>↻</b>重新整理</button></div><div class="tick" id="tick"></div></div></div>
 <div class="banner" id="ban">● 離線，稍後自動重試<small id="bansub">資料來源暫時連不上，頁面會自動重試。</small></div>
+<div class="es"><div><span class="k">目前階段</span> <b id="hcur">—</b></div><div><span class="k">本階段預計完成</span> <b id="heta">—</b> <span class="tz">台北時間 UTC+8</span></div><div><span class="k">全部預計完成</span> <b class="all" id="hall">—</b> <span class="tz">台北時間 UTC+8</span></div><div class="nav" id="nav"><span>左右滑動看其他類別</span><button type="button" id="navl" aria-label="往左">‹</button><button type="button" id="navr" aria-label="往右">›</button></div></div>
 <div class="grid" id="grid"><div class="loading">連線中…</div></div>
 <div class="act"><h3>請求活動（最近 60 秒 · 依平均速度推算）</h3>
  <div class="astats">
@@ -77,12 +90,12 @@ canvas{contain:strict;width:100%;height:clamp(36px,7vh,110px);display:block;back
   <div><div class="k">下一筆預計</div><div class="v" id="nextin">—</div><div class="nextbar"><div id="nb"></div></div></div>
  </div>
  <canvas id="tl"></canvas>
- <div class="legend"><span>← 60 秒前</span><span><i style="background:#2563eb"></i>77 檔分鐘K等</span><span><i style="background:#f59e0b"></i>77 檔逐筆</span><span><i style="background:#8b5cf6"></i>A 早期補齊</span><span><i style="background:#16a34a"></i>B 全市場分鐘K</span><span><i style="background:#db2777"></i>C 全市場逐筆</span><span style="margin-left:auto">現在 →</span></div>
+ <div class="legend"><span>← 60 秒前</span><span><i style="background:#2563eb"></i>77 檔分鐘K等</span><span><i style="background:#f59e0b"></i>77 檔逐筆</span><span><i style="background:#8b5cf6"></i>A 早期補齊</span><span><i style="background:#16a34a"></i>B 全市場日K</span><span><i style="background:#db2777"></i>C 全市場逐筆</span><span style="margin-left:auto">現在 →</span></div>
 </div>
 <div class="foot">
  <div><div class="k">最近 60 分鐘完成（上限 5,950）</div><div class="v" id="rate">—</div></div>
- <div><div class="k" id="curk">目前階段預計完成</div><div class="v" id="ceta">—</div><div class="k" id="crem" style="margin-top:.15em">—</div></div>
- <div><div class="k">預計全部完成</div><div class="v" id="eta">—</div><div class="k" id="rem" style="margin-top:.15em">—</div></div>
+ <div><div class="k" id="curk">目前階段預計完成</div><div class="v"><span id="ceta">—</span><span class="tz">台北</span></div><div class="k" id="crem" style="margin-top:.15em">—</div></div>
+ <div><div class="k">預計全部完成</div><div class="v"><span id="eta">—</span><span class="tz">台北</span></div><div class="k" id="rem" style="margin-top:.15em">—</div></div>
  <div><div class="k">硬碟 已用 / 總量</div><div class="v" id="disk">—</div><div class="k" id="dsub" style="margin-top:.15em">—</div></div>
 </div></div>
 <script>
@@ -95,7 +108,7 @@ const SYNC=300000,MAXX=450,TAU=1.5,TIMEOUT=15000;
 const R=94,C=2*Math.PI*R,TR=113,TC=2*Math.PI*TR,f=n=>Math.round(n).toLocaleString('en-US');
 const COL={P1:'#2563eb',P2:'#f59e0b',A:'#8b5cf6',B:'#16a34a',C:'#db2777'};
 const cof=ds=>COL[ds]||'#6b7280';
-let D=null,skew=0,built=false,fails=0,lastOk=0,nextAt=0,timer=null,inflight=false,hiddenAt=0,mode='init';const odos={},S={},TX={};let ev=[];
+let builtKeys='',curShown=null,D=null,skew=0,built=false,fails=0,lastOk=0,nextAt=0,timer=null,inflight=false,hiddenAt=0,mode='init';const odos={},S={},TX={};let ev=[];
 function setT(id,v){if(TX[id]!==v){TX[id]=v;const e=document.getElementById(id);if(e)e.textContent=v}}
 const TZ='Asia/Taipei',_fp=(o)=>{const F=new Intl.DateTimeFormat('en-GB',Object.assign({timeZone:TZ,hour12:false},o));return ms=>{const p={};for(const x of F.formatToParts(new Date(ms)))p[x.type]=x.value;return p}};
 const _full=_fp({year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -114,19 +127,21 @@ Odo.prototype.set=function(V){if(!(V>=0))V=0;const n=Math.floor(V),fr=V-n,s=this
   if(k===0)p+=fr;else{const m=Math.pow(10,k),rem=(n%m)+fr;if(rem>m-1)p+=rem-(m-1)}
   if(Math.abs(p-this.pos[i])>.0005){this.pos[i]=p;this.cols[i].style.transform=`translateY(${(-p*100/11).toFixed(3)}%)`}}};
 function build(items){const g=document.getElementById('grid');
- g.innerHTML=items.map(x=>{const c=cof(x.ds);return `<div class="card"><h2><i style="background:${c}"></i>${x.label}</h2><div class="ring"><div class="rbox"><svg viewBox="0 0 240 240">
+ g.innerHTML=items.map(x=>{const c=cof(x.ds);return `<div class="card" id="k-${x.ds}"><h2><i style="background:${c}"></i>${x.label}</h2><div class="ring"><div class="rbox"><svg viewBox="0 0 240 240">
   <circle cx="120" cy="120" r="${TR}" fill="none" stroke="${c}" stroke-opacity=".28" stroke-width="4" stroke-dasharray="1.6 4.32"/>
   <circle class="tmr" id="t-${x.ds}" cx="120" cy="120" r="${TR}" fill="none" stroke="${c}" stroke-opacity=".6" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="${TC} ${TC}" stroke-dashoffset="${TC}" transform="rotate(-90 120 120)"/>
   <circle cx="120" cy="120" r="${R}" fill="none" stroke="#e8edf3" stroke-width="22"/>
   <circle id="arc-${x.ds}" cx="120" cy="120" r="${R}" fill="none" stroke="${c}" stroke-width="22" stroke-dasharray="0 ${C}" transform="rotate(-90 120 120)"/></svg>
   <div class="orb" id="d-${x.ds}"><i style="background:${c};box-shadow:0 0 6px 2px ${c}99,0 0 2px ${c}"></i></div>
-  <div class="ctr"><div class="pct" style="color:${c}"><span class="odo" id="p-${x.ds}"></span><span>%</span></div></div></div></div>
+  <div class="ctr"><div class="pct" id="pc-${x.ds}" style="color:${c}"><span class="odo" id="p-${x.ds}"></span><span class="pdone">100</span><span>%</span></div></div></div></div>
   <div class="cnt"><span class="odo" id="c-${x.ds}"></span><span class="tot" id="tt-${x.ds}"></span></div><div class="old" id="o-${x.ds}" title="${x.note||''}"></div><div class="old" id="e-${x.ds}"></div>
   <div class="nxw"><b class="nx" id="n-${x.ds}"></b></div></div>`}).join('');
- items.forEach(x=>{odos['p'+x.ds]=new Odo(document.getElementById('p-'+x.ds),4,false);odos['c'+x.ds]=new Odo(document.getElementById('c-'+x.ds),0,true)});built=true}
-function apply(j){D=j;skew=Date.now()/1000-j.server_ts;if(!built)build(j.items);
+ items.forEach(x=>{odos['p'+x.ds]=new Odo(document.getElementById('p-'+x.ds),4,false);odos['c'+x.ds]=new Odo(document.getElementById('c-'+x.ds),0,true);
+  const o=S[x.ds];if(o){for(const k of ['te','de','dash','deg','fn'])delete o[k]}});for(const k in TX)if(/^(o|e|n|tt)-/.test(k))delete TX[k];
+ built=true;builtKeys=items.map(x=>x.ds).join(',');curShown=null;navUpd()}
+function apply(j,force){D=j;skew=Date.now()/1000-j.server_ts;if(!built||j.items.map(x=>x.ds).join(',')!==builtKeys)build(j.items);
  const st=j.server_ts;let live=0,stall=0;
- j.items.forEach(x=>{let o=S[x.ds];const first=!o;if(first)o=S[x.ds]={disp:x.done,c:x.done,t:st,acc:0};
+ j.items.forEach(x=>{let o=S[x.ds];const first=!o;if(first)o=S[x.ds]={disp:x.done,c:x.done,t:st,acc:0};else if(force)o.disp=x.done;
   const ph=(j.per_hr||{})[x.ds]||0,last=(j.last_ds||{})[x.ds]||0,inc=x.done<x.total;let r=ph/3600;
   if(!first&&st>o.t+30){const dr=Math.max(0,(x.done-o.c)/(st-o.t));r=r>0&&dr>0?(r+dr)/2:(r||dr);o.stall=inc&&x.done<=o.c&&(ph>0||o.r>0)}
   else if(first)o.stall=inc&&ph>0&&last>0&&st-last>600;
@@ -146,14 +161,35 @@ function offline(){mode='offline';status();document.getElementById('ban').classL
  document.getElementById('bansub').textContent=(D?'畫面停在上次同步的數字，暫停推算。':'尚未取得資料。')+'已重試 '+fails+' 次，'+Math.round((nextAt-Date.now())/1000)+' 秒後再試。';
  if(!built)document.getElementById('grid').innerHTML='<div class="loading">資料來源暫時離線，自動重試中…</div>'}
 function schedule(ms){clearTimeout(timer);timer=null;nextAt=Date.now()+ms;if(!document.hidden)timer=setTimeout(sync,ms)}
-async function sync(){clearTimeout(timer);timer=null;if(inflight)return;inflight=true;
+async function sync(force){clearTimeout(timer);timer=null;if(inflight)return false;inflight=true;
  const ac=new AbortController(),to=setTimeout(()=>ac.abort(),TIMEOUT);let ok=false;
- try{const r=await fetch(BASE+'/progress.json',{headers:HDR,cache:'no-store',mode:'cors',signal:ac.signal});
-  if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();if(!j||!Array.isArray(j.items))throw new Error('bad data');apply(j);ok=true}
+ try{const r=await fetch(BASE+'/progress.json?_='+Date.now(),{headers:HDR,cache:'no-store',mode:'cors',signal:ac.signal});
+  if(!r.ok)throw new Error('HTTP '+r.status);const j=await r.json();if(!j||!Array.isArray(j.items))throw new Error('bad data');apply(j,force);ok=true}
  catch(e){fails++}finally{clearTimeout(to);inflight=false}
- if(ok)schedule(SYNC);else{schedule(Math.min(SYNC,30000*Math.pow(2,fails-1)));offline()}}   // 30 s, 60 s, 120 s, 240 s, then 5 min
+ if(ok)schedule(SYNC);else{schedule(Math.min(SYNC,30000*Math.pow(2,fails-1)));offline()}return ok}   // 30 s, 60 s, 120 s, 240 s, then 5 min
 document.addEventListener('visibilitychange',()=>{if(document.hidden){hiddenAt=Date.now();clearTimeout(timer);timer=null}
  else{const n=Date.now();if((hiddenAt&&n-hiddenAt>=SYNC)||n>=nextAt)sync();else schedule(nextAt-n)}});
+// ---- manual refresh: re-fetch /progress.json (no-store + timestamp) and snap to it; if this page itself has a newer
+// build on the server, or the data fetch fails, reload the page with a cache-busting query instead.
+const BUILD='20261020-uifix1';
+function reloadBust(){const u=new URL(location.href);u.searchParams.set('_',Date.now());location.replace(u.toString())}
+async function manualRefresh(){const b=document.getElementById('refresh');if(b.disabled)return;b.disabled=true;b.classList.add('spin');
+ let ok=false;for(let i=0;i<20&&inflight;i++)await new Promise(r=>setTimeout(r,250));
+ try{ok=await sync(true)}catch(e){}
+ let newer=false;try{const r=await fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'});if(r.ok){const m=(await r.text()).match(/name="build" content="([^"]+)"/);newer=!!(m&&m[1]!==BUILD)}}catch(e){}
+ if(newer||!ok){reloadBust();return}
+ setTimeout(()=>{b.disabled=false;b.classList.remove('spin')},500)}
+document.getElementById('refresh').addEventListener('click',manualRefresh);
+window.addEventListener('pageshow',e=>{if(e.persisted)sync(true)});
+const grid=document.getElementById('grid'),nav=document.getElementById('nav'),navl=document.getElementById('navl'),navr=document.getElementById('navr');
+function navUpd(){const over=grid.scrollWidth>grid.clientWidth+4;nav.classList.toggle('on',over);navl.disabled=grid.scrollLeft<=2;navr.disabled=grid.scrollLeft+grid.clientWidth>=grid.scrollWidth-2}
+function navGo(d){const c=grid.querySelector('.card');grid.scrollBy({left:d*(c?c.getBoundingClientRect().width+parseFloat(getComputedStyle(grid).columnGap||0):grid.clientWidth*.8),behavior:'smooth'})}
+navl.addEventListener('click',()=>navGo(-1));navr.addEventListener('click',()=>navGo(1));
+grid.addEventListener('scroll',navUpd,{passive:true});new ResizeObserver(navUpd).observe(grid);
+grid.addEventListener('wheel',e=>{if(Math.abs(e.deltaY)>Math.abs(e.deltaX)&&grid.scrollWidth>grid.clientWidth+4&&!e.shiftKey){const before=grid.scrollLeft;grid.scrollLeft+=e.deltaY;if(grid.scrollLeft!==before)e.preventDefault()}},{passive:false});
+function markCur(k){if(k===curShown)return;if(curShown!==null){const old=document.getElementById('k-'+curShown);if(old)old.classList.remove('cur')}
+ const first=curShown===null;curShown=k;const el=k&&document.getElementById('k-'+k);if(!el)return;el.classList.add('cur');
+ if(first){const gl=grid.getBoundingClientRect().left,r=el.getBoundingClientRect();if(r.right>gl+grid.clientWidth||r.left<gl)grid.scrollLeft+=r.right-(gl+grid.clientWidth)+8;navUpd()}}
 // ---- animation: one rAF loop, transform/attribute writes only, text throttled to 10/s
 const cv=document.getElementById('tl'),cx=cv.getContext('2d');let pt=0,lastTxt=0,cw=0,ch=0,dpr=1;
 function sizeCv(){const r=cv.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);cw=r.width;ch=r.height;cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr)}
@@ -168,7 +204,8 @@ function frame(ts){const dt=pt?Math.min(.1,(ts-pt)/1000):0;pt=ts;const wall=Date
    if(live){rTot+=o.r;o.acc+=o.r*dt;let k=0;while(o.acc>=1&&k<50){o.acc-=1;k++;ev.push([x.ds,cnow])}if(o.acc>=1)o.acc%=1;
     ph=o.acc;left=(1-ph)/o.r;if(minLeft==null||left<minLeft){minLeft=left;minP=ph}}
    if(o.disp<o.total){rem+=o.total-o.disp;if(curK==null)curK=x.ds}o.cum=rem;
-   const p=o.total?o.disp/o.total:0;odos['c'+x.ds].set(o.disp);odos['p'+x.ds].set(p*1e6);
+   const p=o.total?o.disp/o.total:0,fn=o.total>0&&o.disp>=o.total;odos['c'+x.ds].set(o.disp);
+   if(o.fn!==fn){o.fn=fn;document.getElementById('pc-'+x.ds).classList.toggle('fin',fn)}if(!fn)odos['p'+x.ds].set(Math.min(p*1e6,999999.999));
    const dash=(C*p).toFixed(1);if(o.dash!==dash){o.dash=dash;document.getElementById('arc-'+x.ds).setAttribute('stroke-dasharray',dash+' '+C)}
    const sp=o.fin?1:(live?ph:0);
    const deg=(sp*360).toFixed(1);if(o.deg!==deg){o.deg=deg;(o.te||(o.te=document.getElementById('t-'+x.ds))).style.strokeDashoffset=(TC*(1-sp)).toFixed(2);
@@ -181,7 +218,9 @@ function frame(ts){const dt=pt?Math.min(.1,(ts-pt)/1000):0;pt=ts;const wall=Date
    setT('lastago',ago!=null?ago.toFixed(1)+' 秒前':'—');setT('nextin',minLeft!=null?'約 '+minLeft.toFixed(1)+' 秒後':'—');
    setT('rem','剩 '+f(rem)+' 次');setT('eta',rTot&&rem>0?mdhm(wall+rem/rTot*1000):(rem>0?'—（暫停）':'已完成'));
    for(const x of D.items){const o=S[x.ds];if(!o)continue;setT('e-'+x.ds,o.fin&&o.disp>=o.total?'':(rTot?'預計 '+mdhm(wall+o.cum/rTot*1000):'預計 —'))}
-   const co=curK&&S[curK];setT('curk',co?'目前階段（'+co.label+'）完成':'目前階段');
+   const co=curK&&S[curK];setT('curk',co?'目前階段（'+co.label+'）完成':'目前階段');markCur(curK);
+   setT('hcur',co?co.label+'（'+(co.total?(Math.floor(co.disp/co.total*1e4)/100).toFixed(2):'0.00')+'%）':'全部完成');
+   setT('heta',co?(rTot?mdhm(wall+co.cum/rTot*1000):'—（暫停）'):'已完成');setT('hall',rTot&&rem>0?mdhm(wall+rem/rTot*1000):(rem>0?'—（暫停）':'已完成'));
    setT('ceta',co?(rTot?mdhm(wall+co.cum/rTot*1000):'—（暫停）'):'已完成');setT('crem',co?'剩 '+f(co.total-co.disp)+' 次':'—');
    setT('now',ymdhms(wall)+'（台北時間）');
    const tag=mode==='offline'?`離線，${Math.max(0,Math.round((nextAt-wall)/1000))} 秒後重試`:(mode==='stall'?'沒有新進度，暫停推算':(mode==='stopped'?'下載程式已停止':(rTot?'數字為推算':'')));
