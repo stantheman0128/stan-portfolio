@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#ffffff">
-<meta name="build" content="20261020-uifix2">
+<meta name="build" content="20261020-uifix3">
 <meta http-equiv="Cache-Control" content="no-store">
 <title>Berkshire 資料庫即時進度</title>
 <style>
@@ -62,6 +62,7 @@ h1{font-size:clamp(20px,calc(var(--u)*2.3),56px);margin:0;line-height:1.15}
 canvas{contain:strict;width:100%;height:clamp(36px,7vh,110px);display:block;background:#f8fafc;border-radius:8px;margin-top:calc(var(--u)*.7)}
 .legend{display:flex;gap:1.2em;color:var(--mut);font-size:clamp(12px,calc(var(--u)*.9),20px);margin-top:.35em;flex-wrap:wrap}.legend i{display:inline-block;width:.75em;height:.75em;border-radius:2px;margin-right:.35em}
 .foot{border-top:2px solid var(--line);padding-top:calc(var(--u)*.9)}
+.foot.one{grid-template-columns:repeat(3,minmax(0,1fr))}.foot.one #curbox{display:none}
 .banner{display:none;position:fixed;left:50%;top:12px;transform:translateX(-50%);z-index:10;max-width:92vw;padding:10px 16px;border-radius:10px;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;font-size:clamp(14px,calc(var(--u)*1.2),24px);font-weight:600;box-shadow:0 4px 18px rgba(0,0,0,.08)}
 .banner.on{display:block}.banner small{display:block;font-weight:400;color:#7f1d1d;margin-top:2px;font-size:.82em}
 .loading{grid-column:1/-1;align-self:center;text-align:center;color:var(--mut);font-size:clamp(15px,calc(var(--u)*1.4),30px)}
@@ -79,6 +80,7 @@ canvas{contain:strict;width:100%;height:clamp(36px,7vh,110px);display:block;back
  .k{font-size:13px}.v{font-size:20px}.legend{gap:8px 12px;font-size:12px}canvas{height:56px}
 }
 #lastago,#nextin{height:1.25em;contain:strict;overflow:hidden}.tick{height:1.3em;contain:strict;white-space:nowrap}.rt{min-width:14em}.v .tz{font-size:.55em;color:var(--mut);font-weight:600;margin-left:.2em}
+@media (max-width:760px){.foot.one{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style></head><body><div class="wrap">
 <div class="hd"><div><h1>Berkshire 資料庫即時進度</h1><div class="sub" id="now">—</div></div><div class="rt"><div class="strow"><div class="st" id="st">—</div><button class="rf" id="refresh" type="button" title="重新抓取最新數字（不用硬性重整）" aria-label="重新整理"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.34 5.66"/><path d="M20 4v7h-7"/></svg><span id="rft">重新整理</span></button></div><div class="tick" id="tick"></div></div></div>
 <div class="banner" id="ban">● 離線，稍後自動重試<small id="bansub">資料來源暫時連不上，頁面會自動重試。</small></div>
@@ -92,12 +94,12 @@ canvas{contain:strict;width:100%;height:clamp(36px,7vh,110px);display:block;back
   <div><div class="k">下一筆預計</div><div class="v" id="nextin">—</div><div class="nextbar"><div id="nb"></div></div></div>
  </div>
  <canvas id="tl"></canvas>
- <div class="legend"><span>← 60 秒前</span><span><i style="background:#2563eb"></i>77 檔分鐘K等</span><span><i style="background:#f59e0b"></i>77 檔逐筆</span><span><i style="background:#8b5cf6"></i>A 早期補齊</span><span><i style="background:#16a34a"></i>B 全市場日K</span><span><i style="background:#db2777"></i>C 全市場逐筆</span><span style="margin-left:auto">現在 →</span></div>
+ <div class="legend"><span>← 60 秒前</span><span><i style="background:#2563eb"></i>77 檔分鐘K等</span><span><i style="background:#f59e0b"></i>77 檔逐筆</span><span><i style="background:#8b5cf6"></i>A 早期補齊</span><span><i style="background:#16a34a"></i>B 全市場日K</span><span><i style="background:#0891b2"></i>S 一般資料</span><span><i style="background:#db2777"></i>C 全市場逐筆</span><span style="margin-left:auto">現在 →</span></div>
 </div>
-<div class="foot">
+<div class="foot" id="foot">
  <div><div class="k">最近 60 分鐘完成（上限 5,950）</div><div class="v" id="rate">—</div></div>
- <div><div class="k" id="curk">目前階段預計完成</div><div class="v"><span id="ceta">—</span><span class="tz">台北</span></div><div class="k" id="crem" style="margin-top:.15em">—</div></div>
- <div><div class="k">預計全部完成</div><div class="v"><span id="eta">—</span><span class="tz">台北</span></div><div class="k" id="rem" style="margin-top:.15em">—</div></div>
+ <div id="curbox"><div class="k" id="curk">目前階段預計完成</div><div class="v"><span id="ceta">—</span><span class="tz">台北</span></div><div class="k" id="crem" style="margin-top:.15em">—</div></div>
+ <div><div class="k" id="etak">預計全部完成</div><div class="v"><span id="eta">—</span><span class="tz">台北</span></div><div class="k" id="rem" style="margin-top:.15em">—</div></div>
  <div><div class="k">硬碟 已用 / 總量</div><div class="v" id="disk">—</div><div class="k" id="dsub" style="margin-top:.15em">—</div></div>
 </div></div>
 <script>
@@ -108,7 +110,7 @@ const BASE='https://tightness-bride-armoire.ngrok-free.dev',HDR={'ngrok-skip-bro
 // A sync that comes in ahead is eased up to over ~2 s; one that comes in behind holds the display. Never backwards.
 const SYNC=300000,MAXX=450,TAU=1.5,TIMEOUT=15000;
 const R=94,C=2*Math.PI*R,TR=113,TC=2*Math.PI*TR,f=n=>Math.round(n).toLocaleString('en-US');
-const COL={P1:'#2563eb',P2:'#f59e0b',A:'#8b5cf6',B:'#16a34a',C:'#db2777'};
+const COL={P1:'#2563eb',P2:'#f59e0b',A:'#8b5cf6',B:'#16a34a',S:'#0891b2',C:'#db2777'};
 const cof=ds=>COL[ds]||'#6b7280';
 let builtKeys='',curShown=null,D=null,skew=0,built=false,fails=0,lastOk=0,nextAt=0,timer=null,inflight=false,hiddenAt=0,mode='init';const odos={},S={},TX={};let ev=[];
 function setT(id,v){if(TX[id]!==v){TX[id]=v;const e=document.getElementById(id);if(e)e.textContent=v}}
@@ -173,7 +175,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){hiddenAt=D
  else{const n=Date.now();if((hiddenAt&&n-hiddenAt>=SYNC)||n>=nextAt)sync();else schedule(nextAt-n)}});
 // ---- manual refresh: re-fetch /progress.json (no-store + timestamp) and snap to it; if this page itself has a newer
 // build on the server, or the data fetch fails, reload the page with a cache-busting query instead.
-const BUILD='20261020-uifix2';
+const BUILD='20261020-uifix3';
 function reloadBust(){const u=new URL(location.href);u.searchParams.set('_',Date.now());location.replace(u.toString())}
 async function manualRefresh(){const b=document.getElementById('refresh'),bt=document.getElementById('rft');if(b.disabled)return;b.disabled=true;b.classList.remove('done');b.classList.add('spin');bt.textContent='更新中…';const t0=Date.now();
  let ok=false;for(let i=0;i<20&&inflight;i++)await new Promise(r=>setTimeout(r,250));
@@ -196,7 +198,7 @@ function markCur(k){if(k===curShown)return;
 const cv=document.getElementById('tl'),cx=cv.getContext('2d');let pt=0,lastTxt=0,cw=0,ch=0,dpr=1;
 function sizeCv(){const r=cv.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);cw=r.width;ch=r.height;cv.width=Math.round(cw*dpr);cv.height=Math.round(ch*dpr)}
 new ResizeObserver(sizeCv).observe(cv);sizeCv();
-const nb=document.getElementById('nb');
+const nb=document.getElementById('nb');let footOne=false;
 function frame(ts){const dt=pt?Math.min(.1,(ts-pt)/1000):0;pt=ts;const wall=Date.now(),cnow=wall/1000;
  if(D){const now=cnow-skew,txt=ts-lastTxt>=100,run=mode!=='offline';if(txt)lastTxt=ts;let rTot=0,rem=0,minLeft=null,minP=0,curK=null;
   for(const x of D.items){const o=S[x.ds];if(!o)continue;let ph=0,left=0;
@@ -221,6 +223,9 @@ function frame(ts){const dt=pt?Math.min(.1,(ts-pt)/1000):0;pt=ts;const wall=Date
    setT('rem','剩 '+f(rem)+' 次');setT('eta',rTot&&rem>0?mdhm(wall+rem/rTot*1000):(rem>0?'—（暫停）':'已完成'));
    for(const x of D.items){const o=S[x.ds];if(!o)continue;setT('e-'+x.ds,o.fin&&o.disp>=o.total?'':(rTot?'預計 '+mdhm(wall+o.cum/rTot*1000)+'（台北）':'預計 —'))}
    const co=curK&&S[curK];setT('curk',co?'目前階段（'+co.label+'）完成':'目前階段');markCur(curK);
+   // current phase is the last one with work left -> its ETA equals the overall ETA: show one box, not two identical ones
+   const one=!!co&&Math.abs(co.cum-rem)<0.5;if(one!==footOne){footOne=one;document.getElementById('foot').classList.toggle('one',one)}
+   setT('etak',one?'預計全部完成（目前階段：'+co.label+'）':'預計全部完成');
 
    setT('ceta',co?(rTot?mdhm(wall+co.cum/rTot*1000):'—（暫停）'):'已完成');setT('crem',co?'剩 '+f(co.total-co.disp)+' 次':'—');
    setT('now',ymdhms(wall)+'（台北時間）');
