@@ -51,7 +51,7 @@ describe("searchable identity and case-study pages", () => {
   });
 
   it("connects software, its maintainer and the visible repository without claiming upstream authorship", () => {
-    for (const slug of ["antnest-chatbot", "claudepulse", "notify-plus"]) {
+    for (const slug of ["antnest-chatbot", "claudepulse", "notify-plus", "line-codex-stickers"]) {
       const html = pages.find(p => p.path === `/work/${slug}`).html;
       const nodes = graph(html);
       const software = nodes.find(n => n["@type"] === "SoftwareSourceCode");
@@ -87,7 +87,7 @@ describe("searchable identity and case-study pages", () => {
   });
 
   it("publishes reciprocal language variants with self canonicals and shared authorship", () => {
-    for (const slug of ['notify-plus', 'claudepulse']) {
+    for (const slug of ['notify-plus', 'claudepulse', 'line-codex-stickers']) {
       for (const prefix of ['', '/zh']) {
         const path = `${prefix}/work/${slug}`;
         const html = pages.find(p => p.path === path)?.html;

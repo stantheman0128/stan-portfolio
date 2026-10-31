@@ -2,6 +2,126 @@
   "checkedAt": "2026-09-19",
   "catalog": [
     {
+      "id": "line-codex-stickers",
+      "name": "LINE Stickers for Codex",
+      "category": "Desktop AI integration",
+      "status": "Public scripts and documentation",
+      "description": "An unofficial local LINE sticker picker for the Codex desktop composer, with pack search, favorites and enlarged previews.",
+      "zh": "在 Codex 桌面版輸入區選用本機 LINE 貼圖，提供貼圖包搜尋、最愛與放大預覽。",
+      "limits": "Requires a prepared local runtime. The repository does not include Codex, sticker artwork or a ready-to-run app; compatibility depends on the desktop version.",
+      "links": [
+        {
+          "label": "Source and setup notes",
+          "href": "https://github.com/stantheman0128/line-codex-stickers"
+        },
+        {
+          "label": "English case study",
+          "href": "/work/line-codex-stickers"
+        },
+        {
+          "label": "繁體中文介紹",
+          "href": "/zh/work/line-codex-stickers"
+        }
+      ],
+      "checkedAt": "2026-11-01"
+    },
+    {
+      "id": "tray-helper",
+      "name": "TrayHelper",
+      "category": "Windows utility",
+      "status": "GitHub release · v0.9.0",
+      "description": "Keep supported Windows apps running when their last window closes. Restore individual windows from the tray or use a shortcut to bring them back.",
+      "zh": "把支援的 Windows 應用程式收到系統匣，提供視窗還原、快捷鍵與設定介面。",
+      "limits": "Windows 10/11. Setup and standalone executables are available; per-app behavior and elevated windows have documented limits.",
+      "links": [
+        {
+          "label": "Download v0.9.0",
+          "href": "https://github.com/stantheman0128/tray-helper/releases/tag/v0.9.0"
+        },
+        {
+          "label": "Source, demo and supported behavior",
+          "href": "https://github.com/stantheman0128/tray-helper"
+        }
+      ],
+      "checkedAt": "2026-11-01"
+    },
+    {
+      "id": "stan-mic-bridge",
+      "name": "Stan Mic Bridge",
+      "category": "macOS and Windows audio tool",
+      "status": "GitHub release · v1.3.9",
+      "description": "Use a Mac microphone as a Windows virtual microphone over a private Tailscale connection. A native macOS menu bar sender keeps streaming while the browser is closed.",
+      "zh": "透過私人 Tailscale 連線，把 Mac 麥克風傳到 Windows 虛擬麥克風，方便遠端桌面與語音輸入。",
+      "limits": "Requires macOS 12+, a configured Windows receiver, VB-CABLE and Tailscale. The Mac download is ad-hoc signed; receiver setup is separate.",
+      "links": [
+        {
+          "label": "Download v1.3.9",
+          "href": "https://github.com/stantheman0128/stan-mic-bridge/releases/tag/v1.3.9"
+        },
+        {
+          "label": "Source and setup",
+          "href": "https://github.com/stantheman0128/stan-mic-bridge"
+        }
+      ],
+      "checkedAt": "2026-11-01"
+    },
+    {
+      "id": "home-quiet-android",
+      "name": "HomeQuiet · 在家安靜",
+      "category": "Android app",
+      "status": "GitHub APK release · v0.3.9",
+      "description": "Clear notifications from selected apps while at a configured quiet location, using geofencing, location updates and an optional home Wi-Fi signal.",
+      "zh": "在設定的安靜地點自動清除指定 App 通知，使用地理圍欄、定位與可選的住家 Wi-Fi 判定。",
+      "limits": "Distributed as an APK on GitHub. Location and notification access are needed for the documented workflow.",
+      "links": [
+        {
+          "label": "Download v0.3.9 APK",
+          "href": "https://github.com/stantheman0128/home-quiet-android/releases/tag/v0.3.9"
+        },
+        {
+          "label": "Source and documentation",
+          "href": "https://github.com/stantheman0128/home-quiet-android"
+        }
+      ],
+      "checkedAt": "2026-11-01"
+    },
+    {
+      "id": "instabox-windows-fix",
+      "name": "Instabox Windows fixes",
+      "category": "Compatibility repair notes",
+      "status": "Public patch and reproduction",
+      "description": "Reproductions and patches for Windows URL quoting and SSH configuration paths containing spaces in instabox 0.5.2.",
+      "zh": "針對 instabox 0.5.2 的 Windows 網址引號與含空白 SSH 設定路徑問題，提供重現方法與修補檔。",
+      "limits": "A separate patch and write-up. Publication here does not imply that the upstream project has merged or released the fixes.",
+      "links": [
+        {
+          "label": "Read the reproduction and patch",
+          "href": "https://github.com/stantheman0128/instabox-windows-fix"
+        }
+      ],
+      "checkedAt": "2026-11-01"
+    },
+    {
+      "id": "grokbot-background-helper",
+      "name": "Grok Bot Background Helper",
+      "category": "Windows utility",
+      "status": "Public source",
+      "description": "An external tray helper for keeping Grok Bot in the background and restoring its window, without modifying the app files.",
+      "zh": "外部 Windows 系統匣工具，協助 Grok Bot 保持背景執行並還原視窗，不修改 App 檔案。",
+      "limits": "An independent helper with application-specific setup. See TrayHelper for a broader close-to-tray tool.",
+      "links": [
+        {
+          "label": "Source and setup",
+          "href": "https://github.com/stantheman0128/grokbot-background-helper"
+        },
+        {
+          "label": "TrayHelper",
+          "href": "/software#tray-helper"
+        }
+      ],
+      "checkedAt": "2026-11-01"
+    },
+    {
       "id": "colonist-stats-tracker",
       "name": "Colonist.io Stats Tracker",
       "category": "Browser extension",
@@ -245,8 +365,8 @@
       "id": "resource-sentinel",
       "name": "Resource Sentinel",
       "category": "Developer tool",
-      "status": "Public source",
-      "description": "Coordinates local coding-agent workloads using resource snapshots, a shared SQLite reservation ledger and command admission wrappers.",
+      "status": "Historical project · Public source",
+      "description": "An earlier local coding-agent workload coordinator using resource snapshots, a shared SQLite reservation ledger and command admission wrappers.",
       "limits": "Admission depends on current measurements and configured headroom. It is not a hard operating-system memory cap; remote workers require their own measurements.",
       "links": [
         {
@@ -254,7 +374,8 @@
           "href": "https://github.com/stantheman0128/resource-sentinel"
         }
       ],
-      "zh": "使用資源量測與共用預約帳本，協調多個 coding agent 的本機工作。"
+      "zh": "較早期的本機 coding agent 工作協調器，使用資源量測與共用預約帳本安排工作。",
+      "checkedAt": "2026-11-01"
     },
     {
       "id": "claude-mem-sync",
@@ -469,6 +590,36 @@
     }
   ],
   "research": [
+    {
+      "name": "Math Notebook",
+      "description": "AI-assisted computational mathematics with interactive explainers, sequence computations and Lean formal checks.",
+      "limits": "The repository distinguishes small new computations, confirmations of earlier results and unfinished questions. Finite searches do not prove an open conjecture.",
+      "url": "https://github.com/stantheman0128/math-notebook"
+    },
+    {
+      "name": "AIMO R01A negative study",
+      "description": "A reproducible retrospective study of whether fixed text-structure features improve a matched-family mathematics benchmark.",
+      "limits": "The prespecified improvement was not observed. This is a negative result with replay artifacts, not a hidden-test score or a competition award.",
+      "url": "https://github.com/stantheman0128/aimo-r01a-negative-study"
+    },
+    {
+      "name": "Vesuvius HF65 alignment",
+      "description": "Coordinate mapping and resampling tools for comparing HF65 image canvases with tifxyz surfaces, with held-out-region checks.",
+      "limits": "Reported alignment results apply to the segments and regions evaluated in the repository; they are not a guarantee for every scan.",
+      "url": "https://github.com/stantheman0128/vesuvius-hf65-alignment"
+    },
+    {
+      "name": "Vesuvius layout constraints",
+      "description": "An experiment translating two-dimensional ink layout into constraints for three-dimensional spiral fitting, with documented A/B tests and follow-up runs.",
+      "limits": "The reported GPU follow-up did not separate a small decline from seed variation. An improvement in reconstruction quality has not been established.",
+      "url": "https://github.com/stantheman0128/vesuvius-layout-constraints"
+    },
+    {
+      "name": "PHerc0139 gap investigation",
+      "description": "A CT-based investigation of material layers and mesh geometry around a gap, with cross-sections, measurements and reproduction code.",
+      "limits": "The study covers part of the gap and leaves compressed layers unresolved. It does not claim to recover the missing winding.",
+      "url": "https://github.com/stantheman0128/vesuvius-pherc0139-gap-1129"
+    },
     {
       "name": "Typeless Lab",
       "description": "A public experiment comparing speech recognition and language-model correction for Traditional Chinese dictation.",

@@ -7,6 +7,7 @@ const content = JSON.parse(readFileSync(new URL("../data/content.json", import.m
 // editor, so hard-coded positions would break on every content edit.
 const fwIdx = content.items.findIndex((it) => it.id === "site-featherweight");
 const minIdx = content.items.findIndex((it) => it.id === "site-minimal");
+const imageIdx = content.items.findIndex((it) => it.image && it.id !== "site-minimal");
 
 describe("minimal edit-mode data-bind", () => {
   const edit = renderSite(content, "minimal", { edit: true });
@@ -21,7 +22,10 @@ describe("minimal edit-mode data-bind", () => {
     expect(edit).toContain('data-bind="items.0.title"');
     expect(edit).toContain('data-bind="items.0.description"');
     expect(edit).toContain('data-bind="items.0.detail" data-edit="md"');
-    expect(edit).toContain('data-bind="items.0.image" data-edit="image"');
+    // A newly featured project may have no artwork. Check an image-bearing
+    // item at its real content index instead of depending on display order.
+    expect(imageIdx).toBeGreaterThanOrEqual(0);
+    expect(edit).toContain(`data-bind="items.${imageIdx}.image" data-edit="image"`);
   });
   it("uses the true content index, not the filtered index", () => {
     // minimal SHOWS the featherweight card and excludes only itself, so the

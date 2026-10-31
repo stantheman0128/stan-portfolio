@@ -29,8 +29,8 @@ function software(c,data){
   <p class="intro">Android apps, browser extensions, AI tools and web applications from Taipei, Taiwan.</p>
   <p lang="zh-Hant">施博瀚的公開軟體與工具：查看用途、安裝入口、原始碼及使用限制。</p>
   <p>Store listings, downloadable releases and source-only tools are labeled separately. This directory includes tools maintained or adapted by Stan; upstream work is credited in the linked documentation.</p>
-  <p class="meta">Links and publication status checked ${esc(data.checkedAt)}. See also ${link('/open-source','upstream contributions')} and ${link('/research','public research notes')}.</p>
-  <ul class="work-list">${data.catalog.map(p=>`<li id="${esc(p.id)}"><h2>${esc(p.name)}</h2><p class="meta">${esc(p.category)} · ${esc(p.status)}</p><p>${esc(p.description)}</p>${p.zh?`<p lang="zh-Hant">${esc(p.zh)}</p>`:''}${p.limits?`<p>${esc(p.limits)}</p>`:''}${links(p.links)}</li>`).join('')}</ul>`;
+  <p class="meta">See also ${link('/open-source','upstream contributions')} and ${link('/research','public research notes')}. Source review dates are shown with each project.</p>
+  <ul class="work-list">${data.catalog.map(p=>`<li id="${esc(p.id)}"><h2>${esc(p.name)}</h2><p class="meta">${esc(p.category)} · ${esc(p.status)} · Reviewed ${esc(p.checkedAt || data.checkedAt)}</p><p>${esc(p.description)}</p>${p.zh?`<p lang="zh-Hant">${esc(p.zh)}</p>`:''}${p.limits?`<p>${esc(p.limits)}</p>`:''}${links(p.links)}</li>`).join('')}</ul>`;
   return {path,html:shell(c,{path,title:`Software and tools — ${displayName(c.profile)}`,description:'Published Android apps, Chrome extensions, Windows AI developer tools and web applications by Stan Shih (施博瀚) in Taiwan, with source and installation links.',pageType:'CollectionPage',body})};
 }
 
@@ -73,7 +73,7 @@ function notes(c,data){
 function research(c,data){
   const path='/research';
   const body=`<h1>Public research and experiments</h1><p class="intro">Source-linked experiments by ${esc(displayName(c.profile))}.</p><p>Research artifacts are separate from released products. Each project defines its own methods, evidence and limitations.</p><ul class="work-list">${data.research.map(p=>`<li><h2>${link(p.url,p.name)}</h2><p>${esc(p.description)}</p><p>${esc(p.limits)}</p></li>`).join('')}</ul><p>${link('/software','Software directory')} · ${link('/open-source','Open-source contributions')}</p>`;
-  return {path,html:shell(c,{path,title:`Research and experiments — ${displayName(c.profile)}`,description:'Public speech-recognition, ink-depth validation and quantitative research experiments by Stan Shih, with original sources and stated limitations.',pageType:'CollectionPage',body})};
+  return {path,html:shell(c,{path,title:`Research and experiments — ${displayName(c.profile)}`,description:'Public computational mathematics, AI evaluation, Vesuvius imaging and speech-recognition experiments by Stan Shih, with original sources and stated limitations.',pageType:'CollectionPage',body})};
 }
 
 export function discoveryPages(c,data,evidence){

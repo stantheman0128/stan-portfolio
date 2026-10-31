@@ -1,11 +1,284 @@
 {
-  "checkedAt": "2026-10-09T03:02:25.521Z",
+  "checkedAt": "2026-10-31T22:10:34.555Z",
   "login": "stantheman0128",
-  "method": "Public authored merged pull requests; excludes repositories owned by stantheman0128 and Cherith1222. Complete 2026-10-09 search snapshot reconstructed from the 2026-10-02 set and nine verified additions, with no removals. Snapshot, not a ranking or a count of all contributions.",
+  "method": "Public authored merged pull requests; excludes repositories owned by the author. Snapshot, not a ranking or a count of all contributions.",
   "searchUrl": "https://github.com/search?q=author%3Astantheman0128+is%3Apr+is%3Amerged+is%3Apublic&type=pullrequests",
-  "pullRequestCount": 103,
-  "repositoryCount": 35,
+  "pullRequestCount": 142,
+  "repositoryCount": 38,
   "pullRequests": [
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4539,
+      "title": "data(somnia): link CoinMarketCap Somnia page",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4539",
+      "mergedAt": "2026-10-31T15:57:45Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4595,
+      "title": "data(avalanche): link Goldsky subgraph chain page",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4595",
+      "mergedAt": "2026-10-31T13:39:12Z"
+    },
+    {
+      "repository": "ScrollPrize/villa",
+      "number": 2244,
+      "title": "zarr_tasks merge: create output levels through create_level_dataset so merge runs under zarr 3 (fixes #2240)",
+      "url": "https://github.com/ScrollPrize/villa/pull/2244",
+      "mergedAt": "2026-10-30T21:34:27Z"
+    },
+    {
+      "repository": "stacklok/toolhive",
+      "number": 6516,
+      "title": "Add Windows Claude Desktop credential helper",
+      "url": "https://github.com/stacklok/toolhive/pull/6516",
+      "mergedAt": "2026-10-27T13:36:31Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4592,
+      "title": "data(algorand): link ALGOMetrics API methodology",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4592",
+      "mergedAt": "2026-10-26T23:16:33Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4559,
+      "title": "data(avalanche): link the official Supra pull and storage contracts",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4559",
+      "mergedAt": "2026-10-24T06:55:11Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4561,
+      "title": "data(avalanche): link Mobula C-Chain indexer page",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4561",
+      "mergedAt": "2026-10-23T21:58:32Z"
+    },
+    {
+      "repository": "OpenRefine/OpenRefine",
+      "number": 7986,
+      "title": "Fix absolute command URLs for path-prefixed installs",
+      "url": "https://github.com/OpenRefine/OpenRefine/pull/7986",
+      "mergedAt": "2026-10-23T19:18:18Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4563,
+      "title": "data(avalanche): link Envio C-Chain indexer page",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4563",
+      "mergedAt": "2026-10-23T18:15:26Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4437,
+      "title": "data(avalanche): add ICM Teleporter contracts",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4437",
+      "mergedAt": "2026-10-23T10:45:47Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4543,
+      "title": "data(somnia): add the Wrapped SOMI LINK contract",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4543",
+      "mergedAt": "2026-10-22T22:47:51Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4433,
+      "title": "data(algorand): add the Foundation TestNet dispenser",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4433",
+      "mergedAt": "2026-10-22T19:57:19Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4557,
+      "title": "data(filecoin): link the FilForwarder contract",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4557",
+      "mergedAt": "2026-10-22T16:19:16Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4556,
+      "title": "data(filecoin): link the PDP verifier",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4556",
+      "mergedAt": "2026-10-22T16:18:32Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4584,
+      "title": "data(avalanche): link Indexing Company Fuji page",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4584",
+      "mergedAt": "2026-10-22T12:12:02Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4582,
+      "title": "data(avalanche): link Sentio Avalanche chain id",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4582",
+      "mergedAt": "2026-10-22T12:11:03Z"
+    },
+    {
+      "repository": "ScrollPrize/villa",
+      "number": 2132,
+      "title": "scrollprize.org: point twelve dead doc links at pages that exist",
+      "url": "https://github.com/ScrollPrize/villa/pull/2132",
+      "mergedAt": "2026-10-21T19:52:51Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4568,
+      "title": "data(avalanche): link Chainlink Functions routers",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4568",
+      "mergedAt": "2026-10-21T19:27:17Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4574,
+      "title": "data(avalanche): link the 1inch Aggregation Router V6",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4574",
+      "mergedAt": "2026-10-21T05:16:22Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4572,
+      "title": "data(avalanche): list the CCIP SolvBTC token pool",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4572",
+      "mergedAt": "2026-10-20T21:42:27Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4569,
+      "title": "data(avalanche): link Chainlink Data Streams verifier proxies",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4569",
+      "mergedAt": "2026-10-19T20:25:18Z"
+    },
+    {
+      "repository": "apache/ozone",
+      "number": 10968,
+      "title": "HDDS-13625. Recon UI: Add \"Replication Type\" col on Bucket page",
+      "url": "https://github.com/apache/ozone/pull/10968",
+      "mergedAt": "2026-10-19T13:58:10Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4600,
+      "title": "data(avalanche): link the Halliday AVAX page",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4600",
+      "mergedAt": "2026-10-19T08:35:20Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4583,
+      "title": "data(avalanche): link Openfort Avalanche chain ids",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4583",
+      "mergedAt": "2026-10-18T21:37:55Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4586,
+      "title": "data(avalanche): link CryptoAPIs Avalanche transaction API",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4586",
+      "mergedAt": "2026-10-18T19:03:22Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4566,
+      "title": "data(avalanche): link Circle EURC contracts",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4566",
+      "mergedAt": "2026-10-18T08:14:08Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4549,
+      "title": "data(somnia): add the USD Somnia contract",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4549",
+      "mergedAt": "2026-10-18T05:14:11Z"
+    },
+    {
+      "repository": "ScrollPrize/villa",
+      "number": 2074,
+      "title": "scrollprize.org: write \"PHerc. Paris. N\" with the dot (fixes #2068)",
+      "url": "https://github.com/ScrollPrize/villa/pull/2074",
+      "mergedAt": "2026-10-17T18:57:58Z"
+    },
+    {
+      "repository": "kuberay-project/kuberay",
+      "number": 5103,
+      "title": "[APIServer] Wait for the terminate-actor job, not the create-actor job",
+      "url": "https://github.com/kuberay-project/kuberay/pull/5103",
+      "mergedAt": "2026-10-17T06:28:03Z"
+    },
+    {
+      "repository": "Chain-Love/chain-love",
+      "number": 4440,
+      "title": "data(somnia): use the official testnet RPC",
+      "url": "https://github.com/Chain-Love/chain-love/pull/4440",
+      "mergedAt": "2026-10-16T09:28:40Z"
+    },
+    {
+      "repository": "ScrollPrize/villa",
+      "number": 1926,
+      "title": "config: read training YAML as UTF-8, not the locale codec (fixes #1524)",
+      "url": "https://github.com/ScrollPrize/villa/pull/1926",
+      "mergedAt": "2026-10-12T18:44:25Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1798,
+      "title": "fix(i18n): correct the letter case of 142 translation links that 404 on GitHub Pages",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1798",
+      "mergedAt": "2026-10-10T15:48:08Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1797,
+      "title": "fix(link-target): catch links that differ from the page only in letter case",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1797",
+      "mergedAt": "2026-10-10T00:49:47Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1800,
+      "title": "fix(lang-sync): retranslation-drift-check --zh no longer splits hub paths with spaces",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1800",
+      "mergedAt": "2026-10-10T00:49:41Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1799,
+      "title": "fix(tools): manage-featured set/unset on GNU sed, and list/set actually work",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1799",
+      "mergedAt": "2026-10-10T00:49:35Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1795,
+      "title": "fix(prebuild): API generator, image check and immune JSON on Windows; show platform badge",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1795",
+      "mergedAt": "2026-10-10T00:49:28Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1794,
+      "title": "test(lang-sync): extend the UTF-8 gate to open() and subdirectories",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1794",
+      "mergedAt": "2026-10-10T00:49:21Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1793,
+      "title": "fix(windows): let a zh-TW Windows contributor install and commit again",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1793",
+      "mergedAt": "2026-10-10T00:49:15Z"
+    },
+    {
+      "repository": "frank890417/taiwan-md",
+      "number": 1791,
+      "title": "fix(git): read Chinese paths unquoted in changelog, contributors and pre-push",
+      "url": "https://github.com/frank890417/taiwan-md/pull/1791",
+      "mergedAt": "2026-10-10T00:49:08Z"
+    },
     {
       "repository": "frank890417/taiwan-md",
       "number": 1792,
@@ -287,10 +560,10 @@
       "mergedAt": "2026-08-22T17:10:31Z"
     },
     {
-      "repository": "ray-project/kuberay",
+      "repository": "kuberay-project/kuberay",
       "number": 5077,
       "title": "[History Server] Anchor the GCS GetContent search at the configured root dir",
-      "url": "https://github.com/ray-project/kuberay/pull/5077",
+      "url": "https://github.com/kuberay-project/kuberay/pull/5077",
       "mergedAt": "2026-08-18T01:10:55Z"
     },
     {

@@ -7,7 +7,8 @@ const origin = 'https://stan-shih.com';
 const paths = ['/', '/zh/about', '/work', '/work/antnest-chatbot',
   '/work/paper-stan', '/work/claudepulse', '/work/notify-plus', '/interactive',
   '/software', '/open-source', '/zh/open-source', '/notes/windows-open-source-fixes', '/research',
-  '/zh/work/notify-plus', '/zh/work/claudepulse'];
+  '/zh/work/notify-plus', '/zh/work/claudepulse',
+  '/work/line-codex-stickers', '/zh/work/line-codex-stickers'];
 const capturedAt = new Date().toISOString();
 
 function attributes(tag) {

@@ -74,14 +74,14 @@
       "skills": "Skills",
       "contact": ""
     },
-    "workSuffix": "shipped"
+    "workSuffix": "projects"
   },
   "about": {
     "short": "I am Stan Shih (施博瀚 / Po-Han Shih), an AI product developer and AI agent builder based in Taipei, Taiwan.",
     "paragraphs": [
       "I am Stan Shih (施博瀚 / Po-Han Shih), an AI product developer and AI agent builder based in Taipei, Taiwan.",
       "My work connects AI to practical software: a customer-service chatbot for a dessert shop, tools for following coding-agent sessions, and an interactive guide built into this website. I also develop Android apps and browser extensions.",
-      "I publish software as stantheman0128 on GitHub. My projects include Antnest Chatbot, ClaudePulse for Windows, Paper Stan, and Notify+. This website collects the products, implementation notes, and public links behind that work."
+      "I publish software as stantheman0128 on GitHub. My projects include LINE Stickers for Codex, Antnest Chatbot, ClaudePulse for Windows, Paper Stan, and Notify+. This website collects the products, implementation notes, and public links behind that work."
     ],
     "principles": [],
     "zhHant": {
@@ -90,12 +90,32 @@
       "paragraphs": [
         "我是施博瀚，英文名字是 Stan Shih，也使用 Po-Han Shih。我是一位在台北的 AI 產品開發者與 AI Agent Builder，GitHub 帳號是 stantheman0128。",
         "我把 AI 接進實際的軟體流程：從甜點店的客服聊天機器人、追蹤程式開發代理狀態的桌面工具，到這個網站裡的互動導覽角色。我也開發 Android 應用與瀏覽器擴充功能。",
-        "我的作品包括 Antnest Chatbot、Windows 版 ClaudePulse、Paper Stan 與 Notify+。這個網站整理我開發的產品、實作方式與公開連結，讓你能直接了解每個專案做了什麼。"
+        "我的作品包括 LINE Stickers for Codex、Antnest Chatbot、Windows 版 ClaudePulse、Paper Stan 與 Notify+。這個網站整理我開發的產品、實作方式與公開連結，讓你能直接了解每個專案做了什麼。"
       ]
     }
   },
   "stats": [],
   "items": [
+    {
+      "id": "line-codex-stickers",
+      "title": "LINE Stickers for Codex",
+      "status": "Local integration · Public scripts and notes",
+      "year": "2026",
+      "description": "A local LINE sticker picker for the Codex desktop composer, with pack search, favorites, and enlarged previews.",
+      "detail": "An independent Windows integration using stickers already stored by LINE. The public repository contains scripts and documentation; a prepared local runtime is required.",
+      "image": "",
+      "imageMode": "",
+      "links": [
+        {
+          "label": "GitHub",
+          "href": "https://github.com/stantheman0128/line-codex-stickers"
+        },
+        {
+          "label": "Case study",
+          "href": "/work/line-codex-stickers"
+        }
+      ]
+    },
     {
       "id": "colonist-stats-tracker",
       "title": "Colonist.io Stats Tracker",
@@ -352,6 +372,115 @@
   "education": [],
   "skills": [],
   "caseStudies": [
+    {
+      "slug": "line-codex-stickers",
+      "itemId": "line-codex-stickers",
+      "title": "LINE Stickers for Codex",
+      "subtitle": "Bring a familiar sticker picker into a desktop AI conversation",
+      "summary": "LINE Stickers for Codex is an independent Windows integration by Stan Shih (施博瀚). It adds a local sticker picker to the Codex desktop composer, with pack search, favorites, and enlarged previews.",
+      "modified": "2026-11-01",
+      "sections": [
+        {
+          "title": "A picker where the conversation happens",
+          "paragraphs": [
+            "The project adds a LINE sticker button to the Codex desktop composer. Instead of finding an image in a separate folder, you can browse local sticker packs, search pack names, and keep frequently used stickers in favorites.",
+            "The documented v7 interface keeps favorites across restarts and provides enlarged hover previews. Keyboard interaction and reduced-motion mode use static images."
+          ]
+        },
+        {
+          "title": "Preserving the rest of a message",
+          "paragraphs": [
+            "The integration notes describe sending a selected sticker while preserving the text and other attachments already drafted in the composer. Sticker messages use a compact, transparent presentation with animation on hover, while ordinary images keep their existing display behavior.",
+            "The implementation separates the composer picker from message display. The public repository includes both scripts and records local checks for favorites, the submission function, APNG animation pixels, and draft preservation. These checks do not establish success in every signed-in conversation or future app version."
+          ]
+        },
+        {
+          "title": "What is available to try",
+          "paragraphs": [
+            "The GitHub repository publishes scripts, a launcher, and integration notes. It does not distribute Codex or ChatGPT, sticker images, login profiles, or prepared app updates. Cloning the repository alone therefore does not produce a working installation.",
+            "The documented setup uses separately installed LINE and Codex desktop apps and an already prepared local runtime. For that setup, the launcher's ValidateOnly option checks paths without starting or stopping the app. Consult the current repository before using the launcher: its documented resource-control dependency and runtime layout are part of the local setup."
+          ]
+        },
+        {
+          "title": "Local assets and compatibility",
+          "paragraphs": [
+            "The picker reads stickers LINE has already stored on the computer. That cache is not a verified purchase record or permission to redistribute the artwork. Sticker assets stay out of the public repository.",
+            "This is a third-party project, not an official OpenAI or LINE integration. Its documented scope is selecting and displaying stickers; it does not establish that an AI understands the meaning of every sticker. Compatibility should be checked against the desktop app version and prepared runtime in use."
+          ]
+        }
+      ],
+      "sources": [
+        {
+          "label": "LINE Stickers for Codex — public scripts and setup notes",
+          "href": "https://github.com/stantheman0128/line-codex-stickers"
+        },
+        {
+          "label": "Integration notes — v7 behavior and verification scope",
+          "href": "https://github.com/stantheman0128/line-codex-stickers/blob/main/NATIVE-INTEGRATION.md"
+        },
+        {
+          "label": "Composer picker implementation",
+          "href": "https://github.com/stantheman0128/line-codex-stickers/blob/main/install-line-composer.js"
+        },
+        {
+          "label": "More software by Stan Shih",
+          "href": "/software"
+        }
+      ],
+      "zhHant": {
+        "title": "LINE Stickers for Codex：在桌面 AI 對話中選用貼圖",
+        "subtitle": "把貼圖包搜尋、最愛與放大預覽放進 Codex 輸入區",
+        "summary": "LINE Stickers for Codex 是施博瀚 Stan Shih 開發的 Windows 本機整合專案，在 Codex 桌面版輸入區加入 LINE 貼圖選單，提供貼圖包搜尋、最愛與放大預覽。",
+        "sections": [
+          {
+            "title": "在對話的位置選貼圖",
+            "paragraphs": [
+              "這個專案在 Codex 桌面版輸入區加入 LINE 貼圖按鈕，可以瀏覽電腦上的貼圖包、搜尋名稱，把常用貼圖放進最愛，省去另外翻找圖片檔案的步驟。",
+              "v7 整合文件記錄了重開後保留最愛與滑鼠放大預覽的行為。鍵盤操作與減少動態效果模式則使用靜態圖片。"
+            ]
+          },
+          {
+            "title": "選貼圖時保留原本的草稿",
+            "paragraphs": [
+              "整合文件描述，點選貼圖送出時會保留輸入區原有的文字與其他附件草稿。訊息中的貼圖使用透明、無框的小尺寸呈現，滑鼠移入時播放動畫；一般圖片維持原本的顯示方式。",
+              "實作把輸入區選單與訊息顯示分開處理。公開原始碼與文件記錄了收藏、提交函式、APNG 動畫像素及草稿保留的本機檢查；這些紀錄不代表每種已登入對話情境或未來版本都已驗證通過。"
+            ]
+          },
+          {
+            "title": "目前公開提供什麼",
+            "paragraphs": [
+              "GitHub 提供程式腳本、啟動器與整合說明，不散布 Codex 或 ChatGPT 應用程式、貼圖圖片、登入 profile 或準備好的 App 更新。因此，單純複製 repository 並不會得到可直接使用的完整安裝。",
+              "文件中的使用方式需要另外安裝 LINE 與 Codex 桌面版，並已有準備好的本機 runtime。這種既有安裝可透過啟動器的 ValidateOnly 選項檢查路徑，不會啟動或停止 App。實際啟動前應核對 repository 的現行說明，包括資源控管依賴與 runtime 目錄配置。"
+            ]
+          },
+          {
+            "title": "本機素材與相容性界線",
+            "paragraphs": [
+              "選單讀取 LINE 已經存放在電腦上的貼圖。這份快取不是完整的購買紀錄，也不代表取得站外散布圖像的授權；貼圖素材不放進公開 repository。",
+              "這是第三方專案，並非 OpenAI 或 LINE 官方整合。目前介紹的範圍是貼圖選取與顯示，不能據此宣稱 AI 能理解每張貼圖的意思。使用時仍應核對桌面 App 版本與本機 runtime 的相容性。"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "label": "LINE Stickers for Codex：公開程式與設定說明",
+            "href": "https://github.com/stantheman0128/line-codex-stickers"
+          },
+          {
+            "label": "原生貼圖整合：v7 功能與驗證範圍",
+            "href": "https://github.com/stantheman0128/line-codex-stickers/blob/main/NATIVE-INTEGRATION.md"
+          },
+          {
+            "label": "貼圖輸入區選單原始碼",
+            "href": "https://github.com/stantheman0128/line-codex-stickers/blob/main/install-line-composer.js"
+          },
+          {
+            "label": "施博瀚的完整軟體目錄",
+            "href": "/software"
+          }
+        ]
+      }
+    },
     {
       "slug": "antnest-chatbot",
       "itemId": "antnest-chatbot",
