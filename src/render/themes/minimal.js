@@ -275,7 +275,7 @@ export function render(content, opts = {}) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
 <meta name="description" content="${metaDesc}">
-${seoHead(p, { path: "/interactive", desc: rawMetaDesc })}
+${seoHead(p, { path: opts.canonicalPath || "/interactive", desc: rawMetaDesc })}
 <meta name="build" content="${esc(String(c._build || "dev"))}">
 <link rel="stylesheet" href="/moana-puppet-kit/moana-puppet.css">
 <script>
@@ -297,7 +297,6 @@ ${seoHead(p, { path: "/interactive", desc: rawMetaDesc })}
   if(pref==="fast"||slow||lowEnd||rd)location.replace("/fast/");
 }catch(e){}})();
 </script>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f6f5f1'/%3E%3Cpolygon points='8,22 3,18 8,15' fill='%23efe7da'/%3E%3Cpolygon points='8,22 20,22 15,12' fill='%23c2522d'/%3E%3Cpolygon points='11,20 17,20 13,13' fill='%238f351f'/%3E%3Cpolygon points='20,22 26,18 21,15' fill='%23efe7da'/%3E%3Cpolygon points='26,18 29,19 26,21' fill='%2317151a'/%3E%3C/svg%3E">
 <meta name="theme-color" content="#f6f5f1">
 <link rel="manifest" href="/site.webmanifest">
 <style>

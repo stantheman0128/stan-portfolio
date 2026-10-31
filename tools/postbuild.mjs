@@ -28,6 +28,18 @@ const discovery = JSON.parse(readFileSync(join(root, "data", "discovery.json"), 
 const evidence = JSON.parse(readFileSync(join(root, "data", "oss-evidence.json"), "utf8"));
 const fw = renderSite(content, "featherweight");
 writeFileSync(join(dist, "index.html"), fw);
+
+// Preserve the legacy theme selector's Vite loader, but give its initial HTML
+// the same identity/canonical as the homepage before JavaScript runs.
+const { seoHead, seoTitle, seoDescription } = await import(new URL("../src/render/seo.js", import.meta.url));
+const { esc } = await import(new URL("../src/render/util.js", import.meta.url));
+const entryPath = join(dist, "site.html");
+const entry = readFileSync(entryPath, "utf8")
+  .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(seoTitle(content.profile))}</title>`)
+  .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${esc(seoDescription(content.profile))}">`)
+  .replace('</head>', `${seoHead(content.profile)}\n</head>`)
+  .replace('</body>', `<main><h1>${esc(seoTitle(content.profile))}</h1><p>${esc(seoDescription(content.profile))}</p><p><a href="/">Personal website and portfolio</a> · <a href="/zh/about" lang="zh-Hant">施博瀚的中文介紹</a></p></main></body>`);
+writeFileSync(entryPath, entry);
 mkdirSync(join(dist, "fast"), { recursive: true });
 writeFileSync(join(dist, "fast", "index.html"), fw);
 

@@ -156,6 +156,7 @@ export function seoHead(p, { path = "/", title, desc, lang = "en", pageType = pa
   const t = title || seoTitle(p);
   const d = desc || seoDescription(p);
   return [
+    `<link rel="icon" type="image/png" sizes="192x192" href="${ORIGIN}/assets/icon-192.png">`,
     `<link rel="canonical" href="${canonical}">`,
     ...(path === "/" ? [`<meta name="google-site-verification" content="${GOOGLE_SITE_VERIFICATION}">`] : []),
     ...(path === "/" ? [`<meta name="msvalidate.01" content="${BING_SITE_VERIFICATION}">`] : []),

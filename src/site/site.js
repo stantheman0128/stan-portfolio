@@ -14,7 +14,9 @@ const content = await (await fetch("/data/content.json")).json();
 
 // renderSite() returns a full HTML document string. Parse it and swap the
 // document element in place of the shell, no document.write / open / close.
-const doc = new DOMParser().parseFromString(renderSite(content, theme), "text/html");
+// The legacy theme selector is a homepage alias, even when it displays minimal.
+// Keep the canonical consistent with its initial, build-generated HTML.
+const doc = new DOMParser().parseFromString(renderSite(content, theme, onInteractive ? {} : { canonicalPath: "/" }), "text/html");
 document.replaceChild(document.importNode(doc.documentElement, true), document.documentElement);
 
 // DOMParser marks <script> elements as non-executable and importNode keeps that

@@ -337,7 +337,6 @@ ${seoHead(p, { path: "/", desc: rawDesc })}
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#fbfbfa">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2316161a'/%3E%3Ctext x='16' y='22' font-family='-apple-system,Segoe UI,Roboto,sans-serif' font-size='18' font-weight='600' fill='%23fbfbfa' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E">
 <style>
 :root{--root:1.0625rem;--r:1.333;--s-1:calc(var(--root) / var(--r));--s0:var(--root);--s1:calc(var(--root) * var(--r));--s2:calc(var(--s1) * var(--r));--s3:calc(var(--s2) * var(--r));--lh:1.62;--measure:64ch;--prose:42rem;--proof-w:52rem;--rule:1px;--ink:#16161a;--ink-2:#4a4a52;--ink-3:#5e5e66;--line:#e3e3e6;--line-2:#cfcfd4;--bg:#fbfbfa;--accent:#16161a;--focus:#1a55ff;--live:#1f8a3b;--space:1.62rem}
 @media (prefers-color-scheme:dark){:root{--ink:#ecedee;--ink-2:#b7b8bc;--ink-3:#9a9ba0;--line:#2a2a2e;--line-2:#3a3a40;--bg:#0e0e10;--accent:#ecedee;--focus:#6f9bff;--live:#3fb950}}

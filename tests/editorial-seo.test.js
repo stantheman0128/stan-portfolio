@@ -95,6 +95,7 @@ describe("searchable identity and case-study pages", () => {
         expect(html).toContain(`hreflang="en" href="https://stan-shih.com/work/${slug}"`);
         expect(html).toContain(`hreflang="zh-Hant" href="https://stan-shih.com/zh/work/${slug}"`);
         expect(html).toContain(`<html lang="${prefix ? 'zh-Hant' : 'en'}">`);
+        expect(html).toContain(`<a rel="author" href="${prefix ? '/zh/about' : '/'}">`);
         expect(graph(html).find(n => n['@type'] === 'Article').author['@id']).toBe('https://stan-shih.com/#person');
       }
       expect(pages.find(p => p.path === '/zh/about').html).toContain(`href="/zh/work/${slug}"`);
@@ -131,5 +132,17 @@ describe("searchable identity and case-study pages", () => {
       expect(html).toContain('href="/zh/about"');
       expect(html).toContain('href="/work"');
     }
+  });
+
+  it("keeps the legacy selector canonical stable across themes without changing the interactive URL", () => {
+    for (const theme of ['featherweight', 'minimal']) {
+      const html = renderSite(content, theme, { canonicalPath: '/' });
+      expect(html).toContain('rel="canonical" href="https://stan-shih.com/"');
+      expect(html).toContain('og:url" content="https://stan-shih.com/"');
+      expect(graph(html).find(n => n['@type'] === 'ProfilePage').url).toBe('https://stan-shih.com/');
+      expect(html.match(/<link\b[^>]*rel="icon"[^>]*>/g)).toHaveLength(1);
+      expect(html).toContain('href="https://stan-shih.com/assets/icon-192.png"');
+    }
+    expect(renderSite(content, 'minimal')).toContain('rel="canonical" href="https://stan-shih.com/interactive"');
   });
 });
