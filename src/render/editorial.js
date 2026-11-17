@@ -88,7 +88,7 @@ function aboutPage(c, zh) {
   <h2>${zh ? "姓名與公開身分" : "Names and public identity"}</h2>
   <dl class="identity">${identity.filter(x => x[1]).map(([label, value]) => `<dt>${esc(label)}</dt><dd>${esc(value)}</dd>`).join("")}</dl>
   <p>${zh ? "這個網站介紹的是開發 Antnest Chatbot、ClaudePulse for Windows 與 Notify+ 的施博瀚。你可以從以下本人帳號與作品連結核對我的工作。" : "This profile belongs to the developer of Antnest Chatbot, ClaudePulse for Windows, and Notify+. The accounts and project links below connect these names to my software work."}</p>
-  <h2>${zh ? "作品與實作" : "Projects and implementation"}</h2>${workList(c, zh)}
+  <h2>${zh ? "AI 應用、Agent 工具與軟體作品" : "Projects and implementation"}</h2>${workList(c, zh)}
   <h2>${zh ? "本人公開帳號" : "Find my work elsewhere"}</h2>${sources([{ label: "GitHub · stantheman0128", href: p.githubUrl }, { label: "LinkedIn · Po-Han (Stan) Shih", href: p.linkedinUrl }])}
   <p>${zh ? "Notify+ 的 Google Play 商店頁也列出開發者 Stan Shih。" : "The Notify+ Google Play listing also identifies its developer as Stan Shih."}</p>${sources([{ label: "Notify+ · Google Play", href: "https://play.google.com/store/apps/details?id=com.stanslab.linenotify" }])}`;
   return { path, html: shell(c, { path, title, description, lang: zh ? "zh-Hant" : "en", pageType: "ProfilePage", alternates: [], body }) };

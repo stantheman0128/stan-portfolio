@@ -85,11 +85,11 @@
     ],
     "principles": [],
     "zhHant": {
-      "title": "施博瀚 Stan Shih — AI 產品開發者",
-      "description": "施博瀚（Stan Shih／Po-Han Shih）是位於台北的 AI 產品開發者與 AI Agent Builder。認識他的 AI 客服、開發者工具、Android 應用與公開作品。",
+      "title": "施博瀚 Stan Shih — AI 產品開發者與 AI Agent Builder",
+      "description": "施博瀚（Stan Shih／Po-Han Shih）是台北的 AI 產品開發者與 AI Agent Builder，專注人工智慧應用、AI 客服與開發者工具。查看 Antnest Chatbot、ClaudePulse for Windows、LINE Stickers for Codex 的實作與原始碼。",
       "paragraphs": [
         "我是施博瀚，英文名字是 Stan Shih，也使用 Po-Han Shih。我是一位在台北的 AI 產品開發者與 AI Agent Builder，GitHub 帳號是 stantheman0128。",
-        "我把 AI 接進實際的軟體流程：從甜點店的客服聊天機器人、追蹤程式開發代理狀態的桌面工具，到這個網站裡的互動導覽角色。我也開發 Android 應用與瀏覽器擴充功能。",
+        "我的 AI 開發工作聚焦人工智慧應用與 AI Agent（人工智慧代理）的實際使用流程：從甜點店的 AI 客服聊天機器人、追蹤程式開發代理狀態的桌面工具，到這個網站裡的互動導覽角色。我也開發 Android 應用與瀏覽器擴充功能。",
         "我的作品包括 LINE Stickers for Codex、Antnest Chatbot、Windows 版 ClaudePulse、Paper Stan 與 Notify+。這個網站整理我開發的產品、實作方式與公開連結，讓你能直接了解每個專案做了什麼。"
       ]
     }
